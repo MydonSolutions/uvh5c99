@@ -1,0 +1,34 @@
+# Name of instrument
+instrument = "ATA"
+
+# Input map.  This lists which antenna-polarizations were connected to which
+# correlator inputs.  For dual-polarization inputs, the two polarization for a
+# given input are flattened into two sequential elements, with the "first"
+# polarization of the input given before the "second" polarization.  The
+# antenna-polarization for an input is given as a two element array.  The first
+# element specifies the antenna.  This can be given as a string for antenna
+# name or an integer for antenna number.  The second element specifies the
+# polarization.  Valid values are L,R,X,Y (case-insensitive).  Polarizations
+# must be specified for each input, even for single polarization instruments.
+input_map = [
+  ["1c", "x"], ["1c", "y"],
+  ["1e", "x"], ["1e", "y"],
+  ["1g", "x"], ["1g", "y"],
+  ["1h", "x"], ["1h", "y"],
+  ["1k", "x"], ["1k", "y"],
+  ["2a", "x"], ["2a", "y"],
+  ["2b", "x"], ["2b", "y"],
+  ["2c", "x"], ["2c", "y"],
+  ["2e", "x"], ["2e", "y"],
+  ["2h", "x"], ["2h", "y"],
+  ["2j", "x"], ["2j", "y"],
+  ["2k", "x"], ["2k", "y"],
+  ["2l", "x"], ["2l", "y"],
+  ["2m", "x"], ["2m", "y"],
+  ["3c", "x"], ["3c", "y"],
+  ["3d", "x"], ["3d", "y"],
+  ["3l", "x"], ["3l", "y"],
+  ["4j", "x"], ["4j", "y"],
+  ["5b", "x"], ["5b", "y"],
+  ["4g", "x"], ["4g", "y"]
+]
