@@ -419,6 +419,9 @@ static inline void _UVH5_Hwrite_static(UVH5_file_t *uvh5_file)
 	status = _H5DstringWrite(uvh5_file->header_id, "phase_type", 0, NULL, header.phase_type);
 	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'phase_type'\n"); return; }
 
+	status = _H5DintWrite(uvh5_file->header_id, "Nants_data", 0, NULL, &header.Nants_data);
+	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Nants_data'\n"); return; }
+
 	status = _H5DintWrite(uvh5_file->header_id, "Nants_telescope", 0, NULL, &header.Nants_telescope);
 	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Nants_telescope'\n"); return; }
 
