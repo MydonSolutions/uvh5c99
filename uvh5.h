@@ -648,23 +648,23 @@ int UVH5write_dynamic(UVH5_file_t* uvh5_file) {
 	status = H5DSextend(&uvh5_file->DS_header_ant_1_array);
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_ant_1_array'\n"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_header_ant_1_array, uvh5_file->header.ant_1_array);
-
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_ant_1_array'\n"); return -1;}
+
 	status = H5DSextend(&uvh5_file->DS_header_ant_2_array);
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_ant_2_array'\n"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_header_ant_2_array, uvh5_file->header.ant_2_array);
-
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_ant_2_array'\n"); return -1;}
+
 	status = H5DSextend(&uvh5_file->DS_header_uvw_array);
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_uvw_array'\n"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_header_uvw_array, uvh5_file->header.uvw_array);
-
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_uvw_array'\n"); return -1;}
+
 	status = H5DSextend(&uvh5_file->DS_header_time_array);
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_time_array'\n"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_header_time_array, uvh5_file->header.time_array);
-
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_time_array'\n"); return -1;}
+
 	status = H5DSextend(&uvh5_file->DS_header_integration_time);
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_integration_time'\n"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_header_integration_time, uvh5_file->header.integration_time);
@@ -674,13 +674,13 @@ int UVH5write_dynamic(UVH5_file_t* uvh5_file) {
 	status = H5DSextend(&uvh5_file->DS_data_visdata);
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'data_visdata'\n"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_data_visdata, uvh5_file->visdata);
-
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'data_visdata'\n"); return -1;}
+
 	status = H5DSextend(&uvh5_file->DS_data_flags);
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'data_flags'\n"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_data_flags, uvh5_file->flags);
-
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'data_flags'\n"); return -1;}
+
 	status = H5DSextend(&uvh5_file->DS_data_nsamples);
 	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'data_nsamples'\n"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_data_nsamples, uvh5_file->nsamples);
