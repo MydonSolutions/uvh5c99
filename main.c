@@ -147,10 +147,13 @@ void toml_load_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 			if(ant_1_idx != ant_2_idx) {
 				uvh5_header->ant_1_array[bls_idx] = ant_name_index_map[ant_1_idx];//ant_1_idx < ant_2_idx ? ant_1_idx : ant_2_idx];
 				uvh5_header->ant_2_array[bls_idx] = ant_name_index_map[ant_2_idx];//ant_1_idx > ant_2_idx ? ant_1_idx : ant_2_idx];
-				// fprintf(stderr, "#%d: Cross Correlation Baseline between %s and %s.\n", bls_idx, 
-				// 	uvh5_header->antenna_names[uvh5_header->ant_1_array[bls_idx]],
-				// 	uvh5_header->antenna_names[uvh5_header->ant_2_array[bls_idx]]
-				// );
+
+				for (size_t i = 0; i < 3; i++)
+				{
+					uvh5_header->uvw_array[bls_idx*3 + i] = // ant_1 -> ant_2
+						uvh5_header->antenna_positions[uvh5_header->ant_2_array[bls_idx]*3 + i] -
+						uvh5_header->antenna_positions[uvh5_header->ant_1_array[bls_idx]*3 + i];
+				}
 				bls_idx++;
 			}
 			ant_2_idx = (ant_2_idx + 1)%uvh5_header->Nants_data;
@@ -192,9 +195,6 @@ int main() {
 
 	for (size_t i = 0; i < uvh5_header->Nbls; i++)
 	{
-		uvh5_header->uvw_array[i*3 + 0] = 0.0;
-		uvh5_header->uvw_array[i*3 + 1] = 1.0;
-		uvh5_header->uvw_array[i*3 + 2] = 2.0;
 		uvh5_header->time_array[i] = 1.0;
 		uvh5_header->integration_time[i] = 1.0;
 	}
