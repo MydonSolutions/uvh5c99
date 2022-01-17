@@ -67,14 +67,14 @@ static inline void H5DSopen(
 		H5Pset_chunk(dataspace->P_id, dataspace->rank, dataspace->dimchunks);
 		dataspace->C_id = H5Screate_simple(dataspace->rank, dataspace->dimchunks, NULL);
 		// filters can only be used with chunked data
-		// if(dataspace->filter_flag >= H5_FILTER_FLAG_NONE){
-		// 	if(dataspace->filter_flag <= H5_FILTER_FLAG_DEFLATE_9){
-		// 		H5Pset_deflate(dataspace->P_id, dataspace->filter_flag);
-		// 	}
-		// 	if(dataspace->filter_flag == H5_FILTER_FLAG_SHUFFLE){
-		// 		H5Pset_shuffle(dataspace->P_id);
-		// 	}
-		// }
+		if(dataspace->filter_flag >= H5_FILTER_FLAG_NONE){
+			if(dataspace->filter_flag <= H5_FILTER_FLAG_DEFLATE_9){
+				H5Pset_deflate(dataspace->P_id, dataspace->filter_flag);
+			}
+			if(dataspace->filter_flag == H5_FILTER_FLAG_SHUFFLE){
+				H5Pset_shuffle(dataspace->P_id);
+			}
+		}
 	}
 	dataspace->D_id = H5Dcreate(dest_id, dataspace->name, dataspace->Tmem_id, dataspace->S_id, H5P_DEFAULT, dataspace->P_id, H5P_DEFAULT);
 }
