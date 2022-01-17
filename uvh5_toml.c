@@ -52,6 +52,21 @@ int uvh5_toml_string_at(toml_array_t* parent, const int idx, char** string_out) 
 	return 0;
 }
 
+int uvh5_toml_nstring_at(toml_array_t* parent, const int location, char* string_out, size_t length) {
+	toml_datum_t toml_datum = toml_string_at(parent, location);
+	if (!toml_datum.ok) {
+			uvh5_toml_error("cannot read index", NULL);
+	}
+	else {
+		memset(string_out, '\0', length);
+		length = length <= strlen(toml_datum.u.s)+1 ? length : strlen(toml_datum.u.s)+1;
+		memcpy(string_out, toml_datum.u.s, length);
+		free(toml_datum.u.s);
+		printf("[%d]: %s\n", location, string_out);
+	}
+	return 0;
+}
+
 int uvh5_toml_string_in(toml_table_t* parent, const char* location, char** string_out) {
 	toml_datum_t toml_datum = toml_string_in(parent, location);
 	if (!toml_datum.ok) {
@@ -62,6 +77,21 @@ int uvh5_toml_string_in(toml_table_t* parent, const char* location, char** strin
 		memcpy(*string_out, toml_datum.u.s, strlen(toml_datum.u.s)+1);
 		free(toml_datum.u.s);
 		printf("%s: %s\n", location, *string_out);
+	}
+	return 0;
+}
+
+int uvh5_toml_nstring_in(toml_table_t* parent, const char* location, char* string_out, size_t length) {
+	toml_datum_t toml_datum = toml_string_in(parent, location);
+	if (!toml_datum.ok) {
+			uvh5_toml_error("cannot read location", NULL);
+	}
+	else {
+		memset(string_out, '\0', length);
+		length = length <= strlen(toml_datum.u.s)+1 ? length : strlen(toml_datum.u.s)+1;
+		memcpy(string_out, toml_datum.u.s, length);
+		free(toml_datum.u.s);
+		printf("%s: %s\n", location, string_out);
 	}
 	return 0;
 }
