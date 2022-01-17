@@ -714,4 +714,72 @@ static int find_antenna_index_by_name(UVH5_header_t* header, char* name) {
 	return -1;
 }
 
+static int polarisation_string_key(char* pol_string, int npols) {
+	if(npols == 1) {
+		switch (pol_string[0]) {
+		case 'i':
+		case 'I': return 1;
+		case 'q':
+		case 'Q': return 2;
+		case 'u':
+		case 'U': return 3;
+		case 'v':
+		case 'V': return 4;
+		default:
+			break;
+		}
+	}
+	else if(npols == 2) {
+		switch (pol_string[0]) {
+			case 'r':
+			case 'R':
+				switch(pol_string[1]) { 	
+					case 'r':
+					case 'R': return -1; // 'RR'
+					case 'l':
+					case 'L': return -3; // 'RL'
+					default:
+						break;
+				}
+				break;
+			case 'l':
+			case 'L':
+				switch(pol_string[1]) { 	
+					case 'l':
+					case 'L': return -2; // 'LL'
+					case 'r':
+					case 'R': return -4; // 'LR'
+					default:
+						break;
+				}
+				break;
+			case 'x':
+			case 'X':
+				switch(pol_string[1]) { 	
+					case 'x':
+					case 'X': return -5; // 'XX'
+					case 'y':
+					case 'Y': return -7; // 'XY'
+					default:
+						break;
+				}
+				break;
+			case 'y':
+			case 'Y':
+				switch(pol_string[1]) { 	
+					case 'y':
+					case 'Y': return -6; // 'YY'
+					case 'x':
+					case 'X': return -8; // 'YX'
+					default:
+						break;
+				}
+				break;
+			default:
+				break;
+		}
+	}
+	return 0;
+}
+
 #endif
