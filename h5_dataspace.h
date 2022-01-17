@@ -31,6 +31,7 @@ typedef struct {
 	hsize_t* dimchunks;
 	char* name;
 	hid_t S_id;
+	hid_t C_id; // Chunk_id: the space-ID for the memory
 	hid_t D_id;
 	hid_t P_id;
 	hid_t Tmem_id;
@@ -64,6 +65,7 @@ static inline void H5DSopen(
 
 	if(dataspace->rank > 0 && dataspace->dimchunks != NULL) {
 		H5Pset_chunk(dataspace->P_id, dataspace->rank, dataspace->dimchunks);
+		dataspace->C_id = H5Screate_simple(dataspace->rank, dataspace->dimchunks, NULL);
 		// filters can only be used with chunked data
 		// if(dataspace->filter_flag >= H5_FILTER_FLAG_NONE){
 		// 	if(dataspace->filter_flag <= H5_FILTER_FLAG_DEFLATE_9){
@@ -93,6 +95,9 @@ static inline herr_t H5DSclose(H5_open_dataspace_t* dataspace) {
 	}
 	if (dataspace->S_id) {
 		status += H5Sclose(dataspace->S_id);
+	}
+	if (dataspace->C_id) {
+		status += H5Sclose(dataspace->C_id);
 	}
 	if (dataspace->dims != NULL) {
 		free(dataspace->dims);
@@ -152,7 +157,7 @@ static inline void H5DSset(int rank, const hsize_t* dimlims, const hsize_t* chun
 
 static inline herr_t H5DSwrite(H5_open_dataspace_t* dataspace, const void* data) {
 	if(dataspace->dimchunks != NULL){
- 		return H5Dwrite(dataspace->D_id, dataspace->Tsto_id, H5S_ALL, dataspace->S_id,  H5P_DEFAULT, data);
+ 		return H5Dwrite(dataspace->D_id, dataspace->Tsto_id, dataspace->C_id, dataspace->S_id, H5P_DEFAULT, data);
 	}
 	else {
  		return H5Dwrite(dataspace->D_id, dataspace->Tsto_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
@@ -161,14 +166,13 @@ static inline herr_t H5DSwrite(H5_open_dataspace_t* dataspace, const void* data)
 
 static inline herr_t H5DSextend(H5_open_dataspace_t* dataspace) {
 	// for selecting extension of space
-	hsize_t *start, *end;
-	start = malloc(dataspace->rank * sizeof(hsize_t));
-	end = malloc(dataspace->rank * sizeof(hsize_t));
+	hsize_t *start = malloc(dataspace->rank * sizeof(hsize_t));
+	memset(start, 0, dataspace->rank * sizeof(hsize_t));
+	hsize_t *end = malloc(dataspace->rank * sizeof(hsize_t));
+	memcpy(end, dataspace->dims, dataspace->rank * sizeof(hsize_t));
 
 	for (size_t i = 0; i < dataspace->rank; i++)
 	{
-		start[i] = 0;
-		end[i] = dataspace->dims[i];
 		// TODO assert at least one unlimited dimension
 		if(dataspace->dimlims[i] == H5S_UNLIMITED) {
 			dataspace->dims[i] += dataspace->dimchunks[i];
@@ -176,12 +180,13 @@ static inline herr_t H5DSextend(H5_open_dataspace_t* dataspace) {
 	}
 	
   herr_t status = H5Dset_extent(dataspace->D_id, dataspace->dims);
-	// TODO is 'this' necessary?
 	H5Sclose(dataspace->S_id); // this
 	dataspace->S_id = H5Dget_space(dataspace->D_id); // this
 
-	// select extension of space (not old space)
-	H5Sselect_hyperslab (dataspace->S_id, H5S_SELECT_NOTB, start, NULL, end, NULL);
+	// select extension of space
+	H5Sselect_all(dataspace->S_id);
+	H5Sselect_hyperslab(dataspace->S_id, H5S_SELECT_NOTB, start, NULL, end, NULL);
+
 	free(start);
 	free(end);
 	return status;
