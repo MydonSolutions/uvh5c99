@@ -94,6 +94,15 @@ static inline herr_t H5DSclose(H5_open_dataspace_t* dataspace) {
 	if (dataspace->S_id) {
 		status += H5Sclose(dataspace->S_id);
 	}
+	if (dataspace->dims != NULL) {
+		free(dataspace->dims);
+	}
+	if (dataspace->dimlims != NULL) {
+		free(dataspace->dimlims);
+	}
+	if (dataspace->dimchunks != NULL) {
+		free(dataspace->dimchunks);
+	}
 	return status;
 }
 
@@ -146,7 +155,7 @@ static inline herr_t H5DSwrite(H5_open_dataspace_t* dataspace, const void* data)
  		return H5Dwrite(dataspace->D_id, dataspace->Tsto_id, H5S_ALL, dataspace->S_id,  H5P_DEFAULT, data);
 	}
 	else {
- 		return H5Dwrite(dataspace->D_id, dataspace->Tsto_id, H5S_ALL, H5S_ALL,  H5P_DEFAULT, data);
+ 		return H5Dwrite(dataspace->D_id, dataspace->Tsto_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
 	}
 }
 
@@ -167,9 +176,9 @@ static inline herr_t H5DSextend(H5_open_dataspace_t* dataspace) {
 	}
 	
   herr_t status = H5Dset_extent(dataspace->D_id, dataspace->dims);
-	// TODO is this necessary?
-	H5Sclose(dataspace->S_id);
-	dataspace->S_id = H5Dget_space(dataspace->D_id);
+	// TODO is 'this' necessary?
+	H5Sclose(dataspace->S_id); // this
+	dataspace->S_id = H5Dget_space(dataspace->D_id); // this
 
 	// select extension of space (not old space)
 	H5Sselect_hyperslab (dataspace->S_id, H5S_SELECT_NOTB, start, NULL, end, NULL);
@@ -200,6 +209,33 @@ static inline void H5DSopenInt(
 	hid_t dest_id, H5_open_dataspace_t* dataspace
 ) {
 	H5DSopen(dest_id, H5Tcopy(H5T_NATIVE_INT), H5Tcopy(H5T_NATIVE_INT), dataspace);
+}
+
+static inline size_t H5DSnelem(H5_open_dataspace_t* dataspace) {
+	size_t nelem = 1;
+	for (int i = 0; i < dataspace->rank; i++)
+	{
+		nelem *= dataspace->dims[i];
+	}
+	return nelem;
+}
+
+static inline size_t H5DSnelem_chunks(H5_open_dataspace_t* dataspace) {
+	size_t nelem = 1;
+	for (int i = 0; i < dataspace->rank; i++)
+	{
+		nelem *= dataspace->dimchunks[i];
+	}
+	return nelem;
+}
+
+static inline size_t H5DSnelem_lims(H5_open_dataspace_t* dataspace) {
+	size_t nelem = 1;
+	for (int i = 0; i < dataspace->rank; i++)
+	{
+		nelem *= dataspace->dimlims[i];
+	}
+	return nelem;
 }
 
 #endif

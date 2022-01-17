@@ -106,7 +106,7 @@ void toml_load_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 		fprintf(stderr, "AntInfo length: %d\n", toml_array_nelem(toml_input_ant0_name_pol));
 		uvh5_toml_string_at(toml_input_ant0_name_pol, 0, &ant_name0);
 		do {
-			if(ant_name1 == NULL) {
+			if(ant_name1 != NULL) {
 				free(ant_name1);
 			}
 			toml_array_t* toml_input_ant_name_pol = toml_array_at(toml_input_mapping, Npol++);
@@ -199,49 +199,19 @@ int main() {
 		uvh5_header->integration_time[i] = 1.0;
 	}
 
-	uvh5.file_id = H5Fcreate("test_file.uvh5", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-	uvh5.DS_data_visdata.Tmem_id = UVH5TcreateCF32();
-	uvh5.DS_data_visdata.Tsto_id = UVH5TcreateCF32();
-	UVH5open(&uvh5);
+	UVH5open("test_file.uvh5", &uvh5, UVH5TcreateCF32());
 
-	UVH5Hfree(uvh5_header);
-	H5Fclose(uvh5.file_id);
-	#if 0
-	hid_t file_id = H5Fcreate("test_file.h5", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-	char string[] = "Don't wanna be an American idiot!!!";
-	_H5DstringWrite(file_id, "string", 0, NULL, string);
+	UVH5write_dynamic(&uvh5);
+	UVH5write_dynamic(&uvh5);
+	UVH5write_dynamic(&uvh5);
 
-	/* define array dimensions */
-	int Nblts = 2;
-	int Nfreqs = 3;
-	int Npols = 2;
-	hsize_t dims[3] = {Nblts, Nfreqs, Npols};
-
-	/* initialize data array with FALSE values */
-	UVH5_bool_t data[Nblts][Nfreqs][Npols];
-	for (int i=0; i<Nblts; i++) {
-		for (int j=0; j<Nfreqs; j++) {
-			for (int k=0; k<Npols; k++) {
-				data[i][j][k] = (i+k)%3 ? UVH5_TRUE : UVH5_FALSE;
-			}
-		}
+	free(uvh5_header->telescope_name);
+	for (size_t i = 0; i < uvh5_header->Nants_telescope; i++)
+	{
+		free(uvh5_header->antenna_names[i]);
 	}
-
-	/* make dataspace and write out data */
-	_H5DboolWrite(file_id, "flags", 3, dims, (void*)data);
-	
-	float fdata[Nblts][Nfreqs][Npols];
-	for (int i=0; i<Nblts; i++) {
-		for (int j=0; j<Nfreqs; j++) {
-			for (int k=0; k<Npols; k++) {
-				fdata[i][j][k] = i*3.141 + j*1.618 + k*0.3333;
-			}
-		}
-	}
-	_H5DfloatWrite(file_id, "floats", 3, dims, (void*)fdata);
-
-	/* close down */
-	H5Fclose(file_id);
-	#endif
+	free(uvh5_header->antenna_names);
+	uvh5_header->antenna_names = NULL;
+	UVH5close(&uvh5);
 	return 0;
 }

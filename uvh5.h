@@ -125,72 +125,113 @@ static inline void UVH5Halloc(UVH5_header_t *header)
 	if(header->ant_1_array == NULL && header->Nbls != 0) {
 		header->ant_1_array = malloc(sizeof(int) * header->Nbls);
 		memset(header->ant_1_array, 0, sizeof(int) * header->Nbls);
+		fprintf(stderr, "UVH5: 'ant_1_array' allocated %ld bytes.\n", sizeof(int) * header->Nbls);
 	}
 	if(header->ant_2_array == NULL && header->Nbls != 0) {
 		header->ant_2_array = malloc(sizeof(int) * header->Nbls);
 		memset(header->ant_2_array, 0, sizeof(int) * header->Nbls);
+		fprintf(stderr, "UVH5: 'ant_2_array' allocated %ld bytes.\n", sizeof(int) * header->Nbls);
 	}
 	if(header->antenna_numbers == NULL && header->Nants_telescope != 0) {
 		header->antenna_numbers = malloc(sizeof(int) * header->Nants_telescope);
 		memset(header->antenna_numbers, 0, sizeof(int) * header->Nants_telescope);
+		fprintf(stderr, "UVH5: 'antenna_numbers' allocated %ld bytes.\n", sizeof(int) * header->Nants_telescope);
 	}
 	if(header->antenna_names == NULL && header->Nants_telescope != 0) {
 		header->antenna_names = malloc(sizeof(char *) * header->Nants_telescope);
 		memset(header->antenna_names, 0, sizeof(char *) * header->Nants_telescope);
+		fprintf(stderr, "UVH5: 'antenna_names' allocated %ld bytes.\n", sizeof(char *) * header->Nants_telescope);
 	}
 	if(header->uvw_array == NULL && header->Nbls * 3 != 0) {
 		header->uvw_array = malloc(sizeof(float) * header->Nbls * 3);
 		memset(header->uvw_array, 0, sizeof(float) * header->Nbls * 3);
+		fprintf(stderr, "UVH5: 'uvw_array' allocated %ld bytes.\n", sizeof(float) * header->Nbls * 3);
 	}
 	if(header->time_array == NULL && header->Nbls != 0) {
 		header->time_array = malloc(sizeof(float) * header->Nbls);
 		memset(header->time_array, 0, sizeof(float) * header->Nbls);
+		fprintf(stderr, "UVH5: 'time_array' allocated %ld bytes.\n", sizeof(float) * header->Nbls);
 	}
 	if(header->integration_time == NULL && header->Nbls != 0) {
 		header->integration_time = malloc(sizeof(float) * header->Nbls);
 		memset(header->integration_time, 0, sizeof(float) * header->Nbls);
+		fprintf(stderr, "UVH5: 'integration_time' allocated %ld bytes.\n", sizeof(float) * header->Nbls);
 	}
 	if(header->freq_array == NULL && header->Nfreqs != 0) {
 		header->freq_array = malloc(sizeof(float) * header->Nfreqs);
 		memset(header->freq_array, 0, sizeof(float) * header->Nfreqs);
+		fprintf(stderr, "UVH5: 'freq_array' allocated %ld bytes.\n", sizeof(float) * header->Nfreqs);
 	}
 	if(header->channel_width == NULL && header->Nfreqs != 0) {
 		header->channel_width = malloc(sizeof(float) * header->Nfreqs);
 		memset(header->channel_width, 0, sizeof(float) * header->Nfreqs);
+		fprintf(stderr, "UVH5: 'channel_width' allocated %ld bytes.\n", sizeof(float) * header->Nfreqs);
 	}
 	if(header->spw_array == NULL && header->Nspws != 0) {
 		header->spw_array = malloc(sizeof(float) * header->Nspws);
 		memset(header->spw_array, 0, sizeof(float) * header->Nspws);
+		fprintf(stderr, "UVH5: 'spw_array' allocated %ld bytes.\n", sizeof(float) * header->Nspws);
 	}
 	if(header->polarization_array == NULL && header->Npols != 0) {
 		header->polarization_array = malloc(sizeof(int) * header->Npols);
 		memset(header->polarization_array, 0, sizeof(int) * header->Npols);
+		fprintf(stderr, "UVH5: 'polarization_array' allocated %ld bytes.\n", sizeof(int) * header->Npols);
 	}
 	if(header->antenna_positions == NULL && header->Nants_telescope * 3 != 0) {
 		header->antenna_positions = malloc(sizeof(float) * header->Nants_telescope * 3);
 		memset(header->antenna_positions, 0, sizeof(float) * header->Nants_telescope * 3);
+		fprintf(stderr, "UVH5: 'antenna_positions' allocated %ld bytes.\n", sizeof(float) * header->Nants_telescope * 3);
 	}
 	// Optional entries follow
 	// if(header-> == NULL && header->Nbls != 0) {
 	// 	header->lst_array = malloc(sizeof(float) * header->Nbls);
 	// 	memset(header->lst_array, 0, sizeof(float) * header->Nbls);
+	// 	fprintf(stderr, "UVH5: 'lst_array' allocated %ld bytes.\n", sizeof(float) * header->Nbls);
 	// }
 }
 
 static inline void UVH5Hfree(UVH5_header_t *header)
 {
-	free(header->ant_1_array);
-	free(header->ant_2_array);
-	free(header->antenna_numbers);
-	free(header->antenna_names);
-	free(header->uvw_array);
-	free(header->time_array);
-	free(header->integration_time);
-	free(header->freq_array);
-	free(header->channel_width);
-	free(header->spw_array);
-	free(header->polarization_array);
-	free(header->antenna_positions);
+	if (header->ant_1_array != NULL) {
+		free(header->ant_1_array);
+	}
+	if (header->ant_2_array != NULL) {
+		free(header->ant_2_array);
+	}
+	if (header->antenna_numbers != NULL) {
+		free(header->antenna_numbers);
+	}
+	if (header->antenna_names != NULL) {
+		free(header->antenna_names);
+	}
+	if (header->uvw_array != NULL) {
+		free(header->uvw_array);
+	}
+	if (header->time_array != NULL) {
+		free(header->time_array);
+	}
+	if (header->integration_time != NULL) {
+		free(header->integration_time);
+	}
+	if (header->freq_array != NULL) {
+		free(header->freq_array);
+	}
+	if (header->channel_width != NULL) {
+		free(header->channel_width);
+	}
+	if (header->spw_array != NULL) {
+		free(header->spw_array);
+	}
+	if (header->polarization_array != NULL) {
+		free(header->polarization_array);
+	}
+	if (header->antenna_positions != NULL) {
+		free(header->antenna_positions);
+	}
+	// Optional arrays follow
+	if (header->antenna_diameters != NULL) {
+		free(header->antenna_diameters);
+	}
 	// Administrative arrays follow
 	free(header->_antenna_num_idx_map);
 }
@@ -200,6 +241,8 @@ typedef struct
 	hid_t file_id;
 	hid_t header_id;
 	UVH5_header_t header;
+	H5_open_dataspace_t DS_header_Ntimes;
+	H5_open_dataspace_t DS_header_Nblts;
 	H5_open_dataspace_t DS_header_ant_1_array;
 	H5_open_dataspace_t DS_header_ant_2_array;
 	H5_open_dataspace_t DS_header_uvw_array;
@@ -388,9 +431,6 @@ static inline void _UVH5_Hwrite_static(UVH5_file_t *uvh5_file)
 	status = _H5DintWrite(uvh5_file->header_id, "Nbls", 0, NULL, &header.Nbls);
 	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Nbls'\n"); return; }
 
-	status = _H5DintWrite(uvh5_file->header_id, "Nblts", 0, NULL, &header.Nblts);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Nblts'\n"); return; }
-
 	status = _H5DintWrite(uvh5_file->header_id, "Nspws", 0, NULL, &header.Nspws);
 	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Nspws'\n"); return; }
 
@@ -399,9 +439,6 @@ static inline void _UVH5_Hwrite_static(UVH5_file_t *uvh5_file)
 
 	status = _H5DintWrite(uvh5_file->header_id, "Npols", 0, NULL, &header.Npols);
 	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Npols'\n"); return; }
-
-	status = _H5DintWrite(uvh5_file->header_id, "Ntimes", 0, NULL, &header.Ntimes);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Ntimes'\n"); return; }
 
 	status = _H5DfloatWrite(uvh5_file->header_id, "freq_array", 1, dims1_Nfreqs, header.freq_array);
 	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'freq_array'\n"); return; }
@@ -487,8 +524,13 @@ static inline void _UVH5_Hwrite_static(UVH5_file_t *uvh5_file)
 
 }
 
-static inline void UVH5open(UVH5_file_t *uvh5_file)
+static inline void UVH5open(char* filepath, UVH5_file_t *uvh5_file, hid_t Tvisdata)
 {
+	
+	uvh5_file->file_id = H5Fcreate(filepath, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+	uvh5_file->DS_data_visdata.Tmem_id = Tvisdata;
+	uvh5_file->DS_data_visdata.Tsto_id = H5Tcopy(Tvisdata);
+	 
 	const hsize_t dim1_unlim[] = {H5S_UNLIMITED};
 	const hsize_t dim1_nbls[] = {uvh5_file->header.Nbls};
 	const hsize_t dim2_unlim_3[] = {H5S_UNLIMITED, 3};
@@ -499,6 +541,14 @@ static inline void UVH5open(UVH5_file_t *uvh5_file)
 
 	// 'Header' group
 	uvh5_file->header_id = H5Gcreate(uvh5_file->file_id, "/Header", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+	uvh5_file->DS_header_Ntimes.name = "Ntimes";
+	H5DSset(0, NULL, NULL, &uvh5_file->DS_header_Ntimes);
+	H5DSopenInt(uvh5_file->header_id, &uvh5_file->DS_header_Ntimes);
+
+	uvh5_file->DS_header_Nblts.name = "Nblts";
+	H5DSset(0, NULL, NULL, &uvh5_file->DS_header_Nblts);
+	H5DSopenInt(uvh5_file->header_id, &uvh5_file->DS_header_Nblts);
 
 	uvh5_file->DS_header_ant_1_array.name = "ant_1_array";
 	H5DSset(1, dim1_unlim, dim1_nbls, &uvh5_file->DS_header_ant_1_array);
@@ -520,7 +570,6 @@ static inline void UVH5open(UVH5_file_t *uvh5_file)
 	H5DSset(1, dim1_unlim, dim1_nbls, &uvh5_file->DS_header_integration_time);
 	H5DSopenFloat(uvh5_file->header_id, &uvh5_file->DS_header_integration_time);
 
-
 	if(uvh5_file->header.lst_array){
 		uvh5_file->DS_header_lst_array.name = "lst_array";
 		H5DSset(1, dim1_unlim, dim1_nbls, &uvh5_file->DS_header_lst_array);
@@ -528,6 +577,9 @@ static inline void UVH5open(UVH5_file_t *uvh5_file)
 	}
 
 	_UVH5_Hwrite_static(uvh5_file);
+	int zero = 0;
+	H5DSwrite(&uvh5_file->DS_header_Ntimes, &zero);
+	H5DSwrite(&uvh5_file->DS_header_Nblts, &zero);
 
 	// 'Data' group
 	uvh5_file->data_id = H5Gcreate(uvh5_file->file_id, "/Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -536,16 +588,114 @@ static inline void UVH5open(UVH5_file_t *uvh5_file)
 	H5DSset(3, dim3_data_lim, dim3_data_chunk, &uvh5_file->DS_data_visdata);
 	// zeros for Tmem/sto_id respect DS_data_visdata internal values
 	H5DSopen(uvh5_file->data_id, 0, 0, &uvh5_file->DS_data_visdata);
+	size_t data_visdata_nbytes = H5DSnelem_chunks(&uvh5_file->DS_data_visdata)*H5Tget_size(uvh5_file->DS_data_visdata.Tmem_id);
+	uvh5_file->visdata = malloc(data_visdata_nbytes);
+	memset(uvh5_file->visdata, 0, data_visdata_nbytes);
+	fprintf(stderr, "UVH5: 'data_visdata' allocated %ld bytes.\n", data_visdata_nbytes);
 
 	uvh5_file->DS_data_flags.name = "flags";
 	H5DSset(3, dim3_data_lim, dim3_data_chunk, &uvh5_file->DS_data_flags);
 	uvh5_file->DS_data_flags.filter_flag = H5_FILTER_FLAG_DEFLATE_3;
 	H5DSopenBool(uvh5_file->data_id, &uvh5_file->DS_data_flags);
+	size_t data_flags_nbytes = H5DSnelem_chunks(&uvh5_file->DS_data_flags)*H5Tget_size(uvh5_file->DS_data_flags.Tmem_id);
+	uvh5_file->flags = malloc(data_flags_nbytes);
+	memset(uvh5_file->flags, 0, data_flags_nbytes);
+	fprintf(stderr, "UVH5: 'data_flags' allocated %ld bytes.\n", data_flags_nbytes);
 
 	uvh5_file->DS_data_nsamples.name = "nsamples";
 	H5DSset(3, dim3_data_lim, dim3_data_chunk, &uvh5_file->DS_data_nsamples);
 	uvh5_file->DS_data_flags.filter_flag = H5_FILTER_FLAG_DEFLATE_3;
 	H5DSopenFloat(uvh5_file->data_id, &uvh5_file->DS_data_nsamples);
+	size_t data_nsamples_nbytes = H5DSnelem_chunks(&uvh5_file->DS_data_nsamples)*H5Tget_size(uvh5_file->DS_data_nsamples.Tmem_id);
+	uvh5_file->nsamples = malloc(data_nsamples_nbytes);
+	memset(uvh5_file->nsamples, 0, data_nsamples_nbytes);
+	fprintf(stderr, "UVH5: 'data_nsamples' allocated %ld bytes.\n", data_nsamples_nbytes);
+}
+
+static inline void UVH5close(UVH5_file_t *uvh5_file)
+{
+	// 'Header' group
+	H5DSclose(&uvh5_file->DS_header_Ntimes);
+	H5DSclose(&uvh5_file->DS_header_Nblts);
+	H5DSclose(&uvh5_file->DS_header_ant_1_array);
+	H5DSclose(&uvh5_file->DS_header_ant_2_array);
+	H5DSclose(&uvh5_file->DS_header_uvw_array);
+	H5DSclose(&uvh5_file->DS_header_time_array);
+	H5DSclose(&uvh5_file->DS_header_integration_time);
+
+	if(uvh5_file->header.lst_array){
+		H5DSclose(&uvh5_file->DS_header_lst_array);
+	}
+	H5Gclose(uvh5_file->header_id);
+	UVH5Hfree(&uvh5_file->header);
+
+	// 'Data' group
+	H5DSclose(&uvh5_file->DS_data_visdata);
+	H5DSclose(&uvh5_file->DS_data_flags);
+	H5DSclose(&uvh5_file->DS_data_nsamples);
+
+	H5Gclose(uvh5_file->data_id);
+	free(uvh5_file->visdata);
+	free(uvh5_file->flags);
+	free(uvh5_file->nsamples);
+	
+	H5Fclose(uvh5_file->file_id);
+}
+
+int UVH5write_dynamic(UVH5_file_t* uvh5_file) {
+	herr_t status;
+	// Header
+	status = H5DSextend(&uvh5_file->DS_header_ant_1_array);
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_ant_1_array'\n"); return -1;}
+	status = H5DSwrite(&uvh5_file->DS_header_ant_1_array, uvh5_file->header.ant_1_array);
+
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_ant_1_array'\n"); return -1;}
+	status = H5DSextend(&uvh5_file->DS_header_ant_2_array);
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_ant_2_array'\n"); return -1;}
+	status = H5DSwrite(&uvh5_file->DS_header_ant_2_array, uvh5_file->header.ant_2_array);
+
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_ant_2_array'\n"); return -1;}
+	status = H5DSextend(&uvh5_file->DS_header_uvw_array);
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_uvw_array'\n"); return -1;}
+	status = H5DSwrite(&uvh5_file->DS_header_uvw_array, uvh5_file->header.uvw_array);
+
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_uvw_array'\n"); return -1;}
+	status = H5DSextend(&uvh5_file->DS_header_time_array);
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_time_array'\n"); return -1;}
+	status = H5DSwrite(&uvh5_file->DS_header_time_array, uvh5_file->header.time_array);
+
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_time_array'\n"); return -1;}
+	status = H5DSextend(&uvh5_file->DS_header_integration_time);
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_integration_time'\n"); return -1;}
+	status = H5DSwrite(&uvh5_file->DS_header_integration_time, uvh5_file->header.integration_time);
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_integration_time'\n"); return -1;}
+
+	// Data
+	status = H5DSextend(&uvh5_file->DS_data_visdata);
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'data_visdata'\n"); return -1;}
+	status = H5DSwrite(&uvh5_file->DS_data_visdata, uvh5_file->visdata);
+
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'data_visdata'\n"); return -1;}
+	status = H5DSextend(&uvh5_file->DS_data_flags);
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'data_flags'\n"); return -1;}
+	status = H5DSwrite(&uvh5_file->DS_data_flags, uvh5_file->flags);
+
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'data_flags'\n"); return -1;}
+	status = H5DSextend(&uvh5_file->DS_data_nsamples);
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'data_nsamples'\n"); return -1;}
+	status = H5DSwrite(&uvh5_file->DS_data_nsamples, uvh5_file->nsamples);
+	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'data_nsamples'\n"); return -1;}
+
+	// Update static
+	uvh5_file->header.Ntimes += 1;
+	uvh5_file->header.Nblts += uvh5_file->header.Nbls;
+	status = H5DSwrite(&uvh5_file->DS_header_Ntimes, &uvh5_file->header.Ntimes);
+	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Ntimes'\n"); return -1; }
+
+	status = H5DSwrite(&uvh5_file->DS_header_Nblts, &uvh5_file->header.Nblts);
+	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Nblts'\n"); return -1; }
+
+	return 0;
 }
 
 static int find_antenna_index_by_name(UVH5_header_t* header, char* name) {
