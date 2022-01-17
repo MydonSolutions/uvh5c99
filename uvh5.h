@@ -54,7 +54,7 @@ typedef struct
 	float *uvw_array;					 /* An array of the uvw-coordinates corresponding to each observation in the data. This is a
 																two-dimensional array of size [Nbls, 3] (reiteratively written Ntimes, so that stored it
 																has size [Nblts, 3]). Units are in meters. */
-	float *time_array;				 /* An array of the Julian Date corresponding to the temporal midpoint of the corresponding 
+	float *time_array;				 /* An array of the Julian Date corresponding to the temporal midpoint of the corresponding
 																baseline’s integration. This is a one-dimensional array of size [Nbls] (reiteratively
 																written Ntimes, so that stored it has size [Nblts]). */
 	float *integration_time;	 /* An array of the duration in seconds of an integration. This is a one-dimensional array
@@ -113,7 +113,7 @@ typedef struct
 																each observation in the data in units of radians. If it is not specified, it is calculated
 																from the latitude/longitude and the time array. Saving it in the file can be useful
 																for files with many values in the time array, which would expensive to recompute. */
-	
+
 	// Administrative entries follow
 	int* _antenna_num_idx_map; /* An array whose elements translate the corresponding index from antenna-number to index
 																in the other antenna_* arrays. */
@@ -529,11 +529,11 @@ static inline void _UVH5_Hwrite_static(UVH5_file_t *uvh5_file)
 
 static inline void UVH5open(char* filepath, UVH5_file_t *uvh5_file, hid_t Tvisdata)
 {
-	
+
 	uvh5_file->file_id = H5Fcreate(filepath, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 	uvh5_file->DS_data_visdata.Tmem_id = Tvisdata;
 	uvh5_file->DS_data_visdata.Tsto_id = H5Tcopy(Tvisdata);
-	 
+
 	const hsize_t dim1_unlim[] = {H5S_UNLIMITED};
 	const hsize_t dim1_nbls[] = {uvh5_file->header.Nbls};
 	const hsize_t dim2_unlim_3[] = {H5S_UNLIMITED, 3};
@@ -641,7 +641,7 @@ static inline void UVH5close(UVH5_file_t *uvh5_file)
 	free(uvh5_file->visdata);
 	free(uvh5_file->flags);
 	free(uvh5_file->nsamples);
-	
+
 	H5Fclose(uvh5_file->file_id);
 }
 
