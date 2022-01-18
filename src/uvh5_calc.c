@@ -44,7 +44,7 @@ void frames_translate(double* positions, int pos_count, double translation[3]) {
 /*
  * double ecef[3] is x, y, z
  */
-void populate_ecef_from_lla(
+void ecef_from_lla(
 	double* ecef,
 	const double longitude,
 	const double latitude,
@@ -74,7 +74,7 @@ void position_to_xyz_frame_from_ecef(
 	geodesy_t wgs84 = {0};
 	geodesy_from_af(&wgs84, WGS84_A_METERS, WGS84_F);
 
-	populate_ecef_from_lla(
+	ecef_from_lla(
 		ecef,
 		longitude_deg,
 		latitude_deg,
