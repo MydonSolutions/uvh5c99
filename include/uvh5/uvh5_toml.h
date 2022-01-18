@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-#include "../external_src/tomlc99/toml.h"
+#include "toml.h"
 
 static inline int uvh5_toml_error(const char* msg, const char* msg1)
 {
