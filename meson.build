@@ -6,6 +6,12 @@ inc_lst = [
 ]
 dep_lst = [dependency('hdf5')]
 
+cc = meson.get_compiler('c')
+m_dep = cc.find_library('m', required : true)
+dep_lst += [
+  m_dep
+]
+
 subdir('external_src')
 subdir('include')
 subdir('src')
