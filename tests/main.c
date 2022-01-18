@@ -65,6 +65,13 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 				uvh5_toml_error("cannot access antenna info", "");
 			}
 		}
+		position_to_xyz_frame_from_ecef(
+			uvh5_header->antenna_positions,
+			uvh5_header->Nants_telescope,
+			uvh5_header->longitude,
+			uvh5_header->latitude,
+			uvh5_header->altitude
+		);
 		
 		uvh5_header->_antenna_num_idx_map = malloc(sizeof(int) * (highest_antenna_number + 1)); // Administrative
 		memset(uvh5_header->_antenna_num_idx_map, -1, sizeof(int) * (highest_antenna_number + 1));
