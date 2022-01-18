@@ -4,3 +4,6 @@
 [submodule "external_src/tomlc99"]
 	path = external_src/tomlc99
 	url = https://github.com/cktan/tomlc99
+[submodule "external_src/erfa"]
+	path = external_src/erfa
+	url = https://github.com/liberfa/erfa
