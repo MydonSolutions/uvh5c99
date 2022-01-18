@@ -1,3 +1,4 @@
 src_lst += files([
-	'uvh5_toml.c'
+	'uvh5.c',
+	'uvh5_toml.c',
 ])
