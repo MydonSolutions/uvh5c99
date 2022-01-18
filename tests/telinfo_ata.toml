@@ -21,7 +21,7 @@ antenna_diameter = 6.1
 # antenna's position vector is less than 6 million meters in which case it will
 # be assumed to be `enu`.  Best practice is to explicitly specify this.
 # This is not case-sensitive.
-antenna_position_frame = ecef
+antenna_position_frame = "ecef"
 
 # List of antennas.  Each entry is a hash containing keys:
 #

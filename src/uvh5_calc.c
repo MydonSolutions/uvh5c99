@@ -16,7 +16,7 @@ float julian_date_from_guppi_param(
 	 return julian_date_from_unix(synctime + tperpktidx*pktidx);
 }
 
-float hypotenuse(float* position, int dims) {
+float hypotenuse_f(float* position, int dims) {
 	double sum = 0.0;
 	while(--dims > 0) {
 		sum += position[dims]*position[dims];
@@ -24,9 +24,15 @@ float hypotenuse(float* position, int dims) {
 	return (float) sqrt(sum);
 }
 
+double hypotenuse(double* position, int dims) {
+	double sum = 0.0;
+	while(--dims > 0) {
+		sum += position[dims]*position[dims];
+	}
+	return sqrt(sum);
+}
+
 void frames_translate(double* positions, int pos_count, double translation[3]) {
-	translation[0], translation[1], translation[2], pos_count
-	);
 	for (int i = 0; i < pos_count; i++)
 	{
 		positions[i*3+0] += translation[0];

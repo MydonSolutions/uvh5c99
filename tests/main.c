@@ -65,13 +65,49 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 				uvh5_toml_error("cannot access antenna info", "");
 			}
 		}
-		position_to_xyz_frame_from_ecef(
-			uvh5_header->antenna_positions,
-			uvh5_header->Nants_telescope,
-			uvh5_header->longitude,
-			uvh5_header->latitude,
-			uvh5_header->altitude
-		);
+
+		char *ant_pos_frame_str = NULL;
+		char ant_pos_frame = FRAME_ECEF;
+		if(uvh5_toml_string_in(conf, "antenna_position_frame", &ant_pos_frame_str)) {
+			// Not specified
+			double dist = hypotenuse(uvh5_header->antenna_positions, 3);
+			if(dist < 6e6) {
+				ant_pos_frame = FRAME_ENU;
+			}
+			else {
+				ant_pos_frame = FRAME_ECEF;
+			}
+		}
+		else {
+			if(strcmp(ant_pos_frame_str, "ecef") == 0) {
+				ant_pos_frame = FRAME_ECEF;
+			}
+			else if(strcmp(ant_pos_frame_str, "enu") == 0) {
+				ant_pos_frame = FRAME_ENU;
+			}
+			else {
+				fprintf(stderr, "Ignoring 'antenna_position_frame' specfication: '%s'.\n", ant_pos_frame_str);
+			}
+		}
+
+		switch(ant_pos_frame) {
+		 case FRAME_ECEF:
+				fprintf(stderr, "Translating from ECEF to XYZ!\n");
+				position_to_xyz_frame_from_ecef(
+					uvh5_header->antenna_positions,
+					uvh5_header->Nants_telescope,
+					uvh5_header->longitude,
+					uvh5_header->latitude,
+					uvh5_header->altitude
+				);
+				break;
+			case FRAME_ENU:
+				fprintf(stderr, "No current support for ENU to XYZ translation!\n");
+				break;
+			case FRAME_XYZ:
+				fprintf(stderr, "Verbatim XYZ positions.\n");
+				break;
+		}
 		
 		uvh5_header->_antenna_num_idx_map = malloc(sizeof(int) * (highest_antenna_number + 1)); // Administrative
 		memset(uvh5_header->_antenna_num_idx_map, -1, sizeof(int) * (highest_antenna_number + 1));
