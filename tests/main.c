@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "uvh5.h"
+#include "uvh5/uvh5_calc.h"
 #include "uvh5/uvh5_toml.h"
 
 void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path) {
@@ -205,8 +206,8 @@ int main(int argc, const char * argv[]) {
 	uvh5_header->Nspws = 1;
 	uvh5_header->Nblts = uvh5_header->Nbls * uvh5_header->Ntimes;
 
-	uvh5_toml_parse_telescope_info(uvh5_header, argv[1]);
-	uvh5_toml_parse_obs_info(uvh5_header, argv[2]);
+	uvh5_toml_parse_telescope_info(uvh5_header, (char*) argv[1]);
+	uvh5_toml_parse_obs_info(uvh5_header, (char*) argv[2]);
 
 	uvh5_header->instrument = uvh5_header->telescope_name;
 	uvh5_header->object_name = "zenith";
@@ -215,17 +216,22 @@ int main(int argc, const char * argv[]) {
 
 	uvh5_header->flex_spw = UVH5_FALSE;
 
+	float tau = 1.0;
 	for (size_t i = 0; i < uvh5_header->Nbls; i++)
 	{
-		uvh5_header->time_array[i] = 1.0;
-		uvh5_header->integration_time[i] = 1.0;
+		uvh5_header->time_array[i] = julian_date_from_guppi_param(16.0, 16*8192, 8192, 12371829, 0) + tau/(DAYSEC*2);
+		uvh5_header->integration_time[i] = tau;
 	}
 
 	UVH5open("test_file.uvh5", &uvh5, UVH5TcreateCF32());
 
-	UVH5write_dynamic(&uvh5);
-	UVH5write_dynamic(&uvh5);
-	UVH5write_dynamic(&uvh5);
+	while(uvh5_header->Ntimes < 3) {
+		UVH5write_dynamic(&uvh5);
+		for (size_t i = 0; i < uvh5_header->Nbls; i++)
+		{
+			uvh5_header->time_array[i] += tau/DAYSEC;
+		}
+	}
 
 	free(uvh5_header->telescope_name);
 	for (size_t i = 0; i < uvh5_header->Nants_telescope; i++)
