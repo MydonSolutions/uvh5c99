@@ -98,23 +98,30 @@ void uvh5_toml_parse_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 	
 	toml_array_t* toml_input_mapping = toml_array_in(conf, "input_map");
 	if(toml_input_mapping) {
-		int Npol = 0; // Initial assumption
+		int Npol_ant = 0; // Initial assumption
 		fprintf(stderr, "input_map length: %d\n", toml_array_nelem(toml_input_mapping));
 
 		char *ant_name0 = NULL, *ant_name1 = NULL;
-		toml_array_t* toml_input_ant0_name_pol = toml_array_at(toml_input_mapping, Npol++);
-		fprintf(stderr, "AntInfo length: %d\n", toml_array_nelem(toml_input_ant0_name_pol));
-		uvh5_toml_string_at(toml_input_ant0_name_pol, 0, &ant_name0);
+		char pols_ant[4] = {'\0'}; // at most 2 unique pols
 		do {
-			if(ant_name1 != NULL) {
+			if (ant_name1 == NULL) {
 				free(ant_name1);
 			}
-			toml_array_t* toml_input_ant_name_pol = toml_array_at(toml_input_mapping, Npol++);
+			toml_array_t* toml_input_ant_name_pol = toml_array_at(toml_input_mapping, Npol_ant);
 			uvh5_toml_string_at(toml_input_ant_name_pol, 0, &ant_name1);
-		} while(strcmp(ant_name0, ant_name1) == 0);
+			uvh5_toml_nstring_at(toml_input_ant_name_pol, 1, pols_ant + Npol_ant, 1);
+			if ( ant_name0 == NULL) {
+				ant_name0 = malloc(strlen(ant_name1));
+				memcpy(ant_name0, ant_name1, strlen(ant_name1)+1);
+			}
+		} while(strcmp(ant_name0, ant_name1) == 0 && ++Npol_ant <= 2);
+		if (Npol_ant > 2) {
+			fprintf(stderr, "The first antenna is repeated more than twice indicating more than 2 polarisaitons.\n");
+			return;
+		}
 
-		int Nants_data = toml_array_nelem(toml_input_mapping)/(--Npol);
-		fprintf(stderr, "Assuming every antenna has %d polarisations, as the first does.\n", Npol);
+		fprintf(stderr, "Assuming every antenna has %d polarisations, as the first does.\n", Npol_ant);
+		int Nants_data = toml_array_nelem(toml_input_mapping)/Npol_ant;
 		fprintf(stderr, "\tLeads to Nants_data: %d.\n", Nants_data);
 		
 		int* ant_name_index_map = malloc(Nants_data*sizeof(int));
@@ -123,16 +130,26 @@ void uvh5_toml_parse_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 
 		free(ant_name1);
 		for (size_t i = 2; i < Nants_data; i++) {
-			toml_array_t* toml_input_ant_name_pol = toml_array_at(toml_input_mapping, i*Npol);
+			toml_array_t* toml_input_ant_name_pol = toml_array_at(toml_input_mapping, i*Npol_ant);
 			uvh5_toml_string_at(toml_input_ant_name_pol, 0, &ant_name1);
 			ant_name_index_map[i] = find_antenna_index_by_name(uvh5_header, ant_name1);
 			free(ant_name1);
 		}
 		
+		uvh5_header->Npols = Npol_ant*Npol_ant; // header->Npols is the pol-products
 		uvh5_header->Nants_data = Nants_data;
-		uvh5_header->Npols = Npol;
 		uvh5_header->Nbls = (uvh5_header->Nants_data*(uvh5_header->Nants_data+1))/2;
 		UVH5Halloc(uvh5_header);
+
+		char pol_product[3] = {'\0'};
+		for (size_t i = 0; i < Npol_ant; i++) {
+			pol_product[0] = pols_ant[i];
+			for (size_t j = 0; j < Npol_ant; j++) {
+				pol_product[1] = pols_ant[j];
+				uvh5_header->polarization_array[i*2+j] = polarisation_string_key(pol_product, Npol_ant);
+				fprintf(stderr, "Pol-product '%s' with key %d.\n", pol_product, uvh5_header->polarization_array[i*2+j]);
+			}
+		}
 
 		for (size_t i = 0; i < uvh5_header->Nants_data; i++)
 		{
