@@ -46,15 +46,15 @@ void frames_translate(double* positions, int pos_count, double translation[3]) {
  */
 void ecef_from_lla(
 	double* ecef,
-	const double longitude,
-	const double latitude,
+	const double longitude_rad,
+	const double latitude_rad,
 	const double altitude,
 	const geodesy_t* geo
 ) {
-    double sin_phi = sin(deg2rad(latitude));
-		double cos_phi = cos(deg2rad(latitude));
-    double sin_lambda = sin(deg2rad(longitude));
-		double cos_lambda = cos(deg2rad(longitude));
+    double sin_phi = sin(latitude_rad);
+		double cos_phi = cos(latitude_rad);
+    double sin_lambda = sin(longitude_rad);
+		double cos_lambda = cos(longitude_rad);
 
     double N = geo->a / sqrt(1 - geo->e2 * sin_phi * sin_phi);  // Radius of curvature (meters)
 
@@ -66,8 +66,8 @@ void ecef_from_lla(
 void position_to_xyz_frame_from_ecef(
 	double* positions,
 	int pos_count,
-	double longitude_deg,
-	double latitude_deg,
+	double longitude_rad,
+	double latitude_rad,
 	double altitude
 ) {
 	double ecef[3];
@@ -76,8 +76,8 @@ void position_to_xyz_frame_from_ecef(
 
 	ecef_from_lla(
 		ecef,
-		longitude_deg,
-		latitude_deg,
+		longitude_rad,
+		latitude_rad,
 		altitude,
 		&wgs84
 	);

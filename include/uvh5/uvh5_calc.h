@@ -37,8 +37,8 @@ void frames_translate(double* positions, int pos_count, double translation[3]);
  */
 void ecef_from_lla(
 	double* ecef,
-	const double longitude,
-	const double latitude,
+	const double longitude_rad,
+	const double latitude_rad,
 	const double altitude,
 	const geodesy_t* geo
 );
@@ -47,8 +47,8 @@ void ecef_from_lla(
 void position_to_xyz_frame_from_ecef(
 	double* positions,
 	int pos_count,
-	double longitude_deg,
-	double latitude_deg,
+	double longitude_rad,
+	double latitude_rad,
 	double altitude
 );
 
