@@ -58,8 +58,7 @@ int uvh5_toml_nstring_at(toml_array_t* parent, const int location, char* string_
 			uvh5_toml_error("cannot read index", NULL);
 	}
 	else {
-		memset(string_out, '\0', length);
-		length = length <= strlen(toml_datum.u.s)+1 ? length : strlen(toml_datum.u.s)+1;
+		length = length <= strlen(toml_datum.u.s) ? length : strlen(toml_datum.u.s);
 		memcpy(string_out, toml_datum.u.s, length);
 		free(toml_datum.u.s);
 		printf("[%d]: %s\n", location, string_out);

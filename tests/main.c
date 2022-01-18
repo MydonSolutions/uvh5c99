@@ -189,7 +189,12 @@ void uvh5_toml_parse_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 	toml_free(conf);
 }
 
-int main() {
+int main(int argc, const char * argv[]) {
+	if (argc != 3) {
+		fprintf(stderr, "Provide the telescope and observation info toml files.\n");
+		return 1;
+	}
+
 	/* open a new file */
 	UVH5_file_t uvh5 = {0};
 	UVH5_header_t* uvh5_header = &uvh5.header;
@@ -200,8 +205,8 @@ int main() {
 	uvh5_header->Nspws = 1;
 	uvh5_header->Nblts = uvh5_header->Nbls * uvh5_header->Ntimes;
 
-	uvh5_toml_parse_telescope_info(uvh5_header, "./telinfo_ata.toml");
-	uvh5_toml_parse_obs_info(uvh5_header, "./obsinfo.toml");
+	uvh5_toml_parse_telescope_info(uvh5_header, argv[1]);
+	uvh5_toml_parse_obs_info(uvh5_header, argv[2]);
 
 	uvh5_header->instrument = uvh5_header->telescope_name;
 	uvh5_header->object_name = "zenith";
