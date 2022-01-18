@@ -58,9 +58,9 @@ void UVH5Halloc(UVH5_header_t *header)
 		fprintf(stderr, "UVH5: 'polarization_array' allocated %ld bytes.\n", sizeof(int) * header->Npols);
 	}
 	if(header->antenna_positions == NULL && header->Nants_telescope * 3 != 0) {
-		header->antenna_positions = malloc(sizeof(float) * header->Nants_telescope * 3);
-		memset(header->antenna_positions, 0, sizeof(float) * header->Nants_telescope * 3);
-		fprintf(stderr, "UVH5: 'antenna_positions' allocated %ld bytes.\n", sizeof(float) * header->Nants_telescope * 3);
+		header->antenna_positions = malloc(sizeof(double) * header->Nants_telescope * 3);
+		memset(header->antenna_positions, 0, sizeof(double) * header->Nants_telescope * 3);
+		fprintf(stderr, "UVH5: 'antenna_positions' allocated %ld bytes.\n", sizeof(double) * header->Nants_telescope * 3);
 	}
 	// Optional entries follow
 	// if(header-> == NULL && header->Nbls != 0) {
@@ -258,13 +258,13 @@ void _UVH5_Hwrite_static(UVH5_file_t *uvh5_file)
 
 	// TODO assert uvh5_file->header_id
 
-	status = _H5DfloatWrite(uvh5_file->header_id, "latitude", 0, NULL, &header.latitude);
+	status = _H5DdoubleWrite(uvh5_file->header_id, "latitude", 0, NULL, &header.latitude);
 	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'latitude'\n"); return; }
 
-	status = _H5DfloatWrite(uvh5_file->header_id, "longitude", 0, NULL, &header.longitude);
+	status = _H5DdoubleWrite(uvh5_file->header_id, "longitude", 0, NULL, &header.longitude);
 	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'longitude'\n"); return; }
 
-	status = _H5DfloatWrite(uvh5_file->header_id, "altitude", 0, NULL, &header.altitude);
+	status = _H5DdoubleWrite(uvh5_file->header_id, "altitude", 0, NULL, &header.altitude);
 	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'altitude'\n"); return; }
 
 	status = _H5DstringWrite(uvh5_file->header_id, "telescope_name", 0, NULL, header.telescope_name);
@@ -321,7 +321,7 @@ void _UVH5_Hwrite_static(UVH5_file_t *uvh5_file)
 	status = _H5DintWrite(uvh5_file->header_id, "polarization_array", 1, dims1_Npols, header.polarization_array);
 	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'polarization_array'\n"); return; }
 
-	status = _H5DfloatWrite(uvh5_file->header_id, "antenna_positions", 2, dims2_Nants_telescope_3, header.antenna_positions);
+	status = _H5DdoubleWrite(uvh5_file->header_id, "antenna_positions", 2, dims2_Nants_telescope_3, header.antenna_positions);
 	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'antenna_positions'\n"); return; }
 
 	status = _H5DstringWrite(uvh5_file->header_id, "version", 0, NULL, "1.0");

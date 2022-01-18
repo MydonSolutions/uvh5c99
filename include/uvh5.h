@@ -10,9 +10,9 @@
 
 typedef struct
 {
-	float latitude;						 /* The latitude of the telescope site, in degrees. */
-	float longitude;					 /* The longitude of the telescope site, in degrees. */
-	float altitude;						 /* The altitude of the telescope site, in meters. */
+	double latitude;					 /* The latitude of the telescope site, in degrees. */
+	double longitude;					 /* The longitude of the telescope site, in degrees. */
+	double altitude;					 /* The altitude of the telescope site, in meters. */
 	char *telescope_name;			 /* The name of the telescope used to take the data. The value is used to check that metadata
 																is self-consistent for known telescopes in pyuvdata. */
 	char *instrument;					 /* The name of the instrument, typically the telescope name. */
@@ -70,7 +70,7 @@ typedef struct
 	int *polarization_array;	 /* An array of the polarizations contained in the file. This is a one-dimensional array of
 																size [Npols]. Note that the polarizations should be stored as an integer, and use the
 																convention defined in AIPS Memo 117. */
-	float *antenna_positions;	 /* An array of the antenna coordinates relative to the reference position of the radio
+	double *antenna_positions; /* An array of the antenna coordinates relative to the reference position of the radio
 																telescope array, which is implicitly defined by the latitude, longitude, and altitude
 																(LLA) parameters. More explicitly, these are the ECEF coordinates of individual antennas
 																minus the ECEF coordinates of the reference telescope position, such that the telescope

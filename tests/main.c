@@ -25,7 +25,7 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 	uvh5_toml_string_in(conf, "telescope_name", &uvh5_header->telescope_name);
 	uvh5_toml_sexagesimal_in(conf, "latitude", &uvh5_header->latitude);
 	uvh5_toml_sexagesimal_in(conf, "longitude", &uvh5_header->longitude);
-	uvh5_toml_float_in(conf, "altitude", &uvh5_header->altitude);
+	uvh5_toml_double_in(conf, "altitude", &uvh5_header->altitude);
 
 	float universal_diameter = -1.0;
 	uvh5_toml_float_in(conf, "antenna_diameter", &universal_diameter);

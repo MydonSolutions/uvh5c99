@@ -1,7 +1,7 @@
 #include "uvh5/uvh5_toml.h"
 
-float sexagesimal_to_float(const char *sexagesiamal_string) {
-		float f = 0.0;
+double sexagesimal_to_double(const char *sexagesiamal_string) {
+		double f = 0.0;
 		char *pend;
 		char *pstart = (char *) sexagesiamal_string;
 		if (*sexagesiamal_string == '-') {
@@ -19,7 +19,7 @@ float sexagesimal_to_float(const char *sexagesiamal_string) {
 		return f;
 }
 
-int uvh5_toml_sexagesimal_in(toml_table_t* parent, const char* location, float* sexagesimal) {
+int uvh5_toml_sexagesimal_in(toml_table_t* parent, const char* location, double* sexagesimal) {
 	toml_datum_t toml_datum = toml_string_in(parent, location);
 	if (!toml_datum.ok) {
 		toml_datum = toml_double_in(parent, location);
@@ -30,8 +30,8 @@ int uvh5_toml_sexagesimal_in(toml_table_t* parent, const char* location, float* 
 		printf("%s: %f\n", location, *sexagesimal);
 	}
 	else {
-		// process sexagesimal string to float
-		*sexagesimal = sexagesimal_to_float(toml_datum.u.s);
+		// process sexagesimal string to double
+		*sexagesimal = sexagesimal_to_double(toml_datum.u.s);
 		free(toml_datum.u.s);
 		printf("%s: %f\n", location, *sexagesimal);
 	}
@@ -163,7 +163,7 @@ int uvh5_toml_antenna_table_in(
 	toml_table_t* parent,
 	int* ant_id,
 	char** ant_name,
-	float* ant_pos,
+	double* ant_pos,
 	float* ant_diameter
 ){
 	if(ant_diameter != NULL){
@@ -185,7 +185,7 @@ int uvh5_toml_antenna_table_in(
 	int ant_pos_count = toml_array_nelem(toml_ant_position);
 	for (size_t i = 0; i < ant_pos_count; i++)
 	{
-		if(uvh5_toml_float_at(toml_ant_position, i, ant_pos+i)) {
+		if(uvh5_toml_double_at(toml_ant_position, i, ant_pos+i)) {
 			uvh5_toml_error("cannot read float", NULL);
 		}
 	}
