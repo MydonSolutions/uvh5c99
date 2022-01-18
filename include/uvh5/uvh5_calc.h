@@ -10,7 +10,8 @@
 enum position_frames {
 	FRAME_ENU,
 	FRAME_XYZ,
-	FRAME_ECEF
+	FRAME_ECEF,
+	FRAME_UVW
 };
 
 static inline double deg2rad(double deg) {return (deg/180)*M_PI;};
@@ -41,6 +42,30 @@ void ecef_from_lla(
 	const double latitude_rad,
 	const double altitude,
 	const geodesy_t* geo
+);
+
+// Clockwise (right-hand curl) rotations
+// y' = cos*vec.y + sin*vec.z
+// z' = -sin*vec.y + cos*vec.z
+void rotate_around_x(
+	double vec[3],
+	double radians
+);
+
+// Clockwise (right-hand curl) rotations
+// x' = cos*vec.x - sin*vec.z
+// z' = sin*vec.x + cos*vec.z
+void rotate_around_y(
+	double vec[3],
+	double radians
+);
+
+// Clockwise (right-hand curl) rotations
+// x' = cos*vec.x - sin*vec.y
+// y' = sin*vec.x + cos*vec.y
+void rotate_around_z(
+	double vec[3],
+	double radians
 );
 
 // positions is of length pos_count*3

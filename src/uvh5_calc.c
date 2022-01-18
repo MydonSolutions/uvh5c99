@@ -63,6 +63,57 @@ void ecef_from_lla(
     ecef[2] = (N * (1 - geo->e2) + altitude) * sin_phi;
 }
 
+void rotate_enu_by_hda(
+	double* enu,
+	double hour_angle_rad,
+	double declination_rad,
+	double latitude_rad
+) {
+	//  rx(-dec_rad) * ry(-ha_rad) * rx(lat_rad)
+	rotate_around_x(enu, -declination_rad); // anti-clockwise
+	rotate_around_y(enu, -hour_angle_rad); // anti-clockwise
+	rotate_around_x(enu, latitude_rad); // clockwise
+}
+
+void rotate_around_x(
+	double vec[3],
+	double radians
+) {
+	double y, z;
+	y = vec[1];
+	z = vec[2];
+	double pos_sin = sin(radians);
+	double pos_cos = cos(radians);
+	vec[1] = pos_cos*y - pos_sin*z;
+	vec[2] = pos_sin*y + pos_cos*z;
+}
+
+void rotate_around_y(
+	double vec[3],
+	double radians
+) {
+	double x, z;
+	x = vec[0];
+	z = vec[2];
+	double pos_sin = sin(radians);
+	double pos_cos = cos(radians);
+	vec[0] = pos_cos*x + pos_sin*z;
+	vec[2] = -pos_sin*x + pos_cos*z;
+}
+
+void rotate_around_z(
+	double vec[3],
+	double radians
+) {
+	double x, y;
+	x = vec[0];
+	y = vec[1];
+	double pos_sin = sin(radians);
+	double pos_cos = cos(radians);
+	vec[0] = pos_cos*x - pos_sin*y;
+	vec[1] = pos_sin*x + pos_cos*y;
+}
+
 void position_to_xyz_frame_from_ecef(
 	double* positions,
 	int pos_count,
