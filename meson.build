@@ -4,7 +4,10 @@ src_lst = []
 inc_lst = [
 	include_directories('include'),
 ]
-dep_lst = [dependency('hdf5')]
+dep_lst = [
+  dependency('erfa'),
+  dependency('hdf5'),
+]
 
 cc = meson.get_compiler('c')
 m_dep = cc.find_library('m', required : true)

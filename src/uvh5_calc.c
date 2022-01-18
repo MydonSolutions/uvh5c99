@@ -63,6 +63,34 @@ void ecef_from_lla(
     ecef[2] = (N * (1 - geo->e2) + altitude) * sin_phi;
 }
 
+void uvws_from_enu_radec_timemjd_lla(
+	double* enu2uvws,
+	int position_count,
+	double ra_rad, double dec_rad,
+	double time_mjd,
+	double time_dut1,
+	double longitude_rad,
+	double latitude_rad,
+	double altitude
+) {
+	double aob, zob, hob, dob, rob, eo;
+
+	eraAtco13(
+		ra_rad, dec_rad,
+		0, 0, 0, 0,
+		time_mjd, 0,
+		time_dut1,
+		longitude_rad, latitude_rad, altitude,
+		0, 0,
+		0, 0, 0, 0,
+		&aob, &zob, &hob, &dob, &rob, &eo
+	);
+
+	while(--position_count >= 0) {
+		rotate_enu_by_hda(enu2uvws + position_count*3, hob, dob, latitude_rad);
+	}
+}
+
 void rotate_enu_by_hda(
 	double* enu,
 	double hour_angle_rad,

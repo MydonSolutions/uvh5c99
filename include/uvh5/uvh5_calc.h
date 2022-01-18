@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <math.h>
 #include "_geodesy.h"
+#include "erfa.h"
 
 #define DAYSEC 86400.0
 
@@ -42,6 +43,24 @@ void ecef_from_lla(
 	const double latitude_rad,
 	const double altitude,
 	const geodesy_t* geo
+);
+
+void uvws_from_enu_radec_timemjd_lla(
+	double* enu2uvws,
+	int position_count,
+	double ra_rad, double dec_rad,
+	double time_mjd,
+	double time_dut1,
+	double longitude_rad,
+	double latitude_rad,
+	double altitude
+);
+
+void rotate_enu_by_hda(
+	double* enu,
+	double hour_angle_rad,
+	double declination_rad,
+	double latitude_rad
 );
 
 // Clockwise (right-hand curl) rotations
