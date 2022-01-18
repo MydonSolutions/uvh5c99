@@ -5,8 +5,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "uvh5_bool_t.h"
-#include "h5_dataspace.h"
+#include "uvh5/uvh5_bool_t.h"
+#include "uvh5/h5_dataspace.h"
 
 typedef struct
 {
@@ -55,7 +55,7 @@ typedef struct
 																two-dimensional array of size [Nbls, 3] (reiteratively written Ntimes, so that stored it
 																has size [Nblts, 3]). Units are in meters. */
 	float *time_array;				 /* An array of the Julian Date corresponding to the temporal midpoint of the corresponding
-																baseline’s integration. This is a one-dimensional array of size [Nbls] (reiteratively
+																baseline's integration. This is a one-dimensional array of size [Nbls] (reiteratively
 																written Ntimes, so that stored it has size [Nblts]). */
 	float *integration_time;	 /* An array of the duration in seconds of an integration. This is a one-dimensional array
 																of size [Nbls] (reiteratively written Ntimes, so that stored it has size [Nblts]). */

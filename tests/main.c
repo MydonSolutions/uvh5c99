@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "uvh5.h"
-#include "uvh5_toml.h"
+#include "uvh5/uvh5_toml.h"
 
 void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path) {
 	FILE* fp;

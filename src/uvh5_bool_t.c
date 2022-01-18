@@ -1,4 +1,4 @@
-#include "uvh5_bool_t.h"
+#include "uvh5/uvh5_bool_t.h"
 
 hid_t UVH5TcreateBool() {
 	hid_t UVH5_bool = H5Tcreate(H5T_ENUM, sizeof(UVH5_bool_t));
