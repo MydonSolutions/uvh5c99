@@ -7,7 +7,7 @@
 
 #define DAYSEC 86400.0
 
-static inline double deg2rad(double deg) {return (deg/180)*M_PI;};
+static inline double uvh5_calc_deg2rad(double deg) {return (deg/180)*M_PI;};
 
 enum position_frames {
 	FRAME_ENU,

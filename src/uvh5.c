@@ -97,8 +97,8 @@ void UVH5Hadmin(UVH5_header_t *header) {
 	uvh5_calc_position_to_enu_frame_from_xyz(
 		header->_antenna_enu_positions,
 		header->Nants_telescope,
-		deg2rad(header->longitude),
-		deg2rad(header->latitude),
+		uvh5_calc_deg2rad(header->longitude),
+		uvh5_calc_deg2rad(header->latitude),
 		header->altitude
 	);
 }

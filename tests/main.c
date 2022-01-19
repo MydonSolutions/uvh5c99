@@ -95,8 +95,8 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 				uvh5_calc_position_to_xyz_frame_from_ecef(
 					uvh5_header->antenna_positions,
 					uvh5_header->Nants_telescope,
-					deg2rad(uvh5_header->longitude),
-					deg2rad(uvh5_header->latitude),
+					uvh5_calc_deg2rad(uvh5_header->longitude),
+					uvh5_calc_deg2rad(uvh5_header->latitude),
 					uvh5_header->altitude
 				);
 				break;
@@ -105,8 +105,8 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 				uvh5_calc_position_to_xyz_frame_from_enu(
 					uvh5_header->antenna_positions,
 					uvh5_header->Nants_telescope,
-					deg2rad(uvh5_header->longitude),
-					deg2rad(uvh5_header->latitude),
+					uvh5_calc_deg2rad(uvh5_header->longitude),
+					uvh5_calc_deg2rad(uvh5_header->latitude),
 					uvh5_header->altitude
 				);
 				break;
