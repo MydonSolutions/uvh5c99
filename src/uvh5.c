@@ -94,7 +94,7 @@ void UVH5Hadmin(UVH5_header_t *header) {
 	//	Create ENU antenna_positions from XYZ
 	header->_antenna_enu_positions = malloc(sizeof(double) * header->Nants_telescope * 3);
 	memcpy(header->_antenna_enu_positions, header->antenna_positions, sizeof(double) * header->Nants_telescope * 3);
-	position_to_enu_frame_from_xyz(
+	uvh5_calc_position_to_enu_frame_from_xyz(
 		header->_antenna_enu_positions,
 		header->Nants_telescope,
 		deg2rad(header->longitude),

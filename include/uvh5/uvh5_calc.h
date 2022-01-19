@@ -16,9 +16,9 @@ enum position_frames {
 	FRAME_UVW
 };
 
-float julian_date_from_unix(float unix_sec);
+float uvh5_calc_julian_date_from_unix(float unix_sec);
 
-float julian_date_from_guppi_param(
+float uvh5_calc_julian_date_from_guppi_param(
 	float tbin,
 	size_t sampleperblk,
 	size_t piperblk,
@@ -27,12 +27,12 @@ float julian_date_from_guppi_param(
 );
 
 
-float hypotenuse_f(float* position, int dims);
-double hypotenuse(double* position, int dims);
+float uvh5_calc_hypotenuse_f(float* position, int dims);
+double uvh5_calc_hypotenuse(double* position, int dims);
 
-void frame_translate(double* positions, int position_count, double translation[3]);
+void uvh5_calc_frame_translate(double* positions, int position_count, double translation[3]);
 
-void ecef_from_lla(
+void uvh5_calc_ecef_from_lla(
 	double ecef[3],
 	const double longitude_rad,
 	const double latitude_rad,
@@ -40,11 +40,11 @@ void ecef_from_lla(
 	const geodesy_t* geo
 );
 
-void rotate_around_x(double vec[3], double radians);
-void rotate_around_y(double vec[3], double radians);
-void rotate_around_z(double vec[3], double radians);
+void uvh5_calc_rotate_around_x(double vec[3], double radians);
+void uvh5_calc_rotate_around_y(double vec[3], double radians);
+void uvh5_calc_rotate_around_z(double vec[3], double radians);
 
-void position_to_xyz_frame_from_ecef(
+void uvh5_calc_position_to_xyz_frame_from_ecef(
 	double* positions,
 	int position_count,
 	double longitude_rad,
@@ -52,7 +52,7 @@ void position_to_xyz_frame_from_ecef(
 	double altitude
 );
 
-void position_to_ecef_frame_from_xyz(
+void uvh5_calc_position_to_ecef_frame_from_xyz(
 	double* positions,
 	int position_count,
 	double longitude_rad,
@@ -60,7 +60,7 @@ void position_to_ecef_frame_from_xyz(
 	double altitude
 );
 
-void position_to_xyz_frame_from_enu(
+void uvh5_calc_position_to_xyz_frame_from_enu(
 	double* positions,
 	int position_count,
 	double longitude_rad,
@@ -68,7 +68,7 @@ void position_to_xyz_frame_from_enu(
 	double altitude // Not used
 );
 
-void position_to_enu_frame_from_xyz(
+void uvh5_calc_position_to_enu_frame_from_xyz(
 	double* positions,
 	int position_count,
 	double longitude_rad,
@@ -76,7 +76,7 @@ void position_to_enu_frame_from_xyz(
 	double altitude // Not used
 );
 
-void position_to_enu_frame_from_ecef(
+void uvh5_calc_position_to_enu_frame_from_ecef(
 	double* positions,
 	int position_count,
 	double longitude_rad,
@@ -84,7 +84,7 @@ void position_to_enu_frame_from_ecef(
 	double altitude
 );
 
-void position_to_ecef_frame_from_enu(
+void uvh5_calc_position_to_ecef_frame_from_enu(
 	double* positions,
 	int position_count,
 	double longitude_rad,
@@ -92,7 +92,7 @@ void position_to_ecef_frame_from_enu(
 	double altitude
 );
 
-void position_to_uvw_frame_from_enu(
+void uvh5_calc_position_to_uvw_frame_from_enu(
 	double* positions,
 	int position_count,
 	double hour_angle_rad,
@@ -100,7 +100,7 @@ void position_to_uvw_frame_from_enu(
 	double latitude_rad
 );
 
-void position_to_uvw_frame_from_xyz(
+void uvh5_calc_position_to_uvw_frame_from_xyz(
 	double* positions,
 	int position_count,
 	double hour_angle_rad,

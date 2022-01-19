@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 #include "uvh5.h"
-#include "uvh5/uvh5_calc.h"
 #include "uvh5/uvh5_toml.h"
 
 void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path) {
@@ -70,7 +69,7 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 		char ant_pos_frame = FRAME_ECEF;
 		if(uvh5_toml_string_in(conf, "antenna_position_frame", &ant_pos_frame_str)) {
 			// Not specified
-			double dist = hypotenuse(uvh5_header->antenna_positions, 3);
+			double dist = uvh5_calc_hypotenuse(uvh5_header->antenna_positions, 3);
 			if(dist < 6e6) {
 				ant_pos_frame = FRAME_ENU;
 			}
@@ -93,7 +92,7 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 		switch(ant_pos_frame) {
 		 case FRAME_ECEF:
 				fprintf(stderr, "Translating from ECEF to XYZ!\n");
-				position_to_xyz_frame_from_ecef(
+				uvh5_calc_position_to_xyz_frame_from_ecef(
 					uvh5_header->antenna_positions,
 					uvh5_header->Nants_telescope,
 					deg2rad(uvh5_header->longitude),
@@ -103,7 +102,7 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 				break;
 			case FRAME_ENU:
 				fprintf(stderr, "Translating from ENU to XYZ!\n");
-				position_to_xyz_frame_from_enu(
+				uvh5_calc_position_to_xyz_frame_from_enu(
 					uvh5_header->antenna_positions,
 					uvh5_header->Nants_telescope,
 					deg2rad(uvh5_header->longitude),
@@ -263,7 +262,7 @@ int main(int argc, const char * argv[]) {
 	float tau = 1.0;
 	for (size_t i = 0; i < uvh5_header->Nbls; i++)
 	{
-		uvh5_header->time_array[i] = julian_date_from_guppi_param(16.0, 16*8192, 8192, 12371829, 0) + tau/(DAYSEC*2);
+		uvh5_header->time_array[i] = uvh5_calc_julian_date_from_guppi_param(16.0, 16*8192, 8192, 12371829, 0) + tau/(DAYSEC*2);
 		uvh5_header->integration_time[i] = tau;
 	}
 
