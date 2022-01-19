@@ -6,6 +6,8 @@
 #include "uvh5/uvh5_calc.h"
 #include "uvh5/uvh5_toml.h"
 
+static inline double deg2rad(double deg) {return (deg/180)*M_PI;};
+
 void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path) {
 	FILE* fp;
 	char errbuf[200];
