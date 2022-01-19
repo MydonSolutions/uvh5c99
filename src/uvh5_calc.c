@@ -32,8 +32,8 @@ double hypotenuse(double* position, int dims) {
 	return sqrt(sum);
 }
 
-void frames_translate(double* positions, int pos_count, double translation[3]) {
-	for (int i = 0; i < pos_count; i++)
+void frames_translate(double* positions, int position_count, double translation[3]) {
+	for (int i = 0; i < position_count; i++)
 	{
 		positions[i*3+0] += translation[0];
 		positions[i*3+1] += translation[1];
@@ -41,11 +41,8 @@ void frames_translate(double* positions, int pos_count, double translation[3]) {
 	}
 }
 
-/*
- * double ecef[3] is x, y, z
- */
 void ecef_from_lla(
-	double* ecef,
+	double ecef[3],
 	const double longitude_rad,
 	const double latitude_rad,
 	const double altitude,
@@ -152,7 +149,7 @@ void _rotate_enu_by_hda_cached_trig(
 
 void position_to_xyz_frame_from_ecef(
 	double* positions,
-	int pos_count,
+	int position_count,
 	double longitude_rad,
 	double latitude_rad,
 	double altitude
@@ -171,12 +168,12 @@ void position_to_xyz_frame_from_ecef(
 	ecef[0] *= -1.0;
 	ecef[1] *= -1.0;
 	ecef[2] *= -1.0;
-	frames_translate(positions, pos_count, ecef);
+	frames_translate(positions, position_count, ecef);
 }
 
 void position_to_ecef_frame_from_xyz(
 	double* positions,
-	int pos_count,
+	int position_count,
 	double longitude_rad,
 	double latitude_rad,
 	double altitude
@@ -192,19 +189,12 @@ void position_to_ecef_frame_from_xyz(
 		altitude,
 		&wgs84
 	);
-	frames_translate(positions, pos_count, ecef);
+	frames_translate(positions, position_count, ecef);
 }
 
-/*
- * https://github.com/david-macmahon/RadioInterferometry.jl/blob/3a084d47919ddb422be109c41faade9d365c2a35/src/RadioInterferometry.jl#L659-L662
- * This works by rotating the ENU frame anticlockwise about the East (i.e. first)
- * axis by `lat_rad`, producing a (East,Z,X') frame, then rotating that frame
- * anticlockwise about the Z (i.e. second) axis by `-lon_rad`, producing a
- * (Y,Z,X) frame which is then permuted to (X,Y,Z).
- */
 void position_to_xyz_frame_from_enu(
 	double* positions,
-	int pos_count,
+	int position_count,
 	double longitude_rad,
 	double latitude_rad,
 	double altitude // Not used
@@ -214,7 +204,7 @@ void position_to_xyz_frame_from_enu(
 	double sin_latitude = sin(latitude_rad);
 	double cos_latitude = cos(latitude_rad);
 	double tmp;
-	for (int i = 0; i < pos_count; i++)
+	for (int i = 0; i < position_count; i++)
 	{
 		// RotX(longitude) anti-clockwise
 		_rotate_around_x_cached_trig(
@@ -236,16 +226,9 @@ void position_to_xyz_frame_from_enu(
 	}
 }
 
-/*
- * https://github.com/david-macmahon/RadioInterferometry.jl/blob/3a084d47919ddb422be109c41faade9d365c2a35/src/RadioInterferometry.jl#L487-490
- * This works by rotating the XYZ frame anticlockwise about the Z (i.e. third)
- * axis by `lon_rad`, producing a (X',East,Z) frame, then rotating that frame
- * anticlockwise about the E (i.e. second) axis by `-lat_rad`, producing a
- * (U,E,N) frame which is then permuted to (E,N,U).
- */
 void position_to_enu_frame_from_xyz(
 	double* positions,
-	int pos_count,
+	int position_count,
 	double longitude_rad,
 	double latitude_rad,
 	double altitude // Not used
@@ -255,7 +238,7 @@ void position_to_enu_frame_from_xyz(
 	double sin_latitude = sin(latitude_rad);
 	double cos_latitude = cos(latitude_rad);
 	double tmp;
-	for (int i = 0; i < pos_count; i++)
+	for (int i = 0; i < position_count; i++)
 	{
 		// RotZ(longitude) anti-clockwise
 		_rotate_around_z_cached_trig(
@@ -279,21 +262,21 @@ void position_to_enu_frame_from_xyz(
 
 void position_to_enu_frame_from_ecef(
 	double* positions,
-	int pos_count,
+	int position_count,
 	double longitude_rad,
 	double latitude_rad,
 	double altitude
 ) {
   position_to_xyz_frame_from_ecef(
 		positions,
-		pos_count,
+		position_count,
 		longitude_rad,
 		latitude_rad,
 		altitude
 	);
   position_to_enu_frame_from_xyz(
 		positions,
-		pos_count,
+		position_count,
 		longitude_rad,
 		latitude_rad,
 		altitude
@@ -302,21 +285,21 @@ void position_to_enu_frame_from_ecef(
 
 void position_to_ecef_frame_from_enu(
 	double* positions,
-	int pos_count,
+	int position_count,
 	double longitude_rad,
 	double latitude_rad,
 	double altitude
 ) {
   position_to_xyz_frame_from_enu(
 		positions,
-		pos_count,
+		position_count,
 		longitude_rad,
 		latitude_rad,
 		altitude
 	);
   position_to_ecef_frame_from_xyz(
 		positions,
-		pos_count,
+		position_count,
 		longitude_rad,
 		latitude_rad,
 		altitude
