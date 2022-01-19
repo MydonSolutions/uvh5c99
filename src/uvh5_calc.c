@@ -63,32 +63,64 @@ void ecef_from_lla(
     ecef[2] = (N * (1 - geo->e2) + altitude) * sin_phi;
 }
 
-void uvws_from_enu_radec_timemjd_lla(
-	double* enu2uvws,
-	int position_count,
-	double ra_rad, double dec_rad,
-	double time_mjd,
-	double time_dut1,
-	double longitude_rad,
-	double latitude_rad,
-	double altitude
+static inline void _rotate_around_x_cached_trig(
+	double vec[3],
+	double sin_val,
+	double cos_val
 ) {
-	double aob, zob, hob, dob, rob, eo;
-
-	eraAtco13(
-		ra_rad, dec_rad,
-		0, 0, 0, 0,
-		time_mjd, 0,
-		time_dut1,
-		longitude_rad, latitude_rad, altitude,
-		0, 0,
-		0, 0, 0, 0,
-		&aob, &zob, &hob, &dob, &rob, &eo
+	double y, z;
+	y = vec[1];
+	z = vec[2];
+	vec[1] = cos_val*y - sin_val*z;
+	vec[2] = sin_val*y + cos_val*z;
+}
+void rotate_around_x(
+	double vec[3],
+	double radians
+) {
+	_rotate_around_x_cached_trig(
+		vec, sin(radians), cos(radians)
 	);
+}
 
-	while(--position_count >= 0) {
-		rotate_enu_by_hda(enu2uvws + position_count*3, hob, dob, latitude_rad);
-	}
+static inline void _rotate_around_y_cached_trig(
+	double vec[3],
+	double sin_val,
+	double cos_val
+) {
+	double x, z;
+	x = vec[0];
+	z = vec[2];
+	vec[0] = cos_val*x + sin_val*z;
+	vec[2] = -sin_val*x + cos_val*z;
+}
+void rotate_around_y(
+	double vec[3],
+	double radians
+) {
+	_rotate_around_y_cached_trig(
+		vec, sin(radians), cos(radians)
+	);
+}
+
+static inline void _rotate_around_z_cached_trig(
+	double vec[3],
+	double sin_val,
+	double cos_val
+) {
+	double x, y;
+	x = vec[0];
+	y = vec[1];
+	vec[0] = cos_val*x - sin_val*y;
+	vec[1] = sin_val*x + cos_val*y;
+}
+void rotate_around_z(
+	double vec[3],
+	double radians
+) {
+	_rotate_around_z_cached_trig(
+		vec, sin(radians), cos(radians)
+	);
 }
 
 void rotate_enu_by_hda(
@@ -103,43 +135,19 @@ void rotate_enu_by_hda(
 	rotate_around_x(enu, latitude_rad); // clockwise
 }
 
-void rotate_around_x(
-	double vec[3],
-	double radians
+void _rotate_enu_by_hda_cached_trig(
+	double* enu,
+	double sin_hour_angle,
+	double cos_hour_angle,
+	double sin_declination,
+	double cos_declination,
+	double sin_latitude,
+	double cos_latitude
 ) {
-	double y, z;
-	y = vec[1];
-	z = vec[2];
-	double pos_sin = sin(radians);
-	double pos_cos = cos(radians);
-	vec[1] = pos_cos*y - pos_sin*z;
-	vec[2] = pos_sin*y + pos_cos*z;
-}
-
-void rotate_around_y(
-	double vec[3],
-	double radians
-) {
-	double x, z;
-	x = vec[0];
-	z = vec[2];
-	double pos_sin = sin(radians);
-	double pos_cos = cos(radians);
-	vec[0] = pos_cos*x + pos_sin*z;
-	vec[2] = -pos_sin*x + pos_cos*z;
-}
-
-void rotate_around_z(
-	double vec[3],
-	double radians
-) {
-	double x, y;
-	x = vec[0];
-	y = vec[1];
-	double pos_sin = sin(radians);
-	double pos_cos = cos(radians);
-	vec[0] = pos_cos*x - pos_sin*y;
-	vec[1] = pos_sin*x + pos_cos*y;
+	//  rx(-dec_rad) * ry(-ha_rad) * rx(lat_rad)
+	_rotate_around_x_cached_trig(enu, -sin_declination, cos_declination); // anti-clockwise
+	_rotate_around_y_cached_trig(enu, -sin_hour_angle, cos_hour_angle); // anti-clockwise
+	_rotate_around_x_cached_trig(enu, sin_latitude, cos_latitude); // clockwise
 }
 
 void position_to_xyz_frame_from_ecef(
@@ -164,4 +172,47 @@ void position_to_xyz_frame_from_ecef(
 	ecef[1] *= -1.0;
 	ecef[2] *= -1.0;
 	frames_translate(positions, pos_count, ecef);
+}
+
+void uvws_from_enu_radec_timemjd_lla(
+	double* enu2uvws,
+	int position_count,
+	double ra_rad, double dec_rad,
+	double time_mjd,
+	double time_dut1,
+	double longitude_rad,
+	double latitude_rad,
+	double altitude
+) {
+	double aob, zob, hob, dob, rob, eo;
+
+	eraAtco13(
+		ra_rad, dec_rad,
+		0, 0, 0, 0,
+		time_mjd, 0,
+		time_dut1,
+		longitude_rad, latitude_rad, altitude,
+		0, 0,
+		0, 0, 0, 0,
+		&aob, &zob, &hob, &dob, &rob, &eo
+	);
+	
+	double sin_hour_angle = sin(hob);
+	double cos_hour_angle = cos(hob);
+	double sin_declination = sin(dob);
+	double cos_declination = cos(dob);
+	double sin_latitude = sin(latitude_rad);
+	double cos_latitude = cos(latitude_rad);
+
+	while(--position_count >= 0) {
+		_rotate_enu_by_hda_cached_trig(
+			enu2uvws + position_count*3,
+			sin_hour_angle,
+			cos_hour_angle,
+			sin_declination,
+			cos_declination,
+			sin_latitude,
+			cos_latitude
+		);
+	}
 }
