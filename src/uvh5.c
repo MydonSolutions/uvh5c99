@@ -494,28 +494,19 @@ void UVH5open(char* filepath, UVH5_file_t *uvh5_file, hid_t Tvisdata)
 	H5DSset(3, dim3_data_lim, dim3_data_chunk, &uvh5_file->DS_data_visdata);
 	// zeros for Tmem/sto_id respect DS_data_visdata internal values
 	H5DSopen(uvh5_file->data_id, 0, 0, &uvh5_file->DS_data_visdata);
-	size_t data_visdata_nbytes = H5DSnelem_chunks(&uvh5_file->DS_data_visdata)*H5Tget_size(uvh5_file->DS_data_visdata.Tmem_id);
-	uvh5_file->visdata = malloc(data_visdata_nbytes);
-	memset(uvh5_file->visdata, 0, data_visdata_nbytes);
-	fprintf(stderr, "UVH5: 'data_visdata' allocated %ld bytes.\n", data_visdata_nbytes);
+	uvh5_file->visdata = H5DSmalloc(&uvh5_file->DS_data_visdata);
 
 	uvh5_file->DS_data_flags.name = "flags";
 	H5DSset(3, dim3_data_lim, dim3_data_chunk, &uvh5_file->DS_data_flags);
 	uvh5_file->DS_data_flags.filter_flag = H5_FILTER_FLAG_DEFLATE_3;
 	H5DSopenBool(uvh5_file->data_id, &uvh5_file->DS_data_flags);
-	size_t data_flags_nbytes = H5DSnelem_chunks(&uvh5_file->DS_data_flags)*H5Tget_size(uvh5_file->DS_data_flags.Tmem_id);
-	uvh5_file->flags = malloc(data_flags_nbytes);
-	memset(uvh5_file->flags, 0, data_flags_nbytes);
-	fprintf(stderr, "UVH5: 'data_flags' allocated %ld bytes.\n", data_flags_nbytes);
+	uvh5_file->flags = H5DSmalloc(&uvh5_file->DS_data_flags);
 
 	uvh5_file->DS_data_nsamples.name = "nsamples";
 	H5DSset(3, dim3_data_lim, dim3_data_chunk, &uvh5_file->DS_data_nsamples);
 	uvh5_file->DS_data_flags.filter_flag = H5_FILTER_FLAG_DEFLATE_3;
 	H5DSopenFloat(uvh5_file->data_id, &uvh5_file->DS_data_nsamples);
-	size_t data_nsamples_nbytes = H5DSnelem_chunks(&uvh5_file->DS_data_nsamples)*H5Tget_size(uvh5_file->DS_data_nsamples.Tmem_id);
-	uvh5_file->nsamples = malloc(data_nsamples_nbytes);
-	memset(uvh5_file->nsamples, 0, data_nsamples_nbytes);
-	fprintf(stderr, "UVH5: 'data_nsamples' allocated %ld bytes.\n", data_nsamples_nbytes);
+	uvh5_file->nsamples = H5DSmalloc(&uvh5_file->DS_data_nsamples);
 }
 
 void UVH5close(UVH5_file_t *uvh5_file)
