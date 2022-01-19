@@ -6,8 +6,6 @@
 #include "uvh5/uvh5_calc.h"
 #include "uvh5/uvh5_toml.h"
 
-static inline double deg2rad(double deg) {return (deg/180)*M_PI;};
-
 void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path) {
 	FILE* fp;
 	char errbuf[200];
@@ -104,18 +102,18 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 				);
 				break;
 			case FRAME_ENU:
-				fprintf(stderr, "No current support for ENU to XYZ translation!\n");
+				fprintf(stderr, "Translating from ENU to XYZ!\n");
+				position_to_xyz_frame_from_enu(
+					uvh5_header->antenna_positions,
+					uvh5_header->Nants_telescope,
+					deg2rad(uvh5_header->longitude),
+					deg2rad(uvh5_header->latitude),
+					uvh5_header->altitude
+				);
 				break;
 			case FRAME_XYZ:
 				fprintf(stderr, "Verbatim XYZ positions.\n");
 				break;
-		}
-		
-		uvh5_header->_antenna_num_idx_map = malloc(sizeof(int) * (highest_antenna_number + 1)); // Administrative
-		memset(uvh5_header->_antenna_num_idx_map, -1, sizeof(int) * (highest_antenna_number + 1));
-		for (size_t i = 0; i < uvh5_header->Nants_telescope; i++) {
-			uvh5_header->_antenna_num_idx_map[uvh5_header->antenna_numbers[i]] = i;
-			fprintf(stderr, "Antenna number %d is at index %ld\n", uvh5_header->antenna_numbers[i], i);
 		}
 	}
 
@@ -252,6 +250,7 @@ int main(int argc, const char * argv[]) {
 	uvh5_header->Nblts = uvh5_header->Nbls * uvh5_header->Ntimes;
 
 	uvh5_toml_parse_telescope_info(uvh5_header, (char*) argv[1]);
+	UVH5Hadmin(uvh5_header);
 	uvh5_toml_parse_obs_info(uvh5_header, (char*) argv[2]);
 
 	uvh5_header->instrument = uvh5_header->telescope_name;

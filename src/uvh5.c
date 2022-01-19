@@ -70,6 +70,39 @@ void UVH5Halloc(UVH5_header_t *header)
 	// }
 }
 
+/*
+ * Generate `_antenna_num_idx_map` and `_antenna_enu_positions`.
+ */
+void UVH5Hadmin(UVH5_header_t *header) {
+	int highest_antenna_number = 0;
+	for (int i = 0; i < header->Nants_telescope; i++)
+	{
+		highest_antenna_number = header->antenna_numbers[i] > highest_antenna_number ?
+			header->antenna_numbers[i] :
+			highest_antenna_number
+		;
+	}
+	
+	//	Create antenna number -> index map
+	header->_antenna_num_idx_map = malloc(sizeof(int) * (highest_antenna_number + 1));
+	memset(header->_antenna_num_idx_map, -1, sizeof(int) * (highest_antenna_number + 1));
+	for (size_t i = 0; i < header->Nants_telescope; i++) {
+		header->_antenna_num_idx_map[header->antenna_numbers[i]] = i;
+		fprintf(stderr, "Antenna number %d is at index %ld\n", header->antenna_numbers[i], i);
+	}
+	
+	//	Create ENU antenna_positions from XYZ
+	header->_antenna_enu_positions = malloc(sizeof(double) * header->Nants_telescope * 3);
+	memcpy(header->_antenna_enu_positions, header->antenna_positions, sizeof(double) * header->Nants_telescope * 3);
+	position_to_enu_frame_from_xyz(
+		header->_antenna_enu_positions,
+		header->Nants_telescope,
+		deg2rad(header->longitude),
+		deg2rad(header->latitude),
+		header->altitude
+	);
+}
+
 void UVH5Hfree(UVH5_header_t *header)
 {
 	if (header->ant_1_array != NULL) {
@@ -113,7 +146,12 @@ void UVH5Hfree(UVH5_header_t *header)
 		free(header->antenna_diameters);
 	}
 	// Administrative arrays follow
-	free(header->_antenna_num_idx_map);
+	if(header->_antenna_num_idx_map != NULL){
+		free(header->_antenna_num_idx_map);
+	}
+	if(header->_antenna_enu_positions != NULL){
+		free(header->_antenna_enu_positions);
+	}
 }
 
 hid_t UVH5TcreateCI32()
