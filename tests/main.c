@@ -193,18 +193,13 @@ void uvh5_toml_parse_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 			uvh5_header->ant_2_array[i] = antenna_data_numbers[i];
 		}
 		
-		int ant_1_idx = 0;
-		int ant_2_idx = 1;
-		for (int bls_idx = uvh5_header->Nants_data; bls_idx < uvh5_header->Nbls; )
-		{
-			if(ant_1_idx != ant_2_idx) {
-				uvh5_header->ant_1_array[bls_idx] = antenna_data_numbers[ant_1_idx];//ant_1_idx < ant_2_idx ? ant_1_idx : ant_2_idx];
-				uvh5_header->ant_2_array[bls_idx] = antenna_data_numbers[ant_2_idx];//ant_1_idx > ant_2_idx ? ant_1_idx : ant_2_idx];
+		int bls_idx = uvh5_header->Nants_data;
+		for (int ant_1_idx = 0; ant_1_idx < Nants_data-1; ant_1_idx++) {
+			for (int ant_2_idx = ant_1_idx+1; ant_2_idx < Nants_data; ant_2_idx++)
+			{
+				uvh5_header->ant_1_array[bls_idx] = antenna_data_numbers[ant_1_idx];
+				uvh5_header->ant_2_array[bls_idx] = antenna_data_numbers[ant_2_idx];
 				bls_idx++;
-			}
-			ant_2_idx = (ant_2_idx + 1)%uvh5_header->Nants_data;
-			if(ant_2_idx == 0) {
-				ant_1_idx += 1;
 			}
 		}
 
