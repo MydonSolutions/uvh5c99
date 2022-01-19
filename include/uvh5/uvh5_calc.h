@@ -15,8 +15,6 @@ enum position_frames {
 	FRAME_UVW
 };
 
-static inline double deg2rad(double deg) {return (deg/180)*M_PI;};
-
 float julian_date_from_unix(float unix_sec);
 
 float julian_date_from_guppi_param(
@@ -89,6 +87,46 @@ void rotate_around_z(
 
 // positions is of length pos_count*3
 void position_to_xyz_frame_from_ecef(
+	double* positions,
+	int pos_count,
+	double longitude_rad,
+	double latitude_rad,
+	double altitude
+);
+
+void position_to_ecef_frame_from_xyz(
+	double* positions,
+	int pos_count,
+	double longitude_rad,
+	double latitude_rad,
+	double altitude
+);
+
+void position_to_xyz_frame_from_enu(
+	double* positions,
+	int pos_count,
+	double longitude_rad,
+	double latitude_rad,
+	double altitude // Not used
+);
+
+void position_to_enu_frame_from_xyz(
+	double* positions,
+	int pos_count,
+	double longitude_rad,
+	double latitude_rad,
+	double altitude // Not used
+);
+	
+void position_to_enu_frame_from_ecef(
+	double* positions,
+	int pos_count,
+	double longitude_rad,
+	double latitude_rad,
+	double altitude
+);
+
+void position_to_ecef_frame_from_enu(
 	double* positions,
 	int pos_count,
 	double longitude_rad,
