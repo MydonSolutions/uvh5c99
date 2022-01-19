@@ -23,9 +23,9 @@ void UVH5Halloc(UVH5_header_t *header)
 		fprintf(stderr, "UVH5: 'antenna_names' allocated %ld bytes.\n", sizeof(char *) * header->Nants_telescope);
 	}
 	if(header->uvw_array == NULL && header->Nbls * 3 != 0) {
-		header->uvw_array = malloc(sizeof(float) * header->Nbls * 3);
-		memset(header->uvw_array, 0, sizeof(float) * header->Nbls * 3);
-		fprintf(stderr, "UVH5: 'uvw_array' allocated %ld bytes.\n", sizeof(float) * header->Nbls * 3);
+		header->uvw_array = malloc(sizeof(double) * header->Nbls * 3);
+		memset(header->uvw_array, 0, sizeof(double) * header->Nbls * 3);
+		fprintf(stderr, "UVH5: 'uvw_array' allocated %ld bytes.\n", sizeof(double) * header->Nbls * 3);
 	}
 	if(header->time_array == NULL && header->Nbls != 0) {
 		header->time_array = malloc(sizeof(float) * header->Nbls);
@@ -464,7 +464,7 @@ void UVH5open(char* filepath, UVH5_file_t *uvh5_file, hid_t Tvisdata)
 
 	uvh5_file->DS_header_uvw_array.name = "uvw_array";
 	H5DSset(2, dim2_unlim_3, dim2_nbls_3, &uvh5_file->DS_header_uvw_array);
-	H5DSopenFloat(uvh5_file->header_id, &uvh5_file->DS_header_uvw_array);
+	H5DSopenDouble(uvh5_file->header_id, &uvh5_file->DS_header_uvw_array);
 
 	uvh5_file->DS_header_time_array.name = "time_array";
 	H5DSset(1, dim1_unlim, dim1_nbls, &uvh5_file->DS_header_time_array);
