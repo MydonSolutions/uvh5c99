@@ -162,15 +162,15 @@ void uvh5_toml_parse_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 		int Nants_data = toml_array_nelem(toml_input_mapping)/Npol_ant;
 		fprintf(stderr, "\tLeads to Nants_data: %d.\n", Nants_data);
 		
-		int* ant_name_index_map = malloc(Nants_data*sizeof(int));
-		ant_name_index_map[0] = find_antenna_index_by_name(uvh5_header, ant_name0);
-		ant_name_index_map[1] = find_antenna_index_by_name(uvh5_header, ant_name1);
+		int* antenna_data_numbers = malloc(Nants_data*sizeof(int));
+		antenna_data_numbers[0] = uvh5_header->antenna_numbers[find_antenna_index_by_name(uvh5_header, ant_name0)];
+		antenna_data_numbers[1] = uvh5_header->antenna_numbers[find_antenna_index_by_name(uvh5_header, ant_name1)];
 
 		free(ant_name1);
 		for (size_t i = 2; i < Nants_data; i++) {
 			toml_array_t* toml_input_ant_name_pol = toml_array_at(toml_input_mapping, i*Npol_ant);
 			uvh5_toml_string_at(toml_input_ant_name_pol, 0, &ant_name1);
-			ant_name_index_map[i] = find_antenna_index_by_name(uvh5_header, ant_name1);
+			antenna_data_numbers[i] = uvh5_header->antenna_numbers[find_antenna_index_by_name(uvh5_header, ant_name1)];
 			free(ant_name1);
 		}
 		
@@ -191,8 +191,8 @@ void uvh5_toml_parse_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 
 		for (size_t i = 0; i < uvh5_header->Nants_data; i++)
 		{
-			uvh5_header->ant_1_array[i] = ant_name_index_map[i];
-			uvh5_header->ant_2_array[i] = ant_name_index_map[i];
+			uvh5_header->ant_1_array[i] = antenna_data_numbers[i];
+			uvh5_header->ant_2_array[i] = antenna_data_numbers[i];
 		}
 		
 		int ant_1_idx = 0;
@@ -200,15 +200,8 @@ void uvh5_toml_parse_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 		for (int bls_idx = uvh5_header->Nants_data; bls_idx < uvh5_header->Nbls; )
 		{
 			if(ant_1_idx != ant_2_idx) {
-				uvh5_header->ant_1_array[bls_idx] = ant_name_index_map[ant_1_idx];//ant_1_idx < ant_2_idx ? ant_1_idx : ant_2_idx];
-				uvh5_header->ant_2_array[bls_idx] = ant_name_index_map[ant_2_idx];//ant_1_idx > ant_2_idx ? ant_1_idx : ant_2_idx];
-
-				for (size_t i = 0; i < 3; i++)
-				{
-					uvh5_header->uvw_array[bls_idx*3 + i] = // ant_1 -> ant_2
-						uvh5_header->antenna_positions[uvh5_header->ant_2_array[bls_idx]*3 + i] -
-						uvh5_header->antenna_positions[uvh5_header->ant_1_array[bls_idx]*3 + i];
-				}
+				uvh5_header->ant_1_array[bls_idx] = antenna_data_numbers[ant_1_idx];//ant_1_idx < ant_2_idx ? ant_1_idx : ant_2_idx];
+				uvh5_header->ant_2_array[bls_idx] = antenna_data_numbers[ant_2_idx];//ant_1_idx > ant_2_idx ? ant_1_idx : ant_2_idx];
 				bls_idx++;
 			}
 			ant_2_idx = (ant_2_idx + 1)%uvh5_header->Nants_data;
@@ -218,7 +211,7 @@ void uvh5_toml_parse_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 		}
 
 		free(ant_name0);
-		free(ant_name_index_map);
+		free(antenna_data_numbers);
 	}
 	else {
 		uvh5_toml_error("cannot read location", "input_map");
