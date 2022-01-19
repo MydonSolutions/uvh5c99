@@ -5,12 +5,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "toml.h"
-
-static inline int uvh5_toml_error(const char* msg, const char* msg1)
-{
-    fprintf(stderr, "UVH5_TOML ERROR: %s (%s)\n", msg, msg1?msg1:"");
-		return 1;
-}
+#include "uvh5_printer.h"
 
 int uvh5_toml_sexagesimal_in(toml_table_t* parent, const char* location, double* sexagesimal);
 int uvh5_toml_string_in(toml_table_t* parent, const char* location, char** string_out);

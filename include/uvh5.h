@@ -8,6 +8,7 @@
 #include "uvh5/uvh5_bool_t.h"
 #include "uvh5/h5_dataspace.h"
 #include "uvh5/uvh5_calc.h"
+#include "uvh5/uvh5_printer.h"
 
 typedef struct
 {

@@ -11,14 +11,14 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 
 	fp = fopen(file_path, "r");
 	if (!fp) {
-			uvh5_toml_error("cannot open telescope info - ", strerror(errno));
+			uvh5_print_error(__FUNCTION__, "cannot open '%s' (%s)", file_path, strerror(errno));
 			return;
 	}
 
 	toml_table_t* conf = toml_parse_file(fp, errbuf, sizeof(errbuf));
 	fclose(fp);
 	if (!conf) {
-			uvh5_toml_error("cannot parse", errbuf);
+			uvh5_print_error(__FUNCTION__, "cannot parse %s", errbuf);
 			return;
 	}
 	uvh5_toml_string_in(conf, "telescope_name", &uvh5_header->telescope_name);
@@ -31,7 +31,7 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 	
 	toml_array_t* toml_antennas_array = toml_array_in(conf, "antennas");
 	if (!toml_antennas_array) {
-			uvh5_toml_error("missing [[antennas]]", "");
+			uvh5_print_error(__FUNCTION__, "missing [[antennas]]");
 	}
 	else {
 		uvh5_header->Nants_telescope = toml_array_nelem(toml_antennas_array);
@@ -42,7 +42,7 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 		{
 			toml_table_t* toml_antenna_info = toml_table_at(toml_antennas_array, i);
 			if(toml_antenna_info) {
-				fprintf(stderr, "Antenna: %ld\n", i);
+				uvh5_print_verbose(__FUNCTION__, "Antenna: %ld", i);
 				uvh5_toml_antenna_table_in(
 					toml_antenna_info,
 					uvh5_header->antenna_numbers + i,
@@ -56,7 +56,7 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 				}
 			}
 			else {
-				uvh5_toml_error("cannot access antenna info", "");
+				uvh5_print_error(__FUNCTION__, "cannot access antenna #%ld info", i);
 			}
 		}
 
@@ -80,13 +80,13 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 				ant_pos_frame = FRAME_ENU;
 			}
 			else {
-				fprintf(stderr, "Ignoring 'antenna_position_frame' specfication: '%s'.\n", ant_pos_frame_str);
+				uvh5_print_warn(__FUNCTION__, "Ignoring 'antenna_position_frame' specfication: '%s'.", ant_pos_frame_str);
 			}
 		}
 
 		switch(ant_pos_frame) {
 		 case FRAME_ECEF:
-				fprintf(stderr, "Translating from ECEF to XYZ!\n");
+				uvh5_print_info(__FUNCTION__, "Translating from ECEF to XYZ!");
 				uvh5_calc_position_to_xyz_frame_from_ecef(
 					uvh5_header->antenna_positions,
 					uvh5_header->Nants_telescope,
@@ -96,7 +96,7 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 				);
 				break;
 			case FRAME_ENU:
-				fprintf(stderr, "Translating from ENU to XYZ!\n");
+				uvh5_print_info(__FUNCTION__, "Translating from ENU to XYZ!");
 				uvh5_calc_position_to_xyz_frame_from_enu(
 					uvh5_header->antenna_positions,
 					uvh5_header->Nants_telescope,
@@ -106,7 +106,7 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 				);
 				break;
 			case FRAME_XYZ:
-				fprintf(stderr, "Verbatim XYZ positions.\n");
+				uvh5_print_info(__FUNCTION__, "Verbatim XYZ positions.");
 				break;
 		}
 	}
@@ -121,23 +121,21 @@ void uvh5_toml_parse_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 
 	fp = fopen(file_path, "r");
 	if (!fp) {
-		uvh5_toml_error("cannot open observation info", strerror(errno));
+		uvh5_print_error(__FUNCTION__, "cannot open '%s' (%s)", file_path, strerror(errno));
 		return;
 	}
-	fprintf(stderr, "Opened!\n");
 
 	toml_table_t* conf = toml_parse_file(fp, errbuf, sizeof(errbuf));
 	fclose(fp);
 	if (!conf) {
-		uvh5_toml_error("cannot parse", errbuf);
+		uvh5_print_error(__FUNCTION__, "cannot parse %s", errbuf);
 		return;
 	}
-	fprintf(stderr, "Parsed!\n");
 	
 	toml_array_t* toml_input_mapping = toml_array_in(conf, "input_map");
 	if(toml_input_mapping) {
 		int Npol_ant = 0; // Initial assumption
-		fprintf(stderr, "input_map length: %d\n", toml_array_nelem(toml_input_mapping));
+		uvh5_print_verbose(__FUNCTION__, "input_map length: %d", toml_array_nelem(toml_input_mapping));
 
 		char *ant_name0 = NULL, *ant_name1 = NULL;
 		char pols_ant[4] = {'\0'}; // at most 2 unique pols
@@ -154,13 +152,13 @@ void uvh5_toml_parse_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 			}
 		} while(strcmp(ant_name0, ant_name1) == 0 && ++Npol_ant <= 2);
 		if (Npol_ant > 2) {
-			fprintf(stderr, "The first antenna is repeated more than twice indicating more than 2 polarisaitons.\n");
+			uvh5_print_error(__FUNCTION__, "The first antenna is repeated more than twice indicating more than 2 polarisaitons.");
 			return;
 		}
 
-		fprintf(stderr, "Assuming every antenna has %d polarisations, as the first does.\n", Npol_ant);
+		uvh5_print_info(__FUNCTION__, "Assuming every antenna has %d polarisations, as the first does.", Npol_ant);
 		int Nants_data = toml_array_nelem(toml_input_mapping)/Npol_ant;
-		fprintf(stderr, "\tLeads to Nants_data: %d.\n", Nants_data);
+		uvh5_print_info(__FUNCTION__, "\tLeads to Nants_data: %d.", Nants_data);
 		
 		int* antenna_data_numbers = malloc(Nants_data*sizeof(int));
 		antenna_data_numbers[0] = uvh5_header->antenna_numbers[find_antenna_index_by_name(uvh5_header, ant_name0)];
@@ -185,7 +183,7 @@ void uvh5_toml_parse_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 			for (size_t j = 0; j < Npol_ant; j++) {
 				pol_product[1] = pols_ant[j];
 				uvh5_header->polarization_array[i*2+j] = polarisation_string_key(pol_product, Npol_ant);
-				fprintf(stderr, "Pol-product '%s' with key %d.\n", pol_product, uvh5_header->polarization_array[i*2+j]);
+				uvh5_print_verbose(__FUNCTION__, "Pol-product '%s' with key %d.", pol_product, uvh5_header->polarization_array[i*2+j]);
 			}
 		}
 
@@ -214,7 +212,7 @@ void uvh5_toml_parse_obs_info(UVH5_header_t* uvh5_header, char* file_path) {
 		free(antenna_data_numbers);
 	}
 	else {
-		uvh5_toml_error("cannot read location", "input_map");
+		uvh5_print_error(__FUNCTION__, "cannot read location 'input_map'");
 	}
 
 	toml_free(conf);

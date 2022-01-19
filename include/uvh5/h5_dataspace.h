@@ -6,8 +6,7 @@
 #include <stdlib.h>
 
 #include "uvh5_bool_t.h"
-
-// #define H5_DATASPACE_DEBUG
+#include "uvh5_printer.h"
 
 enum H5_FILTER_FLAG {
 	H5_FILTER_FLAG_NONE = -1,

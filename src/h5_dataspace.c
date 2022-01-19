@@ -3,9 +3,7 @@
 void H5DSopen(
 	hid_t dest_id, hid_t Tmem_id, hid_t Tsto_id, H5_open_dataspace_t* dataspace
 ) {
-	#ifdef H5_DATASPACE_DEBUG
-		fprintf(stderr, "H5DSopen: %s\n", dataspace->name);
-	#endif
+	uvh5_print_verbose(__FUNCTION__, "%s", dataspace->name);
 
 	if(Tmem_id > 0)
 		dataspace->Tmem_id = Tmem_id;
@@ -93,7 +91,7 @@ void* H5DSmalloc(H5_open_dataspace_t* dataspace) {
 		nelem = nelem > 0 ? nelem : H5DSnelem(dataspace);
 	}
 	
-	fprintf(stderr, "UVH5: '%s' allocated %ld bytes.\n", dataspace->name, nelem*element_byte_size);
+	uvh5_print_verbose(__FUNCTION__, "'%s' allocated %ld bytes.", dataspace->name, nelem*element_byte_size);
 	return malloc(nelem*element_byte_size);
 }
 
@@ -103,9 +101,7 @@ void H5DSset(
 	const hsize_t* chunks,
 	H5_open_dataspace_t* dataspace
 ) {
-	#ifdef H5_DATASPACE_DEBUG
-		fprintf(stderr, "H5DSset: %s\n", dataspace->name);
-	#endif
+	uvh5_print_verbose(__FUNCTION__, "%s", dataspace->name);
 	
 	dataspace->rank = rank;
 	dataspace->dims = malloc(rank * sizeof(hsize_t));
@@ -120,15 +116,11 @@ void H5DSset(
 		if(dimlims[i] == H5S_UNLIMITED) {
 			dataspace->dims[i] = 0;
 		}
-		#ifdef H5_DATASPACE_DEBUG
-			fprintf(stderr, "\tdim %ld (%llu/%llu)\n", i, dataspace->dims[i], dataspace->dimlims[i]);
-		#endif
+		uvh5_print_verbose(__FUNCTION__, "\tdim %ld (%llu/%llu)", i, dataspace->dims[i], dataspace->dimlims[i]);
 		if(chunks != NULL) {
 			// TODO assert chunk[i] < dimlims[i]
 			dataspace->dimchunks[i] = chunks[i];
-			#ifdef H5_DATASPACE_DEBUG
-				fprintf(stderr, "\t\t chunked %llu\n", dataspace->dimchunks[i]);
-			#endif
+			uvh5_print_verbose(__FUNCTION__, "\t\tchunked %llu", dataspace->dimchunks[i]);
 		}
 	}
 }

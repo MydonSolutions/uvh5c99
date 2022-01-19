@@ -5,68 +5,68 @@ void UVH5Halloc(UVH5_header_t *header)
 	if(header->ant_1_array == NULL && header->Nbls != 0) {
 		header->ant_1_array = malloc(sizeof(int) * header->Nbls);
 		memset(header->ant_1_array, 0, sizeof(int) * header->Nbls);
-		fprintf(stderr, "UVH5: 'ant_1_array' allocated %ld bytes.\n", sizeof(int) * header->Nbls);
+		uvh5_print_verbose(__FUNCTION__, "'ant_1_array' allocated %ld bytes.", sizeof(int) * header->Nbls);
 	}
 	if(header->ant_2_array == NULL && header->Nbls != 0) {
 		header->ant_2_array = malloc(sizeof(int) * header->Nbls);
 		memset(header->ant_2_array, 0, sizeof(int) * header->Nbls);
-		fprintf(stderr, "UVH5: 'ant_2_array' allocated %ld bytes.\n", sizeof(int) * header->Nbls);
+		uvh5_print_verbose(__FUNCTION__, "'ant_2_array' allocated %ld bytes.", sizeof(int) * header->Nbls);
 	}
 	if(header->antenna_numbers == NULL && header->Nants_telescope != 0) {
 		header->antenna_numbers = malloc(sizeof(int) * header->Nants_telescope);
 		memset(header->antenna_numbers, 0, sizeof(int) * header->Nants_telescope);
-		fprintf(stderr, "UVH5: 'antenna_numbers' allocated %ld bytes.\n", sizeof(int) * header->Nants_telescope);
+		uvh5_print_verbose(__FUNCTION__, "'antenna_numbers' allocated %ld bytes.", sizeof(int) * header->Nants_telescope);
 	}
 	if(header->antenna_names == NULL && header->Nants_telescope != 0) {
 		header->antenna_names = malloc(sizeof(char *) * header->Nants_telescope);
 		memset(header->antenna_names, 0, sizeof(char *) * header->Nants_telescope);
-		fprintf(stderr, "UVH5: 'antenna_names' allocated %ld bytes.\n", sizeof(char *) * header->Nants_telescope);
+		uvh5_print_verbose(__FUNCTION__, "'antenna_names' allocated %ld bytes.", sizeof(char *) * header->Nants_telescope);
 	}
 	if(header->uvw_array == NULL && header->Nbls * 3 != 0) {
 		header->uvw_array = malloc(sizeof(double) * header->Nbls * 3);
 		memset(header->uvw_array, 0, sizeof(double) * header->Nbls * 3);
-		fprintf(stderr, "UVH5: 'uvw_array' allocated %ld bytes.\n", sizeof(double) * header->Nbls * 3);
+		uvh5_print_verbose(__FUNCTION__, "'uvw_array' allocated %ld bytes.", sizeof(double) * header->Nbls * 3);
 	}
 	if(header->time_array == NULL && header->Nbls != 0) {
 		header->time_array = malloc(sizeof(float) * header->Nbls);
 		memset(header->time_array, 0, sizeof(float) * header->Nbls);
-		fprintf(stderr, "UVH5: 'time_array' allocated %ld bytes.\n", sizeof(float) * header->Nbls);
+		uvh5_print_verbose(__FUNCTION__, "'time_array' allocated %ld bytes.", sizeof(float) * header->Nbls);
 	}
 	if(header->integration_time == NULL && header->Nbls != 0) {
 		header->integration_time = malloc(sizeof(float) * header->Nbls);
 		memset(header->integration_time, 0, sizeof(float) * header->Nbls);
-		fprintf(stderr, "UVH5: 'integration_time' allocated %ld bytes.\n", sizeof(float) * header->Nbls);
+		uvh5_print_verbose(__FUNCTION__, "'integration_time' allocated %ld bytes.", sizeof(float) * header->Nbls);
 	}
 	if(header->freq_array == NULL && header->Nfreqs != 0) {
 		header->freq_array = malloc(sizeof(float) * header->Nfreqs);
 		memset(header->freq_array, 0, sizeof(float) * header->Nfreqs);
-		fprintf(stderr, "UVH5: 'freq_array' allocated %ld bytes.\n", sizeof(float) * header->Nfreqs);
+		uvh5_print_verbose(__FUNCTION__, "'freq_array' allocated %ld bytes.", sizeof(float) * header->Nfreqs);
 	}
 	if(header->channel_width == NULL && header->Nfreqs != 0) {
 		header->channel_width = malloc(sizeof(float) * header->Nfreqs);
 		memset(header->channel_width, 0, sizeof(float) * header->Nfreqs);
-		fprintf(stderr, "UVH5: 'channel_width' allocated %ld bytes.\n", sizeof(float) * header->Nfreqs);
+		uvh5_print_verbose(__FUNCTION__, "'channel_width' allocated %ld bytes.", sizeof(float) * header->Nfreqs);
 	}
 	if(header->spw_array == NULL && header->Nspws != 0) {
 		header->spw_array = malloc(sizeof(float) * header->Nspws);
 		memset(header->spw_array, 0, sizeof(float) * header->Nspws);
-		fprintf(stderr, "UVH5: 'spw_array' allocated %ld bytes.\n", sizeof(float) * header->Nspws);
+		uvh5_print_verbose(__FUNCTION__, "'spw_array' allocated %ld bytes.", sizeof(float) * header->Nspws);
 	}
 	if(header->polarization_array == NULL && header->Npols != 0) {
 		header->polarization_array = malloc(sizeof(int) * header->Npols);
 		memset(header->polarization_array, 0, sizeof(int) * header->Npols);
-		fprintf(stderr, "UVH5: 'polarization_array' allocated %ld bytes.\n", sizeof(int) * header->Npols);
+		uvh5_print_verbose(__FUNCTION__, "'polarization_array' allocated %ld bytes.", sizeof(int) * header->Npols);
 	}
 	if(header->antenna_positions == NULL && header->Nants_telescope * 3 != 0) {
 		header->antenna_positions = malloc(sizeof(double) * header->Nants_telescope * 3);
 		memset(header->antenna_positions, 0, sizeof(double) * header->Nants_telescope * 3);
-		fprintf(stderr, "UVH5: 'antenna_positions' allocated %ld bytes.\n", sizeof(double) * header->Nants_telescope * 3);
+		uvh5_print_verbose(__FUNCTION__, "'antenna_positions' allocated %ld bytes.", sizeof(double) * header->Nants_telescope * 3);
 	}
 	// Optional entries follow
 	// if(header-> == NULL && header->Nbls != 0) {
 	// 	header->lst_array = malloc(sizeof(float) * header->Nbls);
 	// 	memset(header->lst_array, 0, sizeof(float) * header->Nbls);
-	// 	fprintf(stderr, "UVH5: 'lst_array' allocated %ld bytes.\n", sizeof(float) * header->Nbls);
+	//	uvh5_print_verbose(__FUNCTION__, "'lst_array' allocated %ld bytes.", sizeof(float) * header->Nbls);
 	// }
 }
 
@@ -88,7 +88,7 @@ void UVH5Hadmin(UVH5_header_t *header) {
 	memset(header->_antenna_num_idx_map, -1, sizeof(int) * (highest_antenna_number + 1));
 	for (size_t i = 0; i < header->Nants_telescope; i++) {
 		header->_antenna_num_idx_map[header->antenna_numbers[i]] = i;
-		fprintf(stderr, "Antenna number %d is at index %ld\n", header->antenna_numbers[i], i);
+		uvh5_print_verbose(__FUNCTION__, "Antenna number %d is at index %ld", header->antenna_numbers[i], i);
 	}
 	
 	//	Create ENU antenna_positions from XYZ
@@ -299,133 +299,133 @@ void _UVH5_Hwrite_static(UVH5_file_t *uvh5_file)
 	// TODO assert uvh5_file->header_id
 
 	status = _H5DdoubleWrite(uvh5_file->header_id, "latitude", 0, NULL, &header.latitude);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'latitude'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'latitude'"); return; }
 
 	status = _H5DdoubleWrite(uvh5_file->header_id, "longitude", 0, NULL, &header.longitude);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'longitude'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'longitude'"); return; }
 
 	status = _H5DdoubleWrite(uvh5_file->header_id, "altitude", 0, NULL, &header.altitude);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'altitude'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'altitude'"); return; }
 
 	status = _H5DstringWrite(uvh5_file->header_id, "telescope_name", 0, NULL, header.telescope_name);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'telescope_name'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'telescope_name'"); return; }
 
 	status = _H5DstringWrite(uvh5_file->header_id, "instrument", 0, NULL, header.instrument);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'instrument'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'instrument'"); return; }
 
 	status = _H5DstringWrite(uvh5_file->header_id, "object_name", 0, NULL, header.object_name);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'object_name'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'object_name'"); return; }
 
 	status = _H5DstringWrite(uvh5_file->header_id, "history", 0, NULL, header.history);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'history'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'history'"); return; }
 
 	status = _H5DstringWrite(uvh5_file->header_id, "phase_type", 0, NULL, header.phase_type);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'phase_type'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'phase_type'"); return; }
 
 	status = _H5DintWrite(uvh5_file->header_id, "Nants_data", 0, NULL, &header.Nants_data);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Nants_data'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'Nants_data'"); return; }
 
 	status = _H5DintWrite(uvh5_file->header_id, "Nants_telescope", 0, NULL, &header.Nants_telescope);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Nants_telescope'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'Nants_telescope'"); return; }
 
 	status = _H5DstringWrite(uvh5_file->header_id, "antenna_names", 1, dims1_Nants_telescope, (char *)header.antenna_names);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'antenna_names'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'antenna_names'"); return; }
 
 	status = _H5DintWrite(uvh5_file->header_id, "antenna_numbers", 1, dims1_Nants_telescope, header.antenna_numbers);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'antenna_numbers'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'antenna_numbers'"); return; }
 
 	status = _H5DintWrite(uvh5_file->header_id, "Nbls", 0, NULL, &header.Nbls);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Nbls'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'Nbls'"); return; }
 
 	status = _H5DintWrite(uvh5_file->header_id, "Nspws", 0, NULL, &header.Nspws);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Nspws'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'Nspws'"); return; }
 
 	status = _H5DintWrite(uvh5_file->header_id, "Nfreqs", 0, NULL, &header.Nfreqs);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Nfreqs'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'Nfreqs'"); return; }
 
 	status = _H5DintWrite(uvh5_file->header_id, "Npols", 0, NULL, &header.Npols);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Npols'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'Npols'"); return; }
 
 	status = _H5DfloatWrite(uvh5_file->header_id, "freq_array", 1, dims1_Nfreqs, header.freq_array);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'freq_array'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'freq_array'"); return; }
 
 	status = _H5DfloatWrite(uvh5_file->header_id, "channel_width", 1, dims1_Nfreqs, header.channel_width);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'channel_width'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'channel_width'"); return; }
 
 	status = _H5DintWrite(uvh5_file->header_id, "spw_array", 1, dims1_Nspws, header.spw_array);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'spw_array'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'spw_array'"); return; }
 
 	status = _H5DboolWrite(uvh5_file->header_id, "flex_spw", 0, NULL, &header.flex_spw);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'flex_spw'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'flex_spw'"); return; }
 
 	status = _H5DintWrite(uvh5_file->header_id, "polarization_array", 1, dims1_Npols, header.polarization_array);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'polarization_array'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'polarization_array'"); return; }
 
 	status = _H5DdoubleWrite(uvh5_file->header_id, "antenna_positions", 2, dims2_Nants_telescope_3, header.antenna_positions);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'antenna_positions'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'antenna_positions'"); return; }
 
 	status = _H5DstringWrite(uvh5_file->header_id, "version", 0, NULL, "1.0");
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'version'\n"); return; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on 'version'"); return; }
 
 	// Optional entries follow
 	if(header.flex_spw_id_array){
 		status = _H5DintWrite(uvh5_file->header_id, "flex_spw_id_array", 1, dims1_Nfreqs, header.flex_spw_id_array);
-		if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on optional 'flex_spw_id_array'\n"); }
+		if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on optional 'flex_spw_id_array'"); }
 	}
 
 	if(header.dut1){
 		status = _H5DfloatWrite(uvh5_file->header_id, "dut1", 0, NULL, &header.dut1);
-		if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on optional 'dut1'\n"); }
+		if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on optional 'dut1'"); }
 	}
 
 	if(header.earth_omega){
 		status = _H5DfloatWrite(uvh5_file->header_id, "earth_omega", 0, NULL, &header.earth_omega);
-		if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on optional 'earth_omega'\n"); }
+		if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on optional 'earth_omega'"); }
 	}
 
 	if(header.gst0){
 		status = _H5DfloatWrite(uvh5_file->header_id, "gst0", 0, NULL, &header.gst0);
-		if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on optional 'gst0'\n"); }
+		if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on optional 'gst0'"); }
 	}
 
 	if(header.rdate){
 		status = _H5DstringWrite(uvh5_file->header_id, "rdate", 0, NULL, header.rdate);
-		if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on optional 'rdate'\n"); }
+		if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on optional 'rdate'"); }
 	}
 
 	if(header.timesys){
 		status = _H5DstringWrite(uvh5_file->header_id, "timesys", 0, NULL, header.timesys);
-		if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on optional 'timesys'\n"); }
+		if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on optional 'timesys'"); }
 	}
 
 	if(header.x_orientation){
 		status = _H5DstringWrite(uvh5_file->header_id, "x_orientation", 0, NULL, header.x_orientation);
-		if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on optional 'x_orientation'\n"); }
+		if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on optional 'x_orientation'"); }
 	}
 
 	if(header.antenna_diameters){
 		status = _H5DfloatWrite(uvh5_file->header_id, "antenna_diameters", 1, dims1_Nants_telescope, header.antenna_diameters);
-		if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on optional 'antenna_diameters'\n"); }
+		if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on optional 'antenna_diameters'"); }
 	}
 
 	if(header.uvplane_reference_time){
 		status = _H5DintWrite(uvh5_file->header_id, "uvplane_reference_time", 0, NULL, &header.uvplane_reference_time);
-		if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on optional 'uvplane_reference_time'\n"); }
+		if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on optional 'uvplane_reference_time'"); }
 	}
 
 	if(header.phase_center_ra){
 		status = _H5DfloatWrite(uvh5_file->header_id, "phase_center_ra", 0, NULL, &header.phase_center_ra);
-		if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on optional 'phase_center_ra'\n"); }
+		if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on optional 'phase_center_ra'"); }
 	}
 
 	if(header.phase_center_dec){
 		status = _H5DfloatWrite(uvh5_file->header_id, "phase_center_dec", 0, NULL, &header.phase_center_dec);
-		if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on optional 'phase_center_dec'\n"); }
+		if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on optional 'phase_center_dec'"); }
 	}
 
 	if(header.phase_center_epoch){
 		status = _H5DfloatWrite(uvh5_file->header_id, "phase_center_epoch", 0, NULL, &header.phase_center_epoch);
-		if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on optional 'phase_center_epoch'\n"); }
+		if (status < 0)	{ uvh5_print_error(__FUNCTION__, "failure on optional 'phase_center_epoch'"); }
 	}
 
 }
@@ -543,54 +543,54 @@ int UVH5write_dynamic(UVH5_file_t* uvh5_file) {
 	herr_t status;
 	// Header
 	status = H5DSextend(&uvh5_file->DS_header_ant_1_array);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_ant_1_array'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSextend failure on 'header_ant_1_array'"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_header_ant_1_array, uvh5_file->header.ant_1_array);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_ant_1_array'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSwrite failure on 'header_ant_1_array'"); return -1;}
 
 	status = H5DSextend(&uvh5_file->DS_header_ant_2_array);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_ant_2_array'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSextend failure on 'header_ant_2_array'"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_header_ant_2_array, uvh5_file->header.ant_2_array);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_ant_2_array'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSwrite failure on 'header_ant_2_array'"); return -1;}
 
 	status = H5DSextend(&uvh5_file->DS_header_uvw_array);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_uvw_array'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSextend failure on 'header_uvw_array'"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_header_uvw_array, uvh5_file->header.uvw_array);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_uvw_array'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSwrite failure on 'header_uvw_array'"); return -1;}
 
 	status = H5DSextend(&uvh5_file->DS_header_time_array);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_time_array'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSextend failure on 'header_time_array'"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_header_time_array, uvh5_file->header.time_array);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_time_array'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSwrite failure on 'header_time_array'"); return -1;}
 
 	status = H5DSextend(&uvh5_file->DS_header_integration_time);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'header_integration_time'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSextend failure on 'header_integration_time'"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_header_integration_time, uvh5_file->header.integration_time);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'header_integration_time'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSwrite failure on 'header_integration_time'"); return -1;}
 
 	// Data
 	status = H5DSextend(&uvh5_file->DS_data_visdata);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'data_visdata'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSextend failure on 'data_visdata'"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_data_visdata, uvh5_file->visdata);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'data_visdata'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSwrite failure on 'data_visdata'"); return -1;}
 
 	status = H5DSextend(&uvh5_file->DS_data_flags);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'data_flags'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSextend failure on 'data_flags'"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_data_flags, uvh5_file->flags);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'data_flags'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSwrite failure on 'data_flags'"); return -1;}
 
 	status = H5DSextend(&uvh5_file->DS_data_nsamples);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSextend failure on 'data_nsamples'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSextend failure on 'data_nsamples'"); return -1;}
 	status = H5DSwrite(&uvh5_file->DS_data_nsamples, uvh5_file->nsamples);
-	if (status < 0) { fprintf(stderr, "UVH5: H5DSwrite failure on 'data_nsamples'\n"); return -1;}
+	if (status < 0) { uvh5_print_error(__FUNCTION__, "H5DSwrite failure on 'data_nsamples'"); return -1;}
 
 	// Update static
 	uvh5_file->header.Ntimes += 1;
 	uvh5_file->header.Nblts += uvh5_file->header.Nbls;
 	status = H5DSwrite(&uvh5_file->DS_header_Ntimes, &uvh5_file->header.Ntimes);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Ntimes'\n"); return -1; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "H5DSwrite failure on 'Ntimes'"); return -1; }
 
 	status = H5DSwrite(&uvh5_file->DS_header_Nblts, &uvh5_file->header.Nblts);
-	if (status < 0)	{ fprintf(stderr, "UVH5 Header: failure on 'Nblts'\n"); return -1; }
+	if (status < 0)	{ uvh5_print_error(__FUNCTION__, "H5DSwrite failure on 'Nblts'"); return -1; }
 
 	return 0;
 }
@@ -601,7 +601,7 @@ int find_antenna_index_by_name(UVH5_header_t* header, char* name) {
 	}
 	for(size_t i = 0; i < header->Nants_telescope; i++) {
 		if(strcmp(name, header->antenna_names[i]) == 0) { // Case sensitive
-			fprintf(stderr, "Antenna '%s' is at index %ld.\n", name, i);
+			uvh5_print_verbose(__FUNCTION__, "Antenna '%s' is at index %ld.", name, i);
 			return i;
 		}
 	}
@@ -610,6 +610,16 @@ int find_antenna_index_by_name(UVH5_header_t* header, char* name) {
 
 void UVH5permutate_uvws(UVH5_header_t* header) {
 	for (int bls_idx = 0; bls_idx < header->Nbls; bls_idx++) {
+		uvh5_print_verbose(__FUNCTION__, "(#%d @ %d) -> (#%d @ %d)",
+			header->ant_1_array[bls_idx],
+			header->_antenna_num_idx_map[header->ant_1_array[bls_idx]],
+			header->ant_2_array[bls_idx],
+			header->_antenna_num_idx_map[header->ant_2_array[bls_idx]]
+		);
+		uvh5_print_verbose(__FUNCTION__, "\t%s -> %s",
+			header->antenna_names[header->_antenna_num_idx_map[header->ant_1_array[bls_idx]]],
+			header->antenna_names[header->_antenna_num_idx_map[header->ant_2_array[bls_idx]]]
+		);
 		for (size_t i = 0; i < 3; i++)
 		{
 			header->uvw_array[bls_idx*3 + i] = // ant_1 -> ant_2
@@ -622,7 +632,21 @@ void UVH5permutate_uvws(UVH5_header_t* header) {
 						header->ant_1_array[bls_idx]
 					]*3 + i]
 			;
+			uvh5_print_verbose(__FUNCTION__, "\t\t %f - %f = %f",
+				header->_antenna_uvw_positions[
+						header->_antenna_num_idx_map[
+							header->ant_2_array[bls_idx]
+						]*3 + i],
+				header->_antenna_uvw_positions[
+						header->_antenna_num_idx_map[
+							header->ant_1_array[bls_idx]
+						]*3 + i],
+				header->uvw_array[bls_idx*3 + i]
+			);
 		}
+		uvh5_print_verbose(__FUNCTION__, "\t\t\tDist: %f",
+			uvh5_calc_hypotenuse(header->uvw_array + bls_idx*3, 3)
+		);
 	}
 }
 
