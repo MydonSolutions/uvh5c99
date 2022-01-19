@@ -4,7 +4,6 @@
 #include <stddef.h>
 #include <math.h>
 #include "_geodesy.h"
-#include "erfa.h"
 
 #define DAYSEC 86400.0
 
@@ -39,20 +38,9 @@ void ecef_from_lla(
 	const geodesy_t* geo
 );
 
-void rotate_around_x(
-	double vec[3],
-	double radians
-);
-
-void rotate_around_y(
-	double vec[3],
-	double radians
-);
-
-void rotate_around_z(
-	double vec[3],
-	double radians
-);
+void rotate_around_x(double vec[3], double radians);
+void rotate_around_y(double vec[3], double radians);
+void rotate_around_z(double vec[3], double radians);
 
 void position_to_xyz_frame_from_ecef(
 	double* positions,

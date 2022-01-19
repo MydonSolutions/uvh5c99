@@ -5,7 +5,6 @@ inc_lst = [
 	include_directories('include'),
 ]
 dep_lst = [
-  dependency('erfa'),
   dependency('hdf5'),
 ]
 
