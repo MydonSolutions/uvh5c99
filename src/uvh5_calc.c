@@ -32,15 +32,18 @@ double hypotenuse(double* position, int dims) {
 	return sqrt(sum);
 }
 
-void frames_translate(double* positions, int position_count, double translation[3]) {
-	for (int i = 0; i < position_count; i++)
+void frame_translate(double* positions, int position_count, double translation[3]) {
+	while(--position_count >= 0)
 	{
-		positions[i*3+0] += translation[0];
-		positions[i*3+1] += translation[1];
-		positions[i*3+2] += translation[2];
+		positions[position_count*3+0] += translation[0];
+		positions[position_count*3+1] += translation[1];
+		positions[position_count*3+2] += translation[2];
 	}
 }
 
+/*
+ * https://github.com/JuliaGeo/Geodesy.jl/blob/dc2b3bd4d73a5fb4ed6f2f9c5462763ac54e5196/src/transformations.jl#L175-L188
+ */
 void ecef_from_lla(
 	double ecef[3],
 	const double longitude_rad,
@@ -71,6 +74,11 @@ static inline void _rotate_around_x_cached_trig(
 	vec[1] = cos_val*y - sin_val*z;
 	vec[2] = sin_val*y + cos_val*z;
 }
+/*
+ * Clockwise (right-hand curl) rotations
+ * y' = cos*vec.y + sin*vec.z
+ * z' = -sin*vec.y + cos*vec.z
+ */
 void rotate_around_x(
 	double vec[3],
 	double radians
@@ -91,6 +99,11 @@ static inline void _rotate_around_y_cached_trig(
 	vec[0] = cos_val*x + sin_val*z;
 	vec[2] = -sin_val*x + cos_val*z;
 }
+/*
+ * Clockwise (right-hand curl) rotations
+ * x' = cos*vec.x - sin*vec.z
+ * z' = sin*vec.x + cos*vec.z
+ */
 void rotate_around_y(
 	double vec[3],
 	double radians
@@ -111,6 +124,11 @@ static inline void _rotate_around_z_cached_trig(
 	vec[0] = cos_val*x - sin_val*y;
 	vec[1] = sin_val*x + cos_val*y;
 }
+/*
+ * Clockwise (right-hand curl) rotations
+ * x' = cos*vec.x - sin*vec.y
+ * y' = sin*vec.x + cos*vec.y
+ */
 void rotate_around_z(
 	double vec[3],
 	double radians
@@ -120,6 +138,9 @@ void rotate_around_z(
 	);
 }
 
+/*
+ * Subtracts ECEF(LLA, WGS84) from positions.
+ */
 void position_to_xyz_frame_from_ecef(
 	double* positions,
 	int position_count,
@@ -141,9 +162,12 @@ void position_to_xyz_frame_from_ecef(
 	ecef[0] *= -1.0;
 	ecef[1] *= -1.0;
 	ecef[2] *= -1.0;
-	frames_translate(positions, position_count, ecef);
+	frame_translate(positions, position_count, ecef);
 }
 
+/*
+ * Adds ECEF(LLA, WGS84) to positions.
+ */
 void position_to_ecef_frame_from_xyz(
 	double* positions,
 	int position_count,
@@ -162,9 +186,16 @@ void position_to_ecef_frame_from_xyz(
 		altitude,
 		&wgs84
 	);
-	frames_translate(positions, position_count, ecef);
+	frame_translate(positions, position_count, ecef);
 }
 
+/*
+ * https://github.com/david-macmahon/RadioInterferometry.jl/blob/3a084d47919ddb422be109c41faade9d365c2a35/src/RadioInterferometry.jl#L659-L662
+ * Rotates the ENU frame anticlockwise about the East (i.e. first)
+ * axis by `lat_rad`, producing a (East,Z,X') frame, then rotates that frame
+ * anticlockwise about the Z (i.e. second) axis by `-lon_rad`, producing a
+ * (Y,Z,X) frame which is then permuted to (X,Y,Z).
+ */
 void position_to_xyz_frame_from_enu(
 	double* positions,
 	int position_count,
@@ -199,6 +230,13 @@ void position_to_xyz_frame_from_enu(
 	}
 }
 
+/*
+ * https://github.com/david-macmahon/RadioInterferometry.jl/blob/3a084d47919ddb422be109c41faade9d365c2a35/src/RadioInterferometry.jl#L487-490
+ * Rotates the XYZ frame anticlockwise about the Z (i.e. third)
+ * axis by `lon_rad`, producing a (X',East,Z) frame, then rotates that frame
+ * anticlockwise about the E (i.e. second) axis by `-lat_rad`, producing a
+ * (U,E,N) frame which is then permuted to (E,N,U).
+ */
 void position_to_enu_frame_from_xyz(
 	double* positions,
 	int position_count,
@@ -233,6 +271,9 @@ void position_to_enu_frame_from_xyz(
 	}
 }
 
+/*
+ * Effects `ecef -> xyz -> enu`.
+ */
 void position_to_enu_frame_from_ecef(
 	double* positions,
 	int position_count,
@@ -256,6 +297,9 @@ void position_to_enu_frame_from_ecef(
 	);
 }
 
+/*
+ * Effects `enu -> xyz -> ecef`.
+ */
 void position_to_ecef_frame_from_enu(
 	double* positions,
 	int position_count,
@@ -279,6 +323,15 @@ void position_to_ecef_frame_from_enu(
 	);
 }
 
+/*
+ * https://github.com/david-macmahon/RadioInterferometry.jl/blob/3a084d47919ddb422be109c41faade9d365c2a35/src/RadioInterferometry.jl#L584-L589
+ * Rotates the ENU frame anticlockwise about the East (i.e. first)
+ * axis by `lat_rad`, producing a (East,Z,X') frame, then rotates that frame
+ * anticlockwise about the Z (i.e. second) axis by `-ha_rad`, producing a
+ * (U,Z,X") frame, then rotates anticlockwise about the U (i.e. first) axis by
+ * `-dec_rad`, producing the (U,V,W) frame where U is east, V is north, and W is
+ * in the direction of projection.
+ */
 void position_to_uvw_frame_from_enu(
 	double* positions,
 	int position_count,
@@ -315,6 +368,15 @@ void position_to_uvw_frame_from_enu(
 	}
 }
 
+/*
+ * https://github.com/david-macmahon/RadioInterferometry.jl/blob/3a084d47919ddb422be109c41faade9d365c2a35/src/RadioInterferometry.jl#L422-427
+ * Rotates the XYZ frame anticlockwise about the Z (i.e. third)
+ * axis by `lon_rad-ha_rad`, producing a (X',U,Z) frame, then rotates that frame
+ * anticlockwise about the U (i.e. second) axis by `-dec_rad`, producing an
+ * (W,U,V) frame which is then permuted to (U,V,W) where U is east, V is north,
+ * and W is in the direction of the given hour angle and declination as seen from
+ * the given longitude.
+ */
 void position_to_uvw_frame_from_xyz(
 	double* positions,
 	int position_count,
