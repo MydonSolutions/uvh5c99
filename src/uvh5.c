@@ -101,6 +101,8 @@ void UVH5Hadmin(UVH5_header_t *header) {
 		uvh5_calc_deg2rad(header->latitude),
 		header->altitude
 	);
+	header->_antenna_uvw_positions = malloc(sizeof(double) * header->Nants_telescope * 3);
+	memset(header->_antenna_uvw_positions, 0, sizeof(double) * header->Nants_telescope * 3);
 }
 
 void UVH5Hfree(UVH5_header_t *header)
@@ -613,6 +615,24 @@ int find_antenna_index_by_name(UVH5_header_t* header, char* name) {
 		}
 	}
 	return -1;
+}
+
+void UVH5permutate_uvws(UVH5_header_t* header) {
+	for (int bls_idx = 0; bls_idx < header->Nbls; bls_idx++) {
+		for (size_t i = 0; i < 3; i++)
+		{
+			header->uvw_array[bls_idx*3 + i] = // ant_1 -> ant_2
+				header->_antenna_uvw_positions[
+					header->_antenna_num_idx_map[
+						header->ant_2_array[bls_idx]
+					]*3 + i] -
+				header->_antenna_uvw_positions[
+					header->_antenna_num_idx_map[
+						header->ant_1_array[bls_idx]
+					]*3 + i]
+			;
+		}
+	}
 }
 
 int polarisation_string_key(char* pol_string, int npols) {

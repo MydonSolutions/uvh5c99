@@ -119,6 +119,7 @@ typedef struct
 	int* _antenna_num_idx_map;	 /* An array whose elements translate the corresponding index from antenna-number to index
 																	in the other antenna_* arrays. */
 	double* _antenna_enu_positions; /* The ENU-framed antenna_positions. */
+	double* _antenna_uvw_positions; /* The UVW-framed antenna_positions. */
 
 } UVH5_header_t;
 
@@ -215,6 +216,8 @@ void UVH5close(UVH5_file_t *uvh5_file);
 int UVH5write_dynamic(UVH5_file_t* uvh5_file);
 
 int find_antenna_index_by_name(UVH5_header_t* header, char* name);
+
+void UVH5permutate_uvws(UVH5_header_t* header);
 
 int polarisation_string_key(char* pol_string, int npols);
 #endif
