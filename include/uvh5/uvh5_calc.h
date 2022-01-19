@@ -40,10 +40,6 @@ void uvh5_calc_ecef_from_lla(
 	const geodesy_t* geo
 );
 
-void uvh5_calc_rotate_around_x(double vec[3], double radians);
-void uvh5_calc_rotate_around_y(double vec[3], double radians);
-void uvh5_calc_rotate_around_z(double vec[3], double radians);
-
 void uvh5_calc_position_to_xyz_frame_from_ecef(
 	double* positions,
 	int position_count,

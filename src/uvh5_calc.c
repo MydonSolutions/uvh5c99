@@ -63,6 +63,11 @@ void uvh5_calc_ecef_from_lla(
     ecef[2] = (N * (1 - geo->e2) + altitude) * sin_phi;
 }
 
+/*
+ * Clockwise (right-hand curl) rotations
+ * y' = cos*vec.y + sin*vec.z
+ * z' = -sin*vec.y + cos*vec.z
+ */
 static inline void _rotate_around_x_cached_trig(
 	double vec[3],
 	double sin_val,
@@ -74,20 +79,12 @@ static inline void _rotate_around_x_cached_trig(
 	vec[1] = cos_val*y - sin_val*z;
 	vec[2] = sin_val*y + cos_val*z;
 }
+
 /*
  * Clockwise (right-hand curl) rotations
- * y' = cos*vec.y + sin*vec.z
- * z' = -sin*vec.y + cos*vec.z
+ * x' = cos*vec.x - sin*vec.z
+ * z' = sin*vec.x + cos*vec.z
  */
-void uvh5_calc_rotate_around_x(
-	double vec[3],
-	double radians
-) {
-	_rotate_around_x_cached_trig(
-		vec, sin(radians), cos(radians)
-	);
-}
-
 static inline void _rotate_around_y_cached_trig(
 	double vec[3],
 	double sin_val,
@@ -99,20 +96,12 @@ static inline void _rotate_around_y_cached_trig(
 	vec[0] = cos_val*x + sin_val*z;
 	vec[2] = -sin_val*x + cos_val*z;
 }
+
 /*
  * Clockwise (right-hand curl) rotations
- * x' = cos*vec.x - sin*vec.z
- * z' = sin*vec.x + cos*vec.z
+ * x' = cos*vec.x - sin*vec.y
+ * y' = sin*vec.x + cos*vec.y
  */
-void uvh5_calc_rotate_around_y(
-	double vec[3],
-	double radians
-) {
-	_rotate_around_y_cached_trig(
-		vec, sin(radians), cos(radians)
-	);
-}
-
 static inline void _rotate_around_z_cached_trig(
 	double vec[3],
 	double sin_val,
@@ -123,19 +112,6 @@ static inline void _rotate_around_z_cached_trig(
 	y = vec[1];
 	vec[0] = cos_val*x - sin_val*y;
 	vec[1] = sin_val*x + cos_val*y;
-}
-/*
- * Clockwise (right-hand curl) rotations
- * x' = cos*vec.x - sin*vec.y
- * y' = sin*vec.x + cos*vec.y
- */
-void uvh5_calc_rotate_around_z(
-	double vec[3],
-	double radians
-) {
-	_rotate_around_z_cached_trig(
-		vec, sin(radians), cos(radians)
-	);
 }
 
 /*
