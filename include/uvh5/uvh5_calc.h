@@ -43,24 +43,6 @@ void ecef_from_lla(
 	const geodesy_t* geo
 );
 
-void uvws_from_enu_radec_timemjd_lla(
-	double* enu2uvws,
-	int position_count,
-	double ra_rad, double dec_rad,
-	double time_mjd,
-	double time_dut1,
-	double longitude_rad,
-	double latitude_rad,
-	double altitude
-);
-
-void rotate_enu_by_hda(
-	double* enu,
-	double hour_angle_rad,
-	double declination_rad,
-	double latitude_rad
-);
-
 /*
  * Clockwise (right-hand curl) rotations
  * y' = cos*vec.y + sin*vec.z
@@ -163,6 +145,40 @@ void position_to_ecef_frame_from_enu(
 	double longitude_rad,
 	double latitude_rad,
 	double altitude
+);
+
+/*
+ * https://github.com/david-macmahon/RadioInterferometry.jl/blob/3a084d47919ddb422be109c41faade9d365c2a35/src/RadioInterferometry.jl#L584-L589
+ * Rotates the ENU frame anticlockwise about the East (i.e. first)
+ * axis by `lat_rad`, producing a (East,Z,X') frame, then rotates that frame
+ * anticlockwise about the Z (i.e. second) axis by `-ha_rad`, producing a
+ * (U,Z,X") frame, then rotates anticlockwise about the U (i.e. first) axis by
+ * `-dec_rad`, producing the (U,V,W) frame where U is east, V is north, and W is
+ * in the direction of projection.
+ */
+void position_to_uvw_frame_from_enu(
+	double* positions,
+	int position_count,
+	double hour_angle_rad,
+	double declination_rad,
+	double latitude_rad
+);
+
+/*
+ * https://github.com/david-macmahon/RadioInterferometry.jl/blob/3a084d47919ddb422be109c41faade9d365c2a35/src/RadioInterferometry.jl#L422-427
+ * Rotates the XYZ frame anticlockwise about the Z (i.e. third)
+ * axis by `lon_rad-ha_rad`, producing a (X',U,Z) frame, then rotates that frame
+ * anticlockwise about the U (i.e. second) axis by `-dec_rad`, producing an
+ * (W,U,V) frame which is then permuted to (U,V,W) where U is east, V is north,
+ * and W is in the direction of the given hour angle and declination as seen from
+ * the given longitude.
+ */
+void position_to_uvw_frame_from_xyz(
+	double* positions,
+	int position_count,
+	double hour_angle_rad,
+	double declination_rad,
+	double longitude_rad
 );
 
 #endif

@@ -120,33 +120,6 @@ void rotate_around_z(
 	);
 }
 
-void rotate_enu_by_hda(
-	double* enu,
-	double hour_angle_rad,
-	double declination_rad,
-	double latitude_rad
-) {
-	//  rx(-dec_rad) * ry(-ha_rad) * rx(lat_rad)
-	rotate_around_x(enu, -declination_rad); // anti-clockwise
-	rotate_around_y(enu, -hour_angle_rad); // anti-clockwise
-	rotate_around_x(enu, latitude_rad); // clockwise
-}
-
-void _rotate_enu_by_hda_cached_trig(
-	double* enu,
-	double sin_hour_angle,
-	double cos_hour_angle,
-	double sin_declination,
-	double cos_declination,
-	double sin_latitude,
-	double cos_latitude
-) {
-	//  rx(-dec_rad) * ry(-ha_rad) * rx(lat_rad)
-	_rotate_around_x_cached_trig(enu, -sin_declination, cos_declination); // anti-clockwise
-	_rotate_around_y_cached_trig(enu, -sin_hour_angle, cos_hour_angle); // anti-clockwise
-	_rotate_around_x_cached_trig(enu, sin_latitude, cos_latitude); // clockwise
-}
-
 void position_to_xyz_frame_from_ecef(
 	double* positions,
 	int position_count,
@@ -306,45 +279,72 @@ void position_to_ecef_frame_from_enu(
 	);
 }
 
-void uvws_from_enu_radec_timemjd_lla(
-	double* enu2uvws,
+void position_to_uvw_frame_from_enu(
+	double* positions,
 	int position_count,
-	double ra_rad, double dec_rad,
-	double time_mjd,
-	double time_dut1,
-	double longitude_rad,
-	double latitude_rad,
-	double altitude
-) {
-	double aob, zob, hob, dob, rob, eo;
-
-	eraAtco13(
-		ra_rad, dec_rad,
-		0, 0, 0, 0,
-		time_mjd, 0,
-		time_dut1,
-		longitude_rad, latitude_rad, altitude,
-		0, 0,
-		0, 0, 0, 0,
-		&aob, &zob, &hob, &dob, &rob, &eo
-	);
-	
-	double sin_hour_angle = sin(hob);
-	double cos_hour_angle = cos(hob);
-	double sin_declination = sin(dob);
-	double cos_declination = cos(dob);
+	double hour_angle_rad,
+	double declination_rad,
+	double latitude_rad
+) {	
+	double sin_hour_angle = sin(hour_angle_rad);
+	double cos_hour_angle = cos(hour_angle_rad);
+	double sin_declination = sin(declination_rad);
+	double cos_declination = cos(declination_rad);
 	double sin_latitude = sin(latitude_rad);
 	double cos_latitude = cos(latitude_rad);
 
 	while(--position_count >= 0) {
-		_rotate_enu_by_hda_cached_trig(
-			enu2uvws + position_count*3,
+		 // clockwise
+		_rotate_around_x_cached_trig(
+			positions + position_count*3,
+			-sin_declination,
+			cos_declination
+		);
+		 // clockwise
+		_rotate_around_y_cached_trig(
+			positions + position_count*3,
 			sin_hour_angle,
-			cos_hour_angle,
-			sin_declination,
-			cos_declination,
-			sin_latitude,
+			cos_hour_angle
+		);
+		 // anti-clockwise
+		_rotate_around_x_cached_trig(
+			positions + position_count*3,
+			-sin_latitude,
 			cos_latitude
 		);
+	}
+}
+
+void position_to_uvw_frame_from_xyz(
+	double* positions,
+	int position_count,
+	double hour_angle_rad,
+	double declination_rad,
+	double longitude_rad
+) {
+	double sin_long_minus_hangle = sin(longitude_rad-hour_angle_rad);
+	double cos_long_minus_hangle = cos(longitude_rad-hour_angle_rad);
+	double sin_declination = sin(declination_rad);
+	double cos_declination = cos(declination_rad);
+	double tmp;
+
+	while (--position_count >= 0) {
+		// RotZ(long-ha) anti-clockwise
+		_rotate_around_z_cached_trig(
+			positions + 3*position_count,
+			-sin_long_minus_hangle,
+			cos_long_minus_hangle
+		);
+		// RotZ(long-ha) clockwise
+		_rotate_around_y_cached_trig(
+			positions + 3*position_count,
+			sin_declination,
+			cos_declination
+		);
+		// Permute (WUV) to (UVW)
+		tmp = positions[3*position_count + 0]; // save W
+		positions[3*position_count + 0] = positions[3*position_count + 1]; // move U
+		positions[3*position_count + 1] = positions[3*position_count + 2]; // move U
+		positions[3*position_count + 2] = tmp; // move U
 	}
 }
