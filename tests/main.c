@@ -38,8 +38,6 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 		UVH5Halloc(uvh5_header); // Alloc Nants_telescope related
 		uvh5_header->antenna_diameters = malloc(sizeof(float) * uvh5_header->Nants_telescope); // Optional
 
-		int highest_antenna_number = -1;
-
 		for (size_t i = 0; i < uvh5_header->Nants_telescope; i++)
 		{
 			toml_table_t* toml_antenna_info = toml_table_at(toml_antennas_array, i);
@@ -56,9 +54,6 @@ void uvh5_toml_parse_telescope_info(UVH5_header_t* uvh5_header, char* file_path)
 				if(uvh5_header->antenna_diameters != NULL && universal_diameter > 0.0f) {
 					uvh5_header->antenna_diameters[i] = universal_diameter;
 				}
-				highest_antenna_number = highest_antenna_number < uvh5_header->antenna_numbers[i] ?
-					uvh5_header->antenna_numbers[i] :
-				highest_antenna_number;
 			}
 			else {
 				uvh5_toml_error("cannot access antenna info", "");
