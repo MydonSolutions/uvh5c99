@@ -19,7 +19,7 @@ double sexagesimal_to_double(const char *sexagesiamal_string) {
 		return f;
 }
 
-int UVH5toml_sexagesimal_in(toml_table_t* parent, const char* location, double* sexagesimal) {
+int _UVH5toml_sexagesimal_in(toml_table_t* parent, const char* location, double* sexagesimal) {
 	toml_datum_t toml_datum = toml_string_in(parent, location);
 	if (!toml_datum.ok) {
 		toml_datum = toml_double_in(parent, location);
@@ -38,7 +38,7 @@ int UVH5toml_sexagesimal_in(toml_table_t* parent, const char* location, double* 
 	return 0;
 }
 
-int UVH5toml_string_at(toml_array_t* parent, const int idx, char** string_out) {
+int _UVH5toml_string_at(toml_array_t* parent, const int idx, char** string_out) {
 	toml_datum_t toml_datum = toml_string_at(parent, idx);
 	if (!toml_datum.ok) {
 			UVH5print_error(__FUNCTION__, "cannot read index %d", idx);
@@ -52,7 +52,7 @@ int UVH5toml_string_at(toml_array_t* parent, const int idx, char** string_out) {
 	return 0;
 }
 
-int UVH5toml_nstring_at(toml_array_t* parent, const int location, char* string_out, size_t length) {
+int _UVH5toml_nstring_at(toml_array_t* parent, const int location, char* string_out, size_t length) {
 	toml_datum_t toml_datum = toml_string_at(parent, location);
 	if (!toml_datum.ok) {
 			UVH5print_error(__FUNCTION__, "cannot read location %s", location);
@@ -66,7 +66,7 @@ int UVH5toml_nstring_at(toml_array_t* parent, const int location, char* string_o
 	return 0;
 }
 
-int UVH5toml_string_in(toml_table_t* parent, const char* location, char** string_out) {
+int _UVH5toml_string_in(toml_table_t* parent, const char* location, char** string_out) {
 	toml_datum_t toml_datum = toml_string_in(parent, location);
 	if (!toml_datum.ok) {
 			UVH5print_error(__FUNCTION__, "cannot read location", location);
@@ -80,7 +80,7 @@ int UVH5toml_string_in(toml_table_t* parent, const char* location, char** string
 	return 0;
 }
 
-int UVH5toml_nstring_in(toml_table_t* parent, const char* location, char* string_out, size_t length) {
+int _UVH5toml_nstring_in(toml_table_t* parent, const char* location, char* string_out, size_t length) {
 	toml_datum_t toml_datum = toml_string_in(parent, location);
 	if (!toml_datum.ok) {
 			UVH5print_error(__FUNCTION__, "cannot read location '%s'", location);
@@ -95,7 +95,7 @@ int UVH5toml_nstring_in(toml_table_t* parent, const char* location, char* string
 	return 0;
 }
 
-int UVH5toml_double_at(toml_array_t* parent, const int idx, double* double_out) {
+int _UVH5toml_double_at(toml_array_t* parent, const int idx, double* double_out) {
 	toml_datum_t toml_datum = toml_double_at(parent, idx);
 	if (!toml_datum.ok) {
 		UVH5print_error(__FUNCTION__, "cannot read index %d", idx);
@@ -106,16 +106,16 @@ int UVH5toml_double_at(toml_array_t* parent, const int idx, double* double_out) 
 	}
 	return 0;
 }
-int UVH5toml_float_at(toml_array_t* parent, const int idx, float* float_out) {
+int _UVH5toml_float_at(toml_array_t* parent, const int idx, float* float_out) {
 	double intermediate;
-	if(UVH5toml_double_at(parent, idx, &intermediate)){
+	if(_UVH5toml_double_at(parent, idx, &intermediate)){
 		UVH5print_error(__FUNCTION__, "cannot read index %d", idx);
 	}
 	*float_out = (float) intermediate;
 	return 0;
 }
 
-int UVH5toml_double_in(toml_table_t* parent, const char* location, double* double_out) {
+int _UVH5toml_double_in(toml_table_t* parent, const char* location, double* double_out) {
 	toml_datum_t toml_datum = toml_double_in(parent, location);
 	if (!toml_datum.ok) {
 			UVH5print_error(__FUNCTION__, "cannot read location '%s'", location);
@@ -126,16 +126,16 @@ int UVH5toml_double_in(toml_table_t* parent, const char* location, double* doubl
 	}
 	return 0;
 }
-int UVH5toml_float_in(toml_table_t* parent, const char* location, float* float_out){
+int _UVH5toml_float_in(toml_table_t* parent, const char* location, float* float_out){
 	double intermediate;
-	if(UVH5toml_double_in(parent, location, &intermediate)) {
+	if(_UVH5toml_double_in(parent, location, &intermediate)) {
 		UVH5print_error(__FUNCTION__, "cannot read location '%s'", location);
 	}
 	*float_out = (float) intermediate;
 	return 0;
 }
 
-int UVH5toml_int_at(toml_array_t* parent, const int idx, int* int_out) {
+int _UVH5toml_int_at(toml_array_t* parent, const int idx, int* int_out) {
 	toml_datum_t toml_datum = toml_int_at(parent, idx);
 	if (!toml_datum.ok) {
 		UVH5print_error(__FUNCTION__, "cannot read index %d", idx);
@@ -147,7 +147,7 @@ int UVH5toml_int_at(toml_array_t* parent, const int idx, int* int_out) {
 	return 0;
 }
 
-int UVH5toml_int_in(toml_table_t* parent, const char* location, int* int_out) {
+int _UVH5toml_int_in(toml_table_t* parent, const char* location, int* int_out) {
 	toml_datum_t toml_datum = toml_int_in(parent, location);
 	if (!toml_datum.ok) {
 		UVH5print_error(__FUNCTION__, "cannot read location", location);
@@ -159,7 +159,7 @@ int UVH5toml_int_in(toml_table_t* parent, const char* location, int* int_out) {
 	return 0;
 }
 
-int UVH5toml_antenna_table_in(
+int _UVH5toml_antenna_table_in(
 	toml_table_t* parent,
 	int* ant_id,
 	char** ant_name,
@@ -167,14 +167,14 @@ int UVH5toml_antenna_table_in(
 	float* ant_diameter
 ){
 	if(ant_diameter != NULL){
-		if(UVH5toml_float_in(parent, "diameter", ant_diameter)) {
+		if(_UVH5toml_float_in(parent, "diameter", ant_diameter)) {
 			UVH5print_warn(__FUNCTION__, "cannot read diameter");
 		}
 	}
-	if(UVH5toml_string_in(parent, "name", ant_name)) {
+	if(_UVH5toml_string_in(parent, "name", ant_name)) {
 		UVH5print_error(__FUNCTION__, "cannot read name");
 	}
-	if(UVH5toml_int_in(parent, "number", ant_id)) {
+	if(_UVH5toml_int_in(parent, "number", ant_id)) {
 		UVH5print_error(__FUNCTION__, "cannot read number");
 	}
 	toml_array_t* toml_ant_position = toml_array_in(parent, "position");
@@ -185,7 +185,7 @@ int UVH5toml_antenna_table_in(
 	int ant_pos_count = toml_array_nelem(toml_ant_position);
 	for (size_t i = 0; i < ant_pos_count; i++)
 	{
-		if(UVH5toml_double_at(toml_ant_position, i, ant_pos+i)) {
+		if(_UVH5toml_double_at(toml_ant_position, i, ant_pos+i)) {
 			UVH5print_error(__FUNCTION__, "cannot read float");
 		}
 	}
@@ -208,13 +208,13 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* UVH5header) {
 			UVH5print_error(__FUNCTION__, "cannot parse %s", errbuf);
 			return;
 	}
-	UVH5toml_string_in(conf, "telescope_name", &UVH5header->telescope_name);
-	UVH5toml_sexagesimal_in(conf, "latitude", &UVH5header->latitude);
-	UVH5toml_sexagesimal_in(conf, "longitude", &UVH5header->longitude);
-	UVH5toml_double_in(conf, "altitude", &UVH5header->altitude);
+	_UVH5toml_string_in(conf, "telescope_name", &UVH5header->telescope_name);
+	_UVH5toml_sexagesimal_in(conf, "latitude", &UVH5header->latitude);
+	_UVH5toml_sexagesimal_in(conf, "longitude", &UVH5header->longitude);
+	_UVH5toml_double_in(conf, "altitude", &UVH5header->altitude);
 
 	float universal_diameter = -1.0;
-	UVH5toml_float_in(conf, "antenna_diameter", &universal_diameter);
+	_UVH5toml_float_in(conf, "antenna_diameter", &universal_diameter);
 	
 	toml_array_t* toml_antennas_array = toml_array_in(conf, "antennas");
 	if (!toml_antennas_array) {
@@ -230,7 +230,7 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* UVH5header) {
 			toml_table_t* toml_antenna_info = toml_table_at(toml_antennas_array, i);
 			if(toml_antenna_info) {
 				UVH5print_verbose(__FUNCTION__, "Antenna: %ld", i);
-				UVH5toml_antenna_table_in(
+				_UVH5toml_antenna_table_in(
 					toml_antenna_info,
 					UVH5header->antenna_numbers + i,
 					UVH5header->antenna_names + i,
@@ -249,7 +249,7 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* UVH5header) {
 
 		char *ant_pos_frame_str = NULL;
 		char ant_pos_frame = FRAME_ECEF;
-		if(UVH5toml_string_in(conf, "antenna_position_frame", &ant_pos_frame_str)) {
+		if(_UVH5toml_string_in(conf, "antenna_position_frame", &ant_pos_frame_str)) {
 			// Not specified
 			double dist = UVH5calc_hypotenuse(UVH5header->antenna_positions, 3);
 			if(dist < 6e6) {
@@ -330,8 +330,8 @@ void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* UVH5header)
 				free(ant_name1);
 			}
 			toml_array_t* toml_input_ant_name_pol = toml_array_at(toml_input_mapping, Npol_ant);
-			UVH5toml_string_at(toml_input_ant_name_pol, 0, &ant_name1);
-			UVH5toml_nstring_at(toml_input_ant_name_pol, 1, pols_ant + Npol_ant, 1);
+			_UVH5toml_string_at(toml_input_ant_name_pol, 0, &ant_name1);
+			_UVH5toml_nstring_at(toml_input_ant_name_pol, 1, pols_ant + Npol_ant, 1);
 			if ( ant_name0 == NULL) {
 				ant_name0 = malloc(strlen(ant_name1));
 				memcpy(ant_name0, ant_name1, strlen(ant_name1)+1);
@@ -353,7 +353,7 @@ void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* UVH5header)
 		free(ant_name1);
 		for (size_t i = 2; i < Nants_data; i++) {
 			toml_array_t* toml_input_ant_name_pol = toml_array_at(toml_input_mapping, i*Npol_ant);
-			UVH5toml_string_at(toml_input_ant_name_pol, 0, &ant_name1);
+			_UVH5toml_string_at(toml_input_ant_name_pol, 0, &ant_name1);
 			antenna_data_numbers[i] = UVH5header->antenna_numbers[UVH5find_antenna_index_by_name(UVH5header, ant_name1)];
 			free(ant_name1);
 		}

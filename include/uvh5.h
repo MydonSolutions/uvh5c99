@@ -151,41 +151,6 @@ typedef struct __attribute__((__packed__))
 } UVH5_CF64_t;
 hid_t UVH5TcreateCF64();
 
-herr_t _H5DboolWrite(
-		hid_t dest_id,
-    char *d_name,
-    const int rank,
-    const hsize_t *dims,
-    const UVH5_bool_t *data);
-
-herr_t _H5DdoubleWrite(
-		hid_t dest_id,
-    char *d_name,
-    const int rank,
-    const hsize_t *dims,
-    const double *data);
-
-herr_t _H5DfloatWrite(
-		hid_t dest_id,
-    char *d_name,
-    const int rank,
-    const hsize_t *dims,
-    const float *data);
-
-herr_t _H5DintWrite(
-		hid_t dest_id,
-    char *d_name,
-    const int rank,
-    const hsize_t *dims,
-    const int *data);
-
-herr_t _H5DstringWrite(
-		hid_t dest_id,
-    char *d_name,
-    const int rank,
-    const hsize_t *dims,
-    const char *data);
-
 typedef struct
 {
 	hid_t file_id;
@@ -207,8 +172,6 @@ typedef struct
 	H5_open_dataspace_t DS_data_flags;
 	H5_open_dataspace_t DS_data_nsamples;
 } UVH5_file_t;
-
-void _UVH5_Hwrite_static(UVH5_file_t *UVH5file);
 
 void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata);
 
