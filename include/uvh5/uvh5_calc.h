@@ -4,8 +4,9 @@
 #include <stddef.h>
 #include <math.h>
 #include "_geodesy.h"
+#include "erfa.h"
 
-#define DAYSEC 86400.0
+#define DAYSEC ERFA_DAYSEC
 
 static inline double uvh5_calc_deg2rad(double deg) {return (deg/180)*M_PI;};
 
@@ -26,6 +27,20 @@ float uvh5_calc_julian_date_from_guppi_param(
 	size_t pktidx
 );
 
+
+void uvh5_calc_ha_dec_rad(
+	double ra_rad,
+	double dec_rad,
+	double longitude_rad,
+	double latitude_rad,
+	double altitude,
+	double timemjd,
+	double dut1,
+	double* hour_angle_rad,
+	double* declination_rad
+);
+
+double uvh5_calc_lst(double timemjd, double dut1);
 
 float uvh5_calc_hypotenuse_f(float* position, int dims);
 double uvh5_calc_hypotenuse(double* position, int dims);

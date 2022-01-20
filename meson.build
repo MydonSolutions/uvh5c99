@@ -6,6 +6,7 @@ inc_lst = [
 ]
 dep_lst = [
   dependency('hdf5'),
+  dependency('erfa'),
 ]
 
 cc = meson.get_compiler('c')
