@@ -126,7 +126,7 @@ void uvh5_calc_position_to_xyz_frame_from_ecef(
 ) {
 	double ecef[3];
 	geodesy_t wgs84 = {0};
-	geodesy_from_af(&wgs84, WGS84_A_METERS, WGS84_F);
+	geodesy_from_af_inv(&wgs84, WGS84_A_METERS, WGS84_F_INV);
 
 	uvh5_calc_ecef_from_lla(
 		ecef,
@@ -153,7 +153,7 @@ void uvh5_calc_position_to_ecef_frame_from_xyz(
 ) {
 	double ecef[3];
 	geodesy_t wgs84 = {0};
-	geodesy_from_af(&wgs84, WGS84_A_METERS, WGS84_F);
+	geodesy_from_af_inv(&wgs84, WGS84_A_METERS, WGS84_F_INV);
 
 	uvh5_calc_ecef_from_lla(
 		ecef,
