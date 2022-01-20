@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "toml.h"
+#include "uvh5.h"
 #include "uvh5_printer.h"
 
 int uvh5_toml_sexagesimal_in(toml_table_t* parent, const char* location, double* sexagesimal);
@@ -27,5 +28,8 @@ int uvh5_toml_antenna_table_in(
 	double* ant_pos,
 	float* ant_diameter
 );
+
+void uvh5_toml_parse_telescope_info(char* file_path, UVH5_header_t* uvh5_header);
+void uvh5_toml_parse_observation_info(char* file_path, UVH5_header_t* uvh5_header);
 
 #endif
