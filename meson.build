@@ -1,4 +1,6 @@
-project('uvh5c99', 'c')
+project('uvh5c99', 'c',
+  version: '0.1',
+)
 
 src_lst = []
 inc_lst = [

@@ -268,7 +268,7 @@ int main(int argc, const char * argv[]) {
 
 	UVH5open("test_file.uvh5", &uvh5, UVH5TcreateCF32());
 
-	while(uvh5_header->Ntimes < 3) {
+	while(uvh5_header->Ntimes < 2) {
 		UVH5write_dynamic(&uvh5);
 		for (size_t i = 0; i < uvh5_header->Nbls; i++)
 		{
