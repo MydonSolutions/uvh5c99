@@ -21,8 +21,8 @@ int main(int argc, const char * argv[]) {
 	uvh5_header->Nspws = 1;
 	uvh5_header->Nblts = uvh5_header->Nbls * uvh5_header->Ntimes;
 
-	uvh5_toml_parse_telescope_info((char*) argv[1], uvh5_header);
-	uvh5_toml_parse_observation_info((char*) argv[2], uvh5_header);
+	UVH5toml_parse_telescope_info((char*) argv[1], uvh5_header);
+	UVH5toml_parse_observation_info((char*) argv[2], uvh5_header);
 	UVH5Hadmin(uvh5_header);
 
 	uvh5_header->instrument = uvh5_header->telescope_name;
@@ -38,12 +38,12 @@ int main(int argc, const char * argv[]) {
 		memcpy(uvh5_header->_antenna_uvw_positions, uvh5_header->_antenna_enu_positions, sizeof(double)*uvh5_header->Nants_telescope*3);
 		double hour_angle_rad = 0.0;
 		double declination_rad = 0.0;
-		uvh5_calc_position_to_uvw_frame_from_enu(
+		UVH5calc_position_to_uvw_frame_from_enu(
 			uvh5_header->_antenna_uvw_positions,
 			uvh5_header->Nants_data,
 			hour_angle_rad,
 			declination_rad,
-			uvh5_calc_deg2rad(uvh5_header->latitude)
+			UVH5calc_deg2rad(uvh5_header->latitude)
 		);
 
 		UVH5permutate_uvws(uvh5_header);
@@ -54,7 +54,7 @@ int main(int argc, const char * argv[]) {
 	float tau = 1.0;
 	for (size_t i = 0; i < uvh5_header->Nbls; i++)
 	{
-		uvh5_header->time_array[i] = uvh5_calc_julian_date_from_guppi_param(16.0, 16*8192, 8192, 12371829, 0) + tau/(DAYSEC*2);
+		uvh5_header->time_array[i] = UVH5calc_julian_date_from_guppi_param(16.0, 16*8192, 8192, 12371829, 0) + tau/(DAYSEC*2);
 		uvh5_header->integration_time[i] = tau;
 	}
 

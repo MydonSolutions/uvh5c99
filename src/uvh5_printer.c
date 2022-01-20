@@ -5,7 +5,7 @@
 /* For now just put it all to stderr.
  * Maybe do something clever like a stack in the future?
  */
-void uvh5_print_error(const char *name, const char *msg, ...) {
+void UVH5print_error(const char *name, const char *msg, ...) {
     fprintf(stderr, "Error (%s)", name);
     if(msg) {
         va_list ap;
@@ -21,7 +21,7 @@ void uvh5_print_error(const char *name, const char *msg, ...) {
     fflush(stderr);
 }
 
-void uvh5_print_warn(const char *name, const char *msg, ...) {
+void UVH5print_warn(const char *name, const char *msg, ...) {
     fprintf(stderr, "Warning (%s)", name);
     if(msg) {
         va_list ap;
@@ -34,7 +34,7 @@ void uvh5_print_warn(const char *name, const char *msg, ...) {
     fflush(stderr);
 }
 
-void uvh5_print_info(const char *name, const char *msg, ...) {
+void UVH5print_info(const char *name, const char *msg, ...) {
     fprintf(stdout, "Info (%s)", name);
     if(msg) {
         va_list ap;
@@ -47,7 +47,7 @@ void uvh5_print_info(const char *name, const char *msg, ...) {
     fflush(stdout);
 }
 
-void uvh5_print_verbose(const char *name, const char *msg, ...) {
+void UVH5print_verbose(const char *name, const char *msg, ...) {
 #ifdef PRINTER_VERBOSE
     fprintf(stdout, "Verbage (%s)", name);
     if(msg) {

@@ -208,17 +208,17 @@ typedef struct
 	H5_open_dataspace_t DS_data_nsamples;
 } UVH5_file_t;
 
-void _UVH5_Hwrite_static(UVH5_file_t *uvh5_file);
+void _UVH5_Hwrite_static(UVH5_file_t *UVH5file);
 
-void UVH5open(char* filepath, UVH5_file_t *uvh5_file, hid_t Tvisdata);
+void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata);
 
-void UVH5close(UVH5_file_t *uvh5_file);
+void UVH5close(UVH5_file_t *UVH5file);
 
-int UVH5write_dynamic(UVH5_file_t* uvh5_file);
+int UVH5write_dynamic(UVH5_file_t* UVH5file);
 
-int find_antenna_index_by_name(UVH5_header_t* header, char* name);
+int UVH5find_antenna_index_by_name(UVH5_header_t* header, char* name);
 
 void UVH5permutate_uvws(UVH5_header_t* header);
 
-int polarisation_string_key(char* pol_string, int npols);
+int UVH5polarisation_string_key(char* pol_string, int npols);
 #endif
