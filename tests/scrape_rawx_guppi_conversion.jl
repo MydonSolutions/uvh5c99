@@ -129,15 +129,13 @@ function uvh5debug_fromraw(rawstem::AbstractString,
   rawdata = nothing
   tau = 0.0
   timejd = 0.0
+  hob = 0.0
+  dob = 0.0
   lst = 0.0
   visdata = nothing
   nblts = 0
   ntimes = 0
   nfreqs = 0
-
-	xgpuidxs = nothing
-	blidxs = nothing
-	polidxs = nothing
 
   ra_rad = 0.0
   dec_rad = 0.0
@@ -497,7 +495,7 @@ function uvh5debug_fromraw(rawstem::AbstractString,
 
   # Dump debug datasets to test headers
   open("matrix_h.h", "w") do matfio
-    matrix_h = read(uvh5debug, "matrix_h")[:,:,1] # take first Ntimes dim
+    matrix_h = matrix_h[:,:,1] # take first Ntimes dim
     write(matfio, "#ifndef _MATRIX_H_H\n")
     write(matfio, "#define _MATRIX_H_H\n\n")
     write(matfio, "#define MATRIX_H_RANK ", string(length(size(matrix_h))+1), "\n")
@@ -509,16 +507,60 @@ function uvh5debug_fromraw(rawstem::AbstractString,
     write(matfio, "};\n\n#endif // _MATRIX_H_H\n")
   end
   open("visdata.h", "w") do vdfio
-    visdata = read(uvh5data, "visdata")
     write(vdfio, "#ifndef _VISDATA_H\n")
     write(vdfio, "#define _VISDATA_H\n\n")
     write(vdfio, "#define VISDATA_RANK ", string(length(size(visdata))+1), "\n")
-    write(matfio, "// VISDATA_DIMS [Nblts, Nfreqs, Npols, real_imag]\n")
+    write(vdfio, "// VISDATA_DIMS [Nblts, Nfreqs, Npols, real_imag]\n")
     write(vdfio, "const int VISDATA_DIMS[VISDATA_RANK] = {", join(reverse(size(visdata)), ","), ",2};\n\n")
     
     write(vdfio, "const int VISDATA[] = {\n\t")
     map(i->write(vdfio, replace(replace(string(i), r"\s\+?([-]?)\s*"=>s", \1"), "im"=>",\n\t")), visdata)
     write(vdfio, "};\n\n#endif // _VISDATA_H\n")
+  end
+  
+  open("uvw_phased.h", "w") do uvwfio
+    ut1utcsec = uvh5debug["dut1"][ntimes]
+    ra_rad = uvh5debug["ra_rad"][ntimes]
+    dec_rad = uvh5debug["dec_rad"][ntimes]
+    write(uvwfio, "#ifndef _UVW_PHASED_H\n")
+    write(uvwfio, "#define _UVW_PHASED_H\n\n")
+    write(uvwfio, "const double hour_angle_rad =  ", string(hob), ";\n")
+    write(uvwfio, "const double declination_rad =  ", string(dob), ";\n")
+    write(uvwfio, "const double timemjd =  ", string(timejd), ";\n")
+    write(uvwfio, "const double dut1 =  ", string(ut1utcsec), ";\n")
+    write(uvwfio, "const double ra_rad =  ", string(ra_rad), ";\n")
+    write(uvwfio, "const double dec_rad =  ", string(dec_rad), ";\n\n")
+
+    write(uvwfio, "#define ENU_RANK ", string(length(size(antpos_enu))), "\n")
+    write(uvwfio, "// ENU_DIMS [Nants_data, 3]\n")
+    write(uvwfio, "const double ENU_DIMS[ENU_RANK] = {", join(reverse(size(antpos_enu)), ","), "};\n")
+    write(uvwfio, "const double ENU[] = {\n\t")
+    map(enu->write(uvwfio, join(map(string, enu), ", ")*",\n\t"), antpos_enu[1:3, i] for i in 1:size(antpos_enu, 2))
+    write(uvwfio, "};\n\n")
+
+    # write(uvwfio, "#define BL_RANK 2\n")
+    # write(uvwfio, "// BL_DIMS [Nbls 2]\n")
+    # write(uvwfio, "const int BL_DIMS[BL_RANK] = {", string(length(bl_array)), ",2};\n")
+    # write(uvwfio, "const int BL[] = {\n\t")
+    # map(bl->write(uvwfio, join(map(string, bl.-1), ", ")*",\n\t"), bl_array)
+    # write(uvwfio, "};\n\n")
+
+    write(uvwfio, "#define ANTENNA_ARRAY_RANK 1\n")
+    write(uvwfio, "// ANTENNA_ARRAY_DIMS [Nbls]\n")
+    write(uvwfio, "const int ANTENNA_ARRAY_DIMS[ANTENNA_ARRAY_RANK] = {", string(length(a1s)), "};\n")
+    write(uvwfio, "const int ANTENNA_1_ARRAY[] = {\n\t")
+    map(a1->write(uvwfio, string(a1)*",\n\t"), a1s)
+    write(uvwfio, "};\n\n")
+    write(uvwfio, "const int ANTENNA_2_ARRAY[] = {\n\t")
+    map(a2->write(uvwfio, string(a2)*",\n\t"), a2s)
+    write(uvwfio, "};\n\n")
+
+    write(uvwfio, "#define UVW_RANK ", string(length(size(bl_uvws))), "\n")
+    write(uvwfio, "// UVW_DIMS [Nblts, 3]\n")
+    write(uvwfio, "const double UVW_DIMS[UVW_RANK] = {", join(reverse(size(bl_uvws)), ","), "};\n")
+    write(uvwfio, "const double UVW[] = {\n\t")
+    map(uvw->write(uvwfio, join(map(string, uvw), ", ")*",\n\t"), bl_uvws[1:3, i] for i in 1:size(bl_uvws, 2))
+    write(uvwfio, "};\n\n#endif // _UVW_PHASED_H\n")
   end
 
   # Close uvh5

@@ -2,6 +2,7 @@
 #define _VISDATA_H
 
 #define VISDATA_RANK 4
+// VISDATA_DIMS [Nblts, Nfreqs, Npols, real_imag]
 const int VISDATA_DIMS[VISDATA_RANK] = {210,192,4,2};
 
 const int VISDATA[] = {
