@@ -552,31 +552,37 @@ void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata)
 void UVH5close(UVH5_file_t *UVH5file)
 {
 	// 'Header' group
-	H5DSclose(&UVH5file->DS_header_Ntimes);
-	H5DSclose(&UVH5file->DS_header_Nblts);
-	H5DSclose(&UVH5file->DS_header_ant_1_array);
-	H5DSclose(&UVH5file->DS_header_ant_2_array);
-	H5DSclose(&UVH5file->DS_header_uvw_array);
-	H5DSclose(&UVH5file->DS_header_time_array);
-	H5DSclose(&UVH5file->DS_header_integration_time);
+	if(UVH5file->header_id) {
+		H5DSclose(&UVH5file->DS_header_Ntimes);
+		H5DSclose(&UVH5file->DS_header_Nblts);
+		H5DSclose(&UVH5file->DS_header_ant_1_array);
+		H5DSclose(&UVH5file->DS_header_ant_2_array);
+		H5DSclose(&UVH5file->DS_header_uvw_array);
+		H5DSclose(&UVH5file->DS_header_time_array);
+		H5DSclose(&UVH5file->DS_header_integration_time);
 
-	if(UVH5file->header.lst_array){
-		H5DSclose(&UVH5file->DS_header_lst_array);
+		if(UVH5file->header.lst_array){
+			H5DSclose(&UVH5file->DS_header_lst_array);
+		}
+		H5Gclose(UVH5file->header_id);
 	}
-	H5Gclose(UVH5file->header_id);
 	UVH5Hfree(&UVH5file->header);
 
 	// 'Data' group
-	H5DSclose(&UVH5file->DS_data_visdata);
-	H5DSclose(&UVH5file->DS_data_flags);
-	H5DSclose(&UVH5file->DS_data_nsamples);
+	if(UVH5file->data_id) {
+		H5DSclose(&UVH5file->DS_data_visdata);
+		H5DSclose(&UVH5file->DS_data_flags);
+		H5DSclose(&UVH5file->DS_data_nsamples);
 
-	H5Gclose(UVH5file->data_id);
-	free(UVH5file->visdata);
-	free(UVH5file->flags);
-	free(UVH5file->nsamples);
+		H5Gclose(UVH5file->data_id);
+		free(UVH5file->visdata);
+		free(UVH5file->flags);
+		free(UVH5file->nsamples);
+	}
 
-	H5Fclose(UVH5file->file_id);
+	if(UVH5file->file_id) {
+		H5Fclose(UVH5file->file_id);
+	}
 }
 
 int UVH5write_dynamic(UVH5_file_t* UVH5file) {
