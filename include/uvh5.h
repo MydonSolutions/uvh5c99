@@ -121,6 +121,13 @@ typedef struct
 																	in the other antenna_* arrays. */
 	double* _antenna_enu_positions; /* The ENU-framed antenna_positions. */
 	double* _antenna_uvw_positions; /* The UVW-framed antenna_positions. */
+	int* _ant_pol_prod_xgpu_index; /* An array whose elements are the xGPU indices. Size of [Nbls*Npols]*/
+	int* _ant_pol_prod_bl_index;	 /* An array whose elements are the ant_1/2_array index. Size of [Nbls*Npols]*/
+	int* _ant_pol_prod_pol_index; /* An array whose elements are the polarization index. Size of [Nbls*Npols]*/
+	char* _ant_pol_prod_conj; 		 /* An array whose elements indicate if the antenna-polarization-product needs
+																		conjugation. Size of [Nbls*Npols]*/
+	char* _ant_pol_prod_auto; 		 /* An array whose elements indicate if the antenna-polarization-product is of auto-
+																		correlation. Size of [Nbls*Npols]*/
 
 } UVH5_header_t;
 

@@ -301,6 +301,124 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* UVH5header) {
 	toml_free(conf);
 }
 
+
+/*
+ * https://github.com/david-macmahon/XGPU.jl/blob/1f08c9eb24268b0bd94659f4da78982ddb829ff0/src/XGPU.jl#L718-L732
+ */
+int xgpuInputPairOutputIndex(
+	int ant_1_i, int ant_1_p,
+	int ant_2_i, int ant_2_p,
+	int npol
+) {
+	if (ant_1_i*npol + ant_1_p > ant_2_i*npol + ant_2_p) {
+		int tmp = ant_1_i;
+		ant_1_i = ant_2_i;
+		ant_2_i = tmp;
+		tmp = ant_1_p;
+		ant_1_p = ant_2_p;
+		ant_2_p = tmp;
+	}
+
+  int station_pair_index = (((ant_2_i+1)*ant_2_i) / 2) + ant_1_i;
+  int pol_pair_index = ant_2_p * npol + ant_1_p;
+  return station_pair_index * npol * npol + pol_pair_index;
+}
+
+void UVH5toml_parse_input_map(
+	toml_array_t* toml_input_mapping,
+	int Npols_in,
+	UVH5_header_t* header
+) {
+
+	//positive offset by most negative -8
+	int pol_product_index_map_offset8[13] = {-1};
+	for(int pol_idx = 0; pol_idx < header->Npols; pol_idx++) {
+		pol_product_index_map_offset8[8+header->polarization_array[pol_idx]] = pol_idx;
+	}
+
+	const int num_inpairs = toml_array_nelem(toml_input_mapping);
+	char pol_product[3] = {'\0'};
+	
+	int auto_bl_idx = -1;
+	bool is_auto;
+	int cross_bl_idx = header->Nants_data - 1;
+	int cross_bl_idx_rerun_from;
+	int idx = 0;
+	int ant_1_idx, ant_1_num, ant_2_idx, ant_2_num;
+	toml_array_t* toml_input_ant_name_pol;
+	for(int inpair_1 = 0; inpair_1 < num_inpairs; inpair_1++) {
+		toml_input_ant_name_pol = toml_array_at(toml_input_mapping, inpair_1);
+		ant_1_idx = inpair_1/Npols_in;
+		ant_1_num = header->antenna_numbers[ant_1_idx];
+		// UVH5print_info(__FUNCTION__, "ant_1_idx: %d, num %d", ant_1_idx, ant_1_num);
+		_UVH5toml_nstring_at(toml_input_ant_name_pol, 1, pol_product+0, 1);
+		
+		if(inpair_1%Npols_in == 0) {
+			cross_bl_idx_rerun_from = cross_bl_idx;
+		}
+		else {
+			// rewind the cross_bl_idx
+			cross_bl_idx = cross_bl_idx_rerun_from;
+		}
+		for(int inpair_2 = inpair_1; inpair_2 < num_inpairs; inpair_2++) {
+			toml_input_ant_name_pol = toml_array_at(toml_input_mapping, inpair_2);
+			ant_2_idx = inpair_2/Npols_in;
+			ant_2_num = header->antenna_numbers[ant_2_idx];
+			_UVH5toml_nstring_at(toml_input_ant_name_pol, 1, pol_product+1, 1);
+			UVH5print_verbose(__FUNCTION__, "\tant_1_idx: %d, num %d", ant_2_idx, ant_2_num);
+			UVH5print_verbose(__FUNCTION__, "\t\tpol product %s (%d)", pol_product, UVH5polarisation_string_key(pol_product, Npols_in));
+
+			is_auto = ant_1_num == ant_2_num;
+
+			if(inpair_1%Npols_in == 0 && inpair_2%Npols_in == 0) {
+				if(is_auto) {
+					auto_bl_idx++;
+					header->ant_1_array[auto_bl_idx] = ant_1_num;
+					header->ant_2_array[auto_bl_idx] = ant_2_num;
+					UVH5print_verbose(__FUNCTION__, "Auto baseline %d->%d", ant_1_num, ant_2_num);
+				}
+				else {
+					cross_bl_idx++;
+					header->ant_1_array[cross_bl_idx] = ant_1_num;
+					header->ant_2_array[cross_bl_idx] = ant_2_num;
+					UVH5print_verbose(__FUNCTION__, "Cross baseline %d->%d", ant_1_num, ant_2_num);
+				}
+			}
+			else if (!is_auto && inpair_1%Npols_in != 0 && inpair_2%Npols_in == 0) {
+				// Re-run the cross baselines
+				cross_bl_idx++;
+			}
+
+			header->_ant_pol_prod_auto[idx] = is_auto;
+			header->_ant_pol_prod_xgpu_index[idx] = xgpuInputPairOutputIndex(
+				ant_1_idx, inpair_1%Npols_in,
+				ant_2_idx, inpair_2%Npols_in,
+				Npols_in
+			);
+
+			header->_ant_pol_prod_bl_index[idx] = is_auto ? auto_bl_idx : cross_bl_idx;
+			header->_ant_pol_prod_pol_index[idx] = pol_product_index_map_offset8[
+				8+UVH5polarisation_string_key(pol_product, Npols_in)
+			];
+			header->_ant_pol_prod_conj[idx] = is_auto || (
+				(ant_1_idx < header->Nants_data-1) &&
+				(ant_2_idx > ant_1_idx)
+			);
+
+			UVH5print_verbose(__FUNCTION__, "#%d: (xgpu = %d, blidx = %d, polidx = %d, isauto = %d, needsconj = %d) [%d, %d]",
+				idx,
+				header->_ant_pol_prod_xgpu_index[idx] + 1,
+				header->_ant_pol_prod_bl_index[idx] + 1,
+				header->_ant_pol_prod_pol_index[idx] + 1,
+				header->_ant_pol_prod_auto[idx],
+				header->_ant_pol_prod_conj[idx],
+				inpair_1, inpair_2
+			);
+			idx++;
+		}
+	}
+}
+
 void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* UVH5header) {
 	FILE* fp;
 	char errbuf[200];
@@ -324,7 +442,7 @@ void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* UVH5header)
 		UVH5print_verbose(__FUNCTION__, "input_map length: %d", toml_array_nelem(toml_input_mapping));
 
 		char *ant_name0 = NULL, *ant_name1 = NULL;
-		char pols_ant[4] = {'\0'}; // at most 2 unique pols
+		char pols_ant[3] = {'\0'}; // at most 2 unique pols
 		do {
 			if (ant_name1 == NULL) {
 				free(ant_name1);
@@ -345,7 +463,12 @@ void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* UVH5header)
 		UVH5print_info(__FUNCTION__, "Assuming every antenna has %d polarisations, as the first does.", Npol_ant);
 		int Nants_data = toml_array_nelem(toml_input_mapping)/Npol_ant;
 		UVH5print_info(__FUNCTION__, "\tLeads to Nants_data: %d.", Nants_data);
-		
+				
+		UVH5header->Npols = Npol_ant*Npol_ant; // header->Npols is the pol-products
+		UVH5header->Nants_data = Nants_data;
+		UVH5header->Nbls = (UVH5header->Nants_data*(UVH5header->Nants_data+1))/2;
+		UVH5Halloc(UVH5header);
+
 		int* antenna_data_numbers = malloc(Nants_data*sizeof(int));
 		antenna_data_numbers[0] = UVH5header->antenna_numbers[UVH5find_antenna_index_by_name(UVH5header, ant_name0)];
 		antenna_data_numbers[1] = UVH5header->antenna_numbers[UVH5find_antenna_index_by_name(UVH5header, ant_name1)];
@@ -357,11 +480,6 @@ void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* UVH5header)
 			antenna_data_numbers[i] = UVH5header->antenna_numbers[UVH5find_antenna_index_by_name(UVH5header, ant_name1)];
 			free(ant_name1);
 		}
-		
-		UVH5header->Npols = Npol_ant*Npol_ant; // header->Npols is the pol-products
-		UVH5header->Nants_data = Nants_data;
-		UVH5header->Nbls = (UVH5header->Nants_data*(UVH5header->Nants_data+1))/2;
-		UVH5Halloc(UVH5header);
 
 		char pol_product[3] = {'\0'};
 		for (size_t i = 0; i < Npol_ant; i++) {
@@ -369,25 +487,11 @@ void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* UVH5header)
 			for (size_t j = 0; j < Npol_ant; j++) {
 				pol_product[1] = pols_ant[j];
 				UVH5header->polarization_array[i*2+j] = UVH5polarisation_string_key(pol_product, Npol_ant);
-				UVH5print_verbose(__FUNCTION__, "Pol-product '%s' with key %d.", pol_product, UVH5header->polarization_array[i*2+j]);
+				UVH5print_verbose(__FUNCTION__, "Pol-product '%s' with key %d @ %d.", pol_product, UVH5header->polarization_array[i*2+j], i*2+j);
 			}
 		}
 
-		for (size_t i = 0; i < UVH5header->Nants_data; i++)
-		{
-			UVH5header->ant_1_array[i] = antenna_data_numbers[i];
-			UVH5header->ant_2_array[i] = antenna_data_numbers[i];
-		}
-		
-		int bls_idx = UVH5header->Nants_data;
-		for (int ant_1_idx = 0; ant_1_idx < Nants_data-1; ant_1_idx++) {
-			for (int ant_2_idx = ant_1_idx+1; ant_2_idx < Nants_data; ant_2_idx++)
-			{
-				UVH5header->ant_1_array[bls_idx] = antenna_data_numbers[ant_1_idx];
-				UVH5header->ant_2_array[bls_idx] = antenna_data_numbers[ant_2_idx];
-				bls_idx++;
-			}
-		}
+		UVH5toml_parse_input_map(toml_input_mapping, Npol_ant, UVH5header);
 
 		free(ant_name0);
 		free(antenna_data_numbers);

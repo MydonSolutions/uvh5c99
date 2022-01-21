@@ -68,8 +68,33 @@ void UVH5Halloc(UVH5_header_t *header)
 	// 	memset(header->lst_array, 0, sizeof(float) * header->Nbls);
 	//	UVH5print_verbose(__FUNCTION__, "'lst_array' allocated %ld bytes.", sizeof(float) * header->Nbls);
 	// }
+	// Administrative entries follow
+	if(header->_ant_pol_prod_xgpu_index == NULL && header->Nbls != 0 && header->Npols != 0) {
+		header->_ant_pol_prod_xgpu_index = malloc(sizeof(int) * header->Nbls * header->Npols);
+		memset(header->_ant_pol_prod_xgpu_index, 0, sizeof(int) * header->Nbls * header->Npols);
+		UVH5print_verbose(__FUNCTION__, "'_ant_pol_prod_xgpu_index' allocated %ld bytes.", sizeof(int) * header->Nbls * header->Npols);
+	}
+	if(header->_ant_pol_prod_bl_index == NULL && header->Nbls != 0 && header->Npols != 0) {
+		header->_ant_pol_prod_bl_index = malloc(sizeof(int) * header->Nbls * header->Npols);
+		memset(header->_ant_pol_prod_bl_index, 0, sizeof(int) * header->Nbls * header->Npols);
+		UVH5print_verbose(__FUNCTION__, "'_ant_pol_prod_bl_index' allocated %ld bytes.", sizeof(int) * header->Nbls * header->Npols);
+	}
+	if(header->_ant_pol_prod_pol_index == NULL && header->Nbls != 0 && header->Npols != 0) {
+		header->_ant_pol_prod_pol_index = malloc(sizeof(int) * header->Nbls * header->Npols);
+		memset(header->_ant_pol_prod_pol_index, 0, sizeof(int) * header->Nbls * header->Npols);
+		UVH5print_verbose(__FUNCTION__, "'_ant_pol_prod_pol_index' allocated %ld bytes.", sizeof(int) * header->Nbls * header->Npols);
+	}
+	if(header->_ant_pol_prod_conj == NULL && header->Nbls != 0 && header->Npols != 0) {
+		header->_ant_pol_prod_conj = malloc(sizeof(char) * header->Nbls * header->Npols);
+		memset(header->_ant_pol_prod_conj, 0, sizeof(char) * header->Nbls * header->Npols);
+		UVH5print_verbose(__FUNCTION__, "'_ant_pol_prod_conj' allocated %ld bytes.", sizeof(char) * header->Nbls * header->Npols);
+	}
+	if(header->_ant_pol_prod_auto == NULL && header->Nbls != 0 && header->Npols != 0) {
+		header->_ant_pol_prod_auto = malloc(sizeof(char) * header->Nbls * header->Npols);
+		memset(header->_ant_pol_prod_auto, 0, sizeof(char) * header->Nbls * header->Npols);
+		UVH5print_verbose(__FUNCTION__, "'_ant_pol_prod_auto' allocated %ld bytes.", sizeof(char) * header->Nbls * header->Npols);
+	}
 }
-
 /*
  * Generate `_antenna_num_idx_map` and `_antenna_enu_positions`.
  */
@@ -153,6 +178,21 @@ void UVH5Hfree(UVH5_header_t *header)
 	}
 	if(header->_antenna_enu_positions != NULL){
 		free(header->_antenna_enu_positions);
+	}
+	if(header->_ant_pol_prod_xgpu_index != NULL){
+		free(header->_ant_pol_prod_xgpu_index);
+	}
+	if(header->_ant_pol_prod_bl_index != NULL){
+		free(header->_ant_pol_prod_bl_index);
+	}
+	if(header->_ant_pol_prod_pol_index != NULL){
+		free(header->_ant_pol_prod_pol_index);
+	}
+	if(header->_ant_pol_prod_conj != NULL){
+		free(header->_ant_pol_prod_conj);
+	}
+	if(header->_ant_pol_prod_auto != NULL){
+		free(header->_ant_pol_prod_auto);
 	}
 }
 
