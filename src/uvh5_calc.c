@@ -361,11 +361,11 @@ void UVH5calc_position_to_uvw_frame_from_enu(
 	double cos_latitude = cos(latitude_rad);
 
 	while(--position_count >= 0) {
-		 // clockwise
+		 // anti-clockwise
 		_rotate_around_x_cached_trig(
 			positions + position_count*3,
-			-sin_declination,
-			cos_declination
+			-sin_latitude,
+			cos_latitude
 		);
 		 // clockwise
 		_rotate_around_y_cached_trig(
@@ -373,11 +373,11 @@ void UVH5calc_position_to_uvw_frame_from_enu(
 			sin_hour_angle,
 			cos_hour_angle
 		);
-		 // anti-clockwise
+		 // clockwise
 		_rotate_around_x_cached_trig(
 			positions + position_count*3,
-			-sin_latitude,
-			cos_latitude
+			sin_declination,
+			cos_declination
 		);
 	}
 }
@@ -411,7 +411,7 @@ void UVH5calc_position_to_uvw_frame_from_xyz(
 			-sin_long_minus_hangle,
 			cos_long_minus_hangle
 		);
-		// RotZ(long-ha) clockwise
+		// RotY(declination) clockwise
 		_rotate_around_y_cached_trig(
 			positions + 3*position_count,
 			sin_declination,
