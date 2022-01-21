@@ -655,38 +655,34 @@ int UVH5find_antenna_index_by_name(UVH5_header_t* header, char* name) {
 }
 
 void UVH5permutate_uvws(UVH5_header_t* header) {
+	int ant_1_idx, ant_2_idx;
 	for (int bls_idx = 0; bls_idx < header->Nbls; bls_idx++) {
+		ant_1_idx = header->_antenna_num_idx_map[
+			header->ant_1_array[bls_idx]
+		];
+		ant_2_idx = header->_antenna_num_idx_map[
+			header->ant_2_array[bls_idx]
+		];
+
 		UVH5print_verbose(__FUNCTION__, "(#%d @ %d) -> (#%d @ %d)",
 			header->ant_1_array[bls_idx],
-			header->_antenna_num_idx_map[header->ant_1_array[bls_idx]],
+			ant_1_idx,
 			header->ant_2_array[bls_idx],
-			header->_antenna_num_idx_map[header->ant_2_array[bls_idx]]
+			ant_2_idx
 		);
 		UVH5print_verbose(__FUNCTION__, "\t%s -> %s",
-			header->antenna_names[header->_antenna_num_idx_map[header->ant_1_array[bls_idx]]],
-			header->antenna_names[header->_antenna_num_idx_map[header->ant_2_array[bls_idx]]]
+			header->antenna_names[ant_1_idx],
+			header->antenna_names[ant_2_idx]
 		);
 		for (size_t i = 0; i < 3; i++)
 		{
 			header->uvw_array[bls_idx*3 + i] = // ant_1 -> ant_2
-				header->_antenna_uvw_positions[
-					header->_antenna_num_idx_map[
-						header->ant_2_array[bls_idx]
-					]*3 + i] -
-				header->_antenna_uvw_positions[
-					header->_antenna_num_idx_map[
-						header->ant_1_array[bls_idx]
-					]*3 + i]
+				header->_antenna_uvw_positions[ant_2_idx*3 + i] -
+				header->_antenna_uvw_positions[ant_1_idx*3 + i]
 			;
 			UVH5print_verbose(__FUNCTION__, "\t\t %f - %f = %f",
-				header->_antenna_uvw_positions[
-						header->_antenna_num_idx_map[
-							header->ant_2_array[bls_idx]
-						]*3 + i],
-				header->_antenna_uvw_positions[
-						header->_antenna_num_idx_map[
-							header->ant_1_array[bls_idx]
-						]*3 + i],
+				header->_antenna_uvw_positions[ant_2_idx*3 + i],
+				header->_antenna_uvw_positions[ant_1_idx*3 + i],
 				header->uvw_array[bls_idx*3 + i]
 			);
 		}

@@ -222,25 +222,25 @@ void UVH5calc_position_to_xyz_frame_from_enu(
 	double sin_latitude = sin(latitude_rad);
 	double cos_latitude = cos(latitude_rad);
 	double tmp;
-	for (int i = 0; i < position_count; i++)
+	while(--position_count >= 0)
 	{
 		// RotX(longitude) anti-clockwise
 		_rotate_around_x_cached_trig(
-			positions + i*3,
+			positions + position_count*3,
 			-sin_latitude,
 			cos_latitude
 		);
 		// RotY(longitude) clockwise
 		_rotate_around_y_cached_trig(
-			positions + i*3,
+			positions + position_count*3,
 			sin_longitude,
 			cos_longitude
 		);
 		// Permute (YZX) to (XYZ)
-		tmp = positions[i*3 + 2]; // save X
-		positions[i*3 + 2] = positions[i*3 + 1]; // move Z
-		positions[i*3 + 1] = positions[i*3 + 0]; // move Y
-		positions[i*3 + 0] = tmp; // move X
+		tmp = positions[position_count*3 + 2]; // save X
+		positions[position_count*3 + 2] = positions[position_count*3 + 1]; // move Z
+		positions[position_count*3 + 1] = positions[position_count*3 + 0]; // move Y
+		positions[position_count*3 + 0] = tmp; // move X
 	}
 }
 
@@ -263,25 +263,25 @@ void UVH5calc_position_to_enu_frame_from_xyz(
 	double sin_latitude = sin(latitude_rad);
 	double cos_latitude = cos(latitude_rad);
 	double tmp;
-	for (int i = 0; i < position_count; i++)
+	while(--position_count >= 0)
 	{
 		// RotZ(longitude) anti-clockwise
 		_rotate_around_z_cached_trig(
-			positions + i*3,
+			positions + position_count*3,
 			-sin_longitude,
 			cos_longitude
 		);
 		// RotY(longitude) clockwise
 		_rotate_around_y_cached_trig(
-			positions + i*3,
+			positions + position_count*3,
 			sin_latitude,
 			cos_latitude
 		);
 		// Permute (UEN) to (ENU)
-		tmp = positions[i*3 + 0];
-		positions[i*3 + 0] = positions[i*3 + 1];
-		positions[i*3 + 1] = positions[i*3 + 2];
-		positions[i*3 + 2] = tmp;
+		tmp = positions[position_count*3 + 0];
+		positions[position_count*3 + 0] = positions[position_count*3 + 1];
+		positions[position_count*3 + 1] = positions[position_count*3 + 2];
+		positions[position_count*3 + 2] = tmp;
 	}
 }
 
