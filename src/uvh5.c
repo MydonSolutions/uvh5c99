@@ -800,7 +800,7 @@ void UVH5visdata_from_xgpu_float_output(
 				memcpy(
 					visdata + visdata_offset+1,
 					xgpuOutput + (
-						freq * ant_pol_products + (*xgpu_idx)),
+						freq * ant_pol_products + (*xgpu_idx) - 1),
 					sizeof(UVH5_CF32_t)
 				);
 				if(*conjugate) {
@@ -860,7 +860,7 @@ void UVH5visdata_from_xgpu_int_output(
 				memcpy(
 					visdata + visdata_offset+1,
 					xgpuOutput + (
-						freq * ant_pol_products + (*xgpu_idx)),
+						freq * ant_pol_products + (*xgpu_idx) - 1),
 					sizeof(UVH5_CF32_t)
 				);
 				if(*conjugate) {
