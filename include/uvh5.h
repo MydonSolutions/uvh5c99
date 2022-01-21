@@ -191,4 +191,16 @@ int UVH5find_antenna_index_by_name(UVH5_header_t* header, char* name);
 void UVH5permutate_uvws(UVH5_header_t* header);
 
 int UVH5polarisation_string_key(char* pol_string, int npols);
+
+void UVH5visdata_from_xgpu_float_output(
+	UVH5_CF32_t* xgpuOutput, // [freq, ant_pol_prod]
+	UVH5_CF32_t* visdata, // [bl, freq, pol]
+	UVH5_header_t* header
+) ;
+
+void UVH5visdata_from_xgpu_int_output(
+	UVH5_CI32_t* xgpuOutput, // [freq, ant_pol_prod]
+	UVH5_CI32_t* visdata, // [bl, freq, pol]
+	UVH5_header_t* header
+) ;
 #endif
