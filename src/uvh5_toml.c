@@ -339,6 +339,7 @@ void UVH5toml_parse_input_map(
 	const int num_inpairs = toml_array_nelem(toml_input_mapping);
 	char pol_product[3] = {'\0'};
 	
+	char* ant_name = NULL;
 	int auto_bl_idx = -1;
 	bool is_auto;
 	int cross_bl_idx = header->Nants_data - 1;
@@ -349,24 +350,29 @@ void UVH5toml_parse_input_map(
 	for(int inpair_1 = 0; inpair_1 < num_inpairs; inpair_1++) {
 		toml_input_ant_name_pol = toml_array_at(toml_input_mapping, inpair_1);
 		ant_1_idx = inpair_1/Npols_in;
-		ant_1_num = header->antenna_numbers[ant_1_idx];
-		// UVH5print_info(__FUNCTION__, "ant_1_idx: %d, num %d", ant_1_idx, ant_1_num);
 		_UVH5toml_nstring_at(toml_input_ant_name_pol, 1, pol_product+0, 1);
 		
 		if(inpair_1%Npols_in == 0) {
+			_UVH5toml_string_at(toml_input_ant_name_pol, 0, &ant_name);
+			ant_1_num = header->antenna_numbers[UVH5find_antenna_index_by_name(header, ant_name)];
+			free(ant_name);
+
 			cross_bl_idx_rerun_from = cross_bl_idx;
 		}
 		else {
 			// rewind the cross_bl_idx
 			cross_bl_idx = cross_bl_idx_rerun_from;
 		}
+
 		for(int inpair_2 = inpair_1; inpair_2 < num_inpairs; inpair_2++) {
 			toml_input_ant_name_pol = toml_array_at(toml_input_mapping, inpair_2);
 			ant_2_idx = inpair_2/Npols_in;
-			ant_2_num = header->antenna_numbers[ant_2_idx];
 			_UVH5toml_nstring_at(toml_input_ant_name_pol, 1, pol_product+1, 1);
-			UVH5print_verbose(__FUNCTION__, "\tant_1_idx: %d, num %d", ant_2_idx, ant_2_num);
-			UVH5print_verbose(__FUNCTION__, "\t\tpol product %s (%d)", pol_product, UVH5polarisation_string_key(pol_product, Npols_in));
+			if(inpair_2%Npols_in == 0) {
+				_UVH5toml_string_at(toml_input_ant_name_pol, 0, &ant_name);
+				ant_2_num = header->antenna_numbers[UVH5find_antenna_index_by_name(header, ant_name)];
+				free(ant_name);
+			}
 
 			is_auto = ant_1_num == ant_2_num;
 
@@ -459,6 +465,8 @@ void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* header) {
 			UVH5print_error(__FUNCTION__, "The first antenna is repeated more than twice indicating more than 2 polarisaitons.");
 			return;
 		}
+		free(ant_name0);
+		free(ant_name1);
 
 		UVH5print_info(__FUNCTION__, "Assuming every antenna has %d polarisations, as the first does.", Npol_ant);
 		int Nants_data = toml_array_nelem(toml_input_mapping)/Npol_ant;
@@ -468,18 +476,6 @@ void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* header) {
 		header->Nants_data = Nants_data;
 		header->Nbls = (header->Nants_data*(header->Nants_data+1))/2;
 		UVH5Halloc(header);
-
-		int* antenna_data_numbers = malloc(Nants_data*sizeof(int));
-		antenna_data_numbers[0] = header->antenna_numbers[UVH5find_antenna_index_by_name(header, ant_name0)];
-		antenna_data_numbers[1] = header->antenna_numbers[UVH5find_antenna_index_by_name(header, ant_name1)];
-
-		free(ant_name1);
-		for (size_t i = 2; i < Nants_data; i++) {
-			toml_array_t* toml_input_ant_name_pol = toml_array_at(toml_input_mapping, i*Npol_ant);
-			_UVH5toml_string_at(toml_input_ant_name_pol, 0, &ant_name1);
-			antenna_data_numbers[i] = header->antenna_numbers[UVH5find_antenna_index_by_name(header, ant_name1)];
-			free(ant_name1);
-		}
 
 		char pol_product[3] = {'\0'};
 		for (size_t i = 0; i < Npol_ant; i++) {
@@ -492,9 +488,6 @@ void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* header) {
 		}
 
 		UVH5toml_parse_input_map(toml_input_mapping, Npol_ant, header);
-
-		free(ant_name0);
-		free(antenna_data_numbers);
 	}
 	else {
 		UVH5print_error(__FUNCTION__, "cannot read location 'input_map'");
