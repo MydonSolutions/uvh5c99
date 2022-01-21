@@ -192,7 +192,7 @@ int _UVH5toml_antenna_table_in(
 	return 0;
 }
 
-void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* UVH5header) {
+void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header) {
 	FILE* fp;
 	char errbuf[200];
 
@@ -208,10 +208,10 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* UVH5header) {
 			UVH5print_error(__FUNCTION__, "cannot parse %s", errbuf);
 			return;
 	}
-	_UVH5toml_string_in(conf, "telescope_name", &UVH5header->telescope_name);
-	_UVH5toml_sexagesimal_in(conf, "latitude", &UVH5header->latitude);
-	_UVH5toml_sexagesimal_in(conf, "longitude", &UVH5header->longitude);
-	_UVH5toml_double_in(conf, "altitude", &UVH5header->altitude);
+	_UVH5toml_string_in(conf, "telescope_name", &header->telescope_name);
+	_UVH5toml_sexagesimal_in(conf, "latitude", &header->latitude);
+	_UVH5toml_sexagesimal_in(conf, "longitude", &header->longitude);
+	_UVH5toml_double_in(conf, "altitude", &header->altitude);
 
 	float universal_diameter = -1.0;
 	_UVH5toml_float_in(conf, "antenna_diameter", &universal_diameter);
@@ -221,25 +221,25 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* UVH5header) {
 			UVH5print_error(__FUNCTION__, "missing [[antennas]]");
 	}
 	else {
-		UVH5header->Nants_telescope = toml_array_nelem(toml_antennas_array);
-		UVH5Halloc(UVH5header); // Alloc Nants_telescope related
-		UVH5header->antenna_diameters = malloc(sizeof(float) * UVH5header->Nants_telescope); // Optional
+		header->Nants_telescope = toml_array_nelem(toml_antennas_array);
+		UVH5Halloc(header); // Alloc Nants_telescope related
+		header->antenna_diameters = malloc(sizeof(float) * header->Nants_telescope); // Optional
 
-		for (size_t i = 0; i < UVH5header->Nants_telescope; i++)
+		for (size_t i = 0; i < header->Nants_telescope; i++)
 		{
 			toml_table_t* toml_antenna_info = toml_table_at(toml_antennas_array, i);
 			if(toml_antenna_info) {
 				UVH5print_verbose(__FUNCTION__, "Antenna: %ld", i);
 				_UVH5toml_antenna_table_in(
 					toml_antenna_info,
-					UVH5header->antenna_numbers + i,
-					UVH5header->antenna_names + i,
-					UVH5header->antenna_positions + 3*i,
+					header->antenna_numbers + i,
+					header->antenna_names + i,
+					header->antenna_positions + 3*i,
 					universal_diameter > 0.0f ? NULL : 
-						UVH5header->antenna_diameters != NULL ? UVH5header->antenna_diameters + i : NULL
+						header->antenna_diameters != NULL ? header->antenna_diameters + i : NULL
 				);
-				if(UVH5header->antenna_diameters != NULL && universal_diameter > 0.0f) {
-					UVH5header->antenna_diameters[i] = universal_diameter;
+				if(header->antenna_diameters != NULL && universal_diameter > 0.0f) {
+					header->antenna_diameters[i] = universal_diameter;
 				}
 			}
 			else {
@@ -251,7 +251,7 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* UVH5header) {
 		char ant_pos_frame = FRAME_ECEF;
 		if(_UVH5toml_string_in(conf, "antenna_position_frame", &ant_pos_frame_str)) {
 			// Not specified
-			double dist = UVH5calc_hypotenuse(UVH5header->antenna_positions, 3);
+			double dist = UVH5calc_hypotenuse(header->antenna_positions, 3);
 			if(dist < 6e6) {
 				ant_pos_frame = FRAME_ENU;
 			}
@@ -275,21 +275,21 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* UVH5header) {
 		 case FRAME_ECEF:
 				UVH5print_info(__FUNCTION__, "Translating from ECEF to XYZ!");
 				UVH5calc_position_to_xyz_frame_from_ecef(
-					UVH5header->antenna_positions,
-					UVH5header->Nants_telescope,
-					UVH5calc_deg2rad(UVH5header->longitude),
-					UVH5calc_deg2rad(UVH5header->latitude),
-					UVH5header->altitude
+					header->antenna_positions,
+					header->Nants_telescope,
+					UVH5calc_deg2rad(header->longitude),
+					UVH5calc_deg2rad(header->latitude),
+					header->altitude
 				);
 				break;
 			case FRAME_ENU:
 				UVH5print_info(__FUNCTION__, "Translating from ENU to XYZ!");
 				UVH5calc_position_to_xyz_frame_from_enu(
-					UVH5header->antenna_positions,
-					UVH5header->Nants_telescope,
-					UVH5calc_deg2rad(UVH5header->longitude),
-					UVH5calc_deg2rad(UVH5header->latitude),
-					UVH5header->altitude
+					header->antenna_positions,
+					header->Nants_telescope,
+					UVH5calc_deg2rad(header->longitude),
+					UVH5calc_deg2rad(header->latitude),
+					header->altitude
 				);
 				break;
 			case FRAME_XYZ:
@@ -419,7 +419,7 @@ void UVH5toml_parse_input_map(
 	}
 }
 
-void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* UVH5header) {
+void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* header) {
 	FILE* fp;
 	char errbuf[200];
 
@@ -464,20 +464,20 @@ void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* UVH5header)
 		int Nants_data = toml_array_nelem(toml_input_mapping)/Npol_ant;
 		UVH5print_info(__FUNCTION__, "\tLeads to Nants_data: %d.", Nants_data);
 				
-		UVH5header->Npols = Npol_ant*Npol_ant; // header->Npols is the pol-products
-		UVH5header->Nants_data = Nants_data;
-		UVH5header->Nbls = (UVH5header->Nants_data*(UVH5header->Nants_data+1))/2;
-		UVH5Halloc(UVH5header);
+		header->Npols = Npol_ant*Npol_ant; // header->Npols is the pol-products
+		header->Nants_data = Nants_data;
+		header->Nbls = (header->Nants_data*(header->Nants_data+1))/2;
+		UVH5Halloc(header);
 
 		int* antenna_data_numbers = malloc(Nants_data*sizeof(int));
-		antenna_data_numbers[0] = UVH5header->antenna_numbers[UVH5find_antenna_index_by_name(UVH5header, ant_name0)];
-		antenna_data_numbers[1] = UVH5header->antenna_numbers[UVH5find_antenna_index_by_name(UVH5header, ant_name1)];
+		antenna_data_numbers[0] = header->antenna_numbers[UVH5find_antenna_index_by_name(header, ant_name0)];
+		antenna_data_numbers[1] = header->antenna_numbers[UVH5find_antenna_index_by_name(header, ant_name1)];
 
 		free(ant_name1);
 		for (size_t i = 2; i < Nants_data; i++) {
 			toml_array_t* toml_input_ant_name_pol = toml_array_at(toml_input_mapping, i*Npol_ant);
 			_UVH5toml_string_at(toml_input_ant_name_pol, 0, &ant_name1);
-			antenna_data_numbers[i] = UVH5header->antenna_numbers[UVH5find_antenna_index_by_name(UVH5header, ant_name1)];
+			antenna_data_numbers[i] = header->antenna_numbers[UVH5find_antenna_index_by_name(header, ant_name1)];
 			free(ant_name1);
 		}
 
@@ -486,12 +486,12 @@ void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* UVH5header)
 			pol_product[0] = pols_ant[i];
 			for (size_t j = 0; j < Npol_ant; j++) {
 				pol_product[1] = pols_ant[j];
-				UVH5header->polarization_array[i*2+j] = UVH5polarisation_string_key(pol_product, Npol_ant);
-				UVH5print_verbose(__FUNCTION__, "Pol-product '%s' with key %d @ %d.", pol_product, UVH5header->polarization_array[i*2+j], i*2+j);
+				header->polarization_array[i*2+j] = UVH5polarisation_string_key(pol_product, Npol_ant);
+				UVH5print_verbose(__FUNCTION__, "Pol-product '%s' with key %d @ %d.", pol_product, header->polarization_array[i*2+j], i*2+j);
 			}
 		}
 
-		UVH5toml_parse_input_map(toml_input_mapping, Npol_ant, UVH5header);
+		UVH5toml_parse_input_map(toml_input_mapping, Npol_ant, header);
 
 		free(ant_name0);
 		free(antenna_data_numbers);
