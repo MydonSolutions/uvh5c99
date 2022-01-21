@@ -1,5 +1,5 @@
 project('uvh5c99', 'c',
-  version: '0.1',
+  version: '0.2',
 )
 
 src_lst = []
