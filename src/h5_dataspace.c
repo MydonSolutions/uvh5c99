@@ -5,6 +5,13 @@ void H5DSopen(
 ) {
 	UVH5print_verbose(__FUNCTION__, "%s", dataspace->name);
 
+	dataspace->P_id = 0;
+	dataspace->Tmem_id = 0;
+	dataspace->Tsto_id = 0;
+	dataspace->D_id = 0;
+	dataspace->S_id = 0;
+	dataspace->C_id = 0;
+
 	if(Tmem_id > 0)
 		dataspace->Tmem_id = Tmem_id;
 	if(Tsto_id > 0)
@@ -58,6 +65,10 @@ herr_t H5DSclose(H5_open_dataspace_t* dataspace) {
 	if (dataspace->C_id) {
 		status += H5Sclose(dataspace->C_id);
 	}
+	return status + H5DSfree(dataspace);
+}
+
+herr_t H5DSfree(H5_open_dataspace_t* dataspace) {
 	if (dataspace->dims != NULL) {
 		free(dataspace->dims);
 	}
@@ -65,19 +76,6 @@ herr_t H5DSclose(H5_open_dataspace_t* dataspace) {
 		free(dataspace->dimlims);
 	}
 	if (dataspace->dimchunks != NULL) {
-		free(dataspace->dimchunks);
-	}
-	return status;
-}
-
-herr_t H5DSfree(H5_open_dataspace_t* dataspace) {
-	if (dataspace->dims) {
-		free(dataspace->dims);
-	}
-	if (dataspace->dimlims) {
-		free(dataspace->dimlims);
-	}
-	if (dataspace->dimchunks) {
 		free(dataspace->dimchunks);
 	}
 	return 0;
@@ -104,23 +102,30 @@ void H5DSset(
 	UVH5print_verbose(__FUNCTION__, "%s", dataspace->name);
 	
 	dataspace->rank = rank;
-	dataspace->dims = malloc(rank * sizeof(hsize_t));
-	dataspace->dimlims = malloc(rank * sizeof(hsize_t));
-	if(chunks != NULL) {
-		dataspace->dimchunks = malloc(rank * sizeof(hsize_t));
-	}
-	for (size_t i = 0; i < rank; i++)
-	{
-		dataspace->dimlims[i] = dimlims[i];
-		dataspace->dims[i] = dimlims[i];
-		if(dimlims[i] == H5S_UNLIMITED) {
-			dataspace->dims[i] = 0;
-		}
-		UVH5print_verbose(__FUNCTION__, "\tdim %ld (%llu/%llu)", i, dataspace->dims[i], dataspace->dimlims[i]);
+	dataspace->dims = NULL;
+	dataspace->dimlims = NULL;
+	dataspace->dimchunks = NULL;
+	if(rank > 0) {
+		dataspace->dims = malloc(rank * sizeof(hsize_t));
+		dataspace->dimlims = malloc(rank * sizeof(hsize_t));
+		
 		if(chunks != NULL) {
-			// TODO assert chunk[i] < dimlims[i]
-			dataspace->dimchunks[i] = chunks[i];
-			UVH5print_verbose(__FUNCTION__, "\t\tchunked %llu", dataspace->dimchunks[i]);
+			dataspace->dimchunks = malloc(rank * sizeof(hsize_t));
+		}
+
+		for (size_t i = 0; i < rank; i++)
+		{
+			dataspace->dimlims[i] = dimlims[i];
+			dataspace->dims[i] = dimlims[i];
+			if(dimlims[i] == H5S_UNLIMITED) {
+				dataspace->dims[i] = 0;
+			}
+			UVH5print_verbose(__FUNCTION__, "\tdim %ld (%llu/%llu)", i, dataspace->dims[i], dataspace->dimlims[i]);
+			if(chunks != NULL) {
+				// TODO assert chunk[i] < dimlims[i]
+				dataspace->dimchunks[i] = chunks[i];
+				UVH5print_verbose(__FUNCTION__, "\t\tchunked %llu", dataspace->dimchunks[i]);
+			}
 		}
 	}
 }
