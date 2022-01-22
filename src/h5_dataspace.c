@@ -1,20 +1,40 @@
 #include "uvh5/h5_dataspace.h"
 
+// #define DEBUG
+
+void _UVH5print_debug(const char *name, const char *msg, ...) {
+#ifdef DEBUG
+	fprintf(stderr, "Debug H5DS (%s)", name);
+	if(msg) {
+		va_list ap;
+		va_start(ap, msg);
+		fprintf(stderr, ": ");
+		vfprintf(stderr, msg, ap);
+		va_end(ap);
+	}
+	if(errno) {
+		fprintf(stderr, " [%s]", strerror(errno));
+	}
+	fprintf(stderr, "\n");
+	fflush(stderr);
+#endif // DEBUG
+}
+
 void H5DSopen(
 	hid_t dest_id, hid_t Tmem_id, hid_t Tsto_id, H5_open_dataspace_t* dataspace
 ) {
-	UVH5print_verbose(__FUNCTION__, "%s", dataspace->name);
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 
 	dataspace->P_id = 0;
-	dataspace->Tmem_id = 0;
-	dataspace->Tsto_id = 0;
+	dataspace->Tmem_id = H5T_NO_CLASS;
+	dataspace->Tsto_id = H5T_NO_CLASS;
 	dataspace->D_id = 0;
 	dataspace->S_id = 0;
 	dataspace->C_id = 0;
 
-	if(Tmem_id > 0)
+	if(Tmem_id != H5T_NO_CLASS)
 		dataspace->Tmem_id = Tmem_id;
-	if(Tsto_id > 0)
+	if(Tsto_id != H5T_NO_CLASS)
 		dataspace->Tsto_id = Tsto_id;
 
 	if(!dataspace->P_id) {
@@ -46,29 +66,37 @@ void H5DSopen(
 }
 
 herr_t H5DSclose(H5_open_dataspace_t* dataspace) {
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	herr_t status = 0;
 	if (dataspace->P_id) {
+		_UVH5print_debug(__FUNCTION__, "\tP_id");
 		status += H5Pclose(dataspace->P_id);
 	}
-	if (dataspace->Tmem_id) {
+	if (dataspace->Tmem_id != H5T_NO_CLASS) {
+		_UVH5print_debug(__FUNCTION__, "\tTmem_id");
 		status += H5Tclose(dataspace->Tmem_id);
 	}
-	if (dataspace->Tsto_id) {
+	if (dataspace->Tsto_id != H5T_NO_CLASS) {
+		_UVH5print_debug(__FUNCTION__, "\tTsto_id");
 		status += H5Tclose(dataspace->Tsto_id);
 	}
 	if (dataspace->D_id) {
+		_UVH5print_debug(__FUNCTION__, "\tD_id");
 		status += H5Dclose(dataspace->D_id);
 	}
 	if (dataspace->S_id) {
+		_UVH5print_debug(__FUNCTION__, "\tS_id");
 		status += H5Sclose(dataspace->S_id);
 	}
 	if (dataspace->C_id) {
+		_UVH5print_debug(__FUNCTION__, "\tC_id");
 		status += H5Sclose(dataspace->C_id);
 	}
 	return status + H5DSfree(dataspace);
 }
 
 herr_t H5DSfree(H5_open_dataspace_t* dataspace) {
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	if (dataspace->dims != NULL) {
 		free(dataspace->dims);
 	}
@@ -82,6 +110,7 @@ herr_t H5DSfree(H5_open_dataspace_t* dataspace) {
 }
 
 void* H5DSmalloc(H5_open_dataspace_t* dataspace) {
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	size_t element_byte_size = H5Tget_size(dataspace->Tmem_id);
 	size_t nelem = H5DSnelem_chunks(dataspace);
 	if (nelem == 0) {
@@ -99,7 +128,7 @@ void H5DSset(
 	const hsize_t* chunks,
 	H5_open_dataspace_t* dataspace
 ) {
-	UVH5print_verbose(__FUNCTION__, "%s", dataspace->name);
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	
 	dataspace->rank = rank;
 	dataspace->dims = NULL;
@@ -131,6 +160,7 @@ void H5DSset(
 }
 
 herr_t H5DSwrite(H5_open_dataspace_t* dataspace, const void* data) {
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	if(dataspace->dimchunks != NULL){
  		return H5Dwrite(dataspace->D_id, dataspace->Tsto_id, dataspace->C_id, dataspace->S_id, H5P_DEFAULT, data);
 	}
@@ -140,6 +170,7 @@ herr_t H5DSwrite(H5_open_dataspace_t* dataspace, const void* data) {
 }
 
 herr_t H5DSextend(H5_open_dataspace_t* dataspace) {
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	// for selecting extension of space
 	hsize_t *start = malloc(dataspace->rank * sizeof(hsize_t));
 	memset(start, 0, dataspace->rank * sizeof(hsize_t));
@@ -170,28 +201,33 @@ herr_t H5DSextend(H5_open_dataspace_t* dataspace) {
 void H5DSopenBool(
 	hid_t dest_id, H5_open_dataspace_t* dataspace
 ) {
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	H5DSopen(dest_id, UVH5TcreateBool(), UVH5TcreateBool(), dataspace);
 }
 
 void H5DSopenDouble(
 	hid_t dest_id, H5_open_dataspace_t* dataspace
 ) {
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	H5DSopen(dest_id, H5Tcopy(H5T_NATIVE_DOUBLE), H5Tcopy(H5T_NATIVE_DOUBLE), dataspace);
 }
 
 void H5DSopenFloat(
 	hid_t dest_id, H5_open_dataspace_t* dataspace
 ) {
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	H5DSopen(dest_id, H5Tcopy(H5T_NATIVE_FLOAT), H5Tcopy(H5T_NATIVE_FLOAT), dataspace);
 }
 
 void H5DSopenInt(
 	hid_t dest_id, H5_open_dataspace_t* dataspace
 ) {
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	H5DSopen(dest_id, H5Tcopy(H5T_NATIVE_INT), H5Tcopy(H5T_NATIVE_INT), dataspace);
 }
 
 size_t H5DSnelem(H5_open_dataspace_t* dataspace) {
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	size_t nelem = 1;
 	for (int i = 0; i < dataspace->rank; i++)
 	{
@@ -201,6 +237,7 @@ size_t H5DSnelem(H5_open_dataspace_t* dataspace) {
 }
 
 size_t H5DSnelem_chunks(H5_open_dataspace_t* dataspace) {
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	if (dataspace->dimchunks == NULL) {
 		return 0;
 	}
@@ -213,6 +250,7 @@ size_t H5DSnelem_chunks(H5_open_dataspace_t* dataspace) {
 }
 
 size_t H5DSnelem_lims(H5_open_dataspace_t* dataspace) {
+	_UVH5print_debug(__FUNCTION__, "%s", dataspace->name);
 	size_t nelem = 1;
 	for (int i = 0; i < dataspace->rank; i++)
 	{
