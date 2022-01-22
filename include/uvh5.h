@@ -107,8 +107,8 @@ typedef struct
 	float phase_center_dec;			 /* The declination of the phase center of the observation in
 																	radians. Required if phase type is "phased". */
 	float phase_center_epoch;		 /* The epoch year of the phase applied to the data (e.g.,
-																	2000.). Required if phase type is "phased". (phase center epoch)
-																	string phase center frame The frame the data and uvw array are phased to.
+																	2000.). Required if phase type is "phased".*/
+	char* phase_center_frame; 	 /* The frame the data and uvw array are phased to.
 																	Options are "gcrs" and "icrs", with default "icrs". These frames are defined as
 																	coordinate systems in astropy. */
 	float* lst_array;						 /* An array corresponding to the local sidereal time of the center of

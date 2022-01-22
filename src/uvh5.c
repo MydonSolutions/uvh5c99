@@ -453,19 +453,18 @@ void _UVH5_Hwrite_static(UVH5_file_t *UVH5file)
 		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on optional 'uvplane_reference_time'"); }
 	}
 
-	if(header.phase_center_ra){
+	if(strcmp(header.phase_type, "phased") == 0){
 		status = _H5DfloatWrite(UVH5file->header_id, "phase_center_ra", 0, NULL, &header.phase_center_ra);
-		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on optional 'phase_center_ra'"); }
-	}
-
-	if(header.phase_center_dec){
+		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on situational 'phase_center_ra'"); }
+	
 		status = _H5DfloatWrite(UVH5file->header_id, "phase_center_dec", 0, NULL, &header.phase_center_dec);
-		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on optional 'phase_center_dec'"); }
-	}
-
-	if(header.phase_center_epoch){
+		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on situational 'phase_center_dec'"); }
+	
 		status = _H5DfloatWrite(UVH5file->header_id, "phase_center_epoch", 0, NULL, &header.phase_center_epoch);
-		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on optional 'phase_center_epoch'"); }
+		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on situational 'phase_center_epoch'"); }
+	
+		status = _H5DstringWrite(UVH5file->header_id, "phase_center_frame", 0, NULL, header.phase_center_frame);
+		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on situational 'phase_center_frame'"); }
 	}
 
 }

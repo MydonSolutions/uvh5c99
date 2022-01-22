@@ -35,6 +35,11 @@ int main(int argc, const char * argv[]) {
 		UVH5permutate_uvws(uvh5_header);
 	}
 	else if(strcmp(uvh5_header->phase_type, "phased") == 0) {
+		uvh5_header->phase_center_ra = 0.0;
+		uvh5_header->phase_center_dec = 0.0;
+		uvh5_header->phase_center_epoch = 2000.0;
+		uvh5_header->phase_center_frame = "icrs";
+
 		memcpy(uvh5_header->_antenna_uvw_positions, uvh5_header->_antenna_enu_positions, sizeof(double)*uvh5_header->Nants_telescope*3);
 		double hour_angle_rad = 0.0;
 		double declination_rad = 0.0;
