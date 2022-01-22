@@ -473,8 +473,6 @@ void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata)
 {
 
 	UVH5file->file_id = H5Fcreate(filepath, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-	UVH5file->DS_data_visdata.Tmem_id = Tvisdata;
-	UVH5file->DS_data_visdata.Tsto_id = H5Tcopy(Tvisdata);
 
 	const hsize_t dim1_unlim[] = {H5S_UNLIMITED};
 	const hsize_t dim1_nbls[] = {UVH5file->header.Nbls};
@@ -531,8 +529,7 @@ void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata)
 
 	UVH5file->DS_data_visdata.name = "visdata";
 	H5DSset(3, dim3_data_lim, dim3_data_chunk, &UVH5file->DS_data_visdata);
-	// zeros for Tmem/sto_id respect DS_data_visdata internal values
-	H5DSopen(UVH5file->data_id, 0, 0, &UVH5file->DS_data_visdata);
+	H5DSopen(UVH5file->data_id, Tvisdata, H5Tcopy(Tvisdata), &UVH5file->DS_data_visdata);
 	UVH5file->visdata = H5DSmalloc(&UVH5file->DS_data_visdata);
 
 	UVH5file->DS_data_flags.name = "flags";
