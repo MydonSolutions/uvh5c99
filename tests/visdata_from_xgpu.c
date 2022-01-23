@@ -10,17 +10,20 @@
 /*
  * Emulates `UVH5visdata_from_xgpu_int_output`, but only increments r/i components,
  * for each visitation, to ensure that each index is visited only once.
+ * 
+ * Returns 1 if an issue is detected, else 0.
  */
-void UVH5visdata_touch(
+int UVH5visdata_touch(
+	UVH5_CI32_t* xgpuOutput, // [freq, xgpu_antpol_prod]
 	UVH5_CI32_t* visdata, // [bl, freq, polprod]
-	// size_t xgpuElements,
+	size_t xgpuElements,
 	UVH5_header_t* header
 ) {
 	const int ant_pol_products = header->Nbls*header->Npols;
 	const int Nfreqs = header->Nfreqs;
 	const int Npols = header->Npols;
 	const int visdata_bl_stride = Nfreqs*header->Npols;
-	// const int xgpu_freq_stride = xgpuElements/Nfreqs;
+	const int xgpu_freq_stride = xgpuElements/Nfreqs;
 
 	int visdata_offset; // = blidx*visdata_bl_stride + freq*Npols + pol_idx
 	int* xgpu_idx = header->_ant_pol_prod_xgpu_index;
@@ -49,7 +52,19 @@ void UVH5visdata_touch(
 					UVH5print_error(__FUNCTION__, "Auto-crosspol product not correctly identified %d-1 != %d",
 					*(bl_idx-1), *bl_idx
 					);
-					exit(1);
+					return 1;
+				}
+				if(
+					xgpuOutput[freq * xgpu_freq_stride + *xgpu_idx].i != 
+					- xgpuOutput[freq * xgpu_freq_stride + *xgpu_idx-1].i
+				) {
+					UVH5print_error(
+						__FUNCTION__, 
+						"Auto-crosspol products are not conjugates @ xgpuOutput[%d, %d|%d], visdata[%d, %d, %d|%d]",
+						freq, *xgpu_idx, *xgpu_idx-1,
+						*bl_idx, freq, *pol_idx, *pol_idx-1
+					);
+					return 1;
 				}
 			}
 
@@ -61,6 +76,7 @@ void UVH5visdata_touch(
 		conjugate++;
 		is_auto++;
 	}
+	return 0;
 }
 
 int main(int argc, const char * argv[]) {
@@ -126,7 +142,7 @@ int main(int argc, const char * argv[]) {
 		UVH5_CI32_t* visdata = malloc(visdata_size*elem_byte_size);
 		memset(visdata, 0, visdata_size*elem_byte_size);
 
-		UVH5visdata_touch(visdata, uvh5_header);
+		failed = UVH5visdata_touch(matrix, visdata, matrix_size, uvh5_header);
 		
 		for(int t = 0; t < 1; t++) {
 			for(int i = 0; !failed && i < visdata_size; i++) {
