@@ -150,6 +150,7 @@ int main(int argc, const char * argv[]) {
 			UVH5visdata_from_xgpu_int_output(
 				(UVH5_CI32_t*) matrix,
 				(UVH5_CI32_t*) visdata,
+				matrix_size,
 				uvh5_header
 			);
 		}

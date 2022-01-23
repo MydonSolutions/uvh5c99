@@ -759,17 +759,20 @@ int UVH5polarisation_string_key(char* pol_string, int npols) {
 /*
  * Emulates Rawx.jl `for (xgpuidx, blidx, polidx, isauto, needsconj) in inpair_maps`
  *
- * Critically reliant on `UVH5_header_t->_ant_pol_prod_*` administrative arrays.
+ * Critically reliant on `UVH5_header_t->_ant_pol_prod_*` administrative arrays, 
+ * which are populated currently in `UVH5toml_parse_input_map`;
  */
 void UVH5visdata_from_xgpu_float_output(
-	UVH5_CF32_t* xgpuOutput, // [freq, ant_pol_prod]
-	UVH5_CF32_t* visdata, // [bl, freq, pol]
+	UVH5_CF32_t* xgpuOutput, // [freq, xgpu_antpol_prod]
+	UVH5_CF32_t* visdata, // [bl, freq, antpol_prod]
+	size_t xgpuOutputElements,
 	UVH5_header_t* header
 ) {
 	const int ant_pol_products = header->Nbls*header->Npols;
-	const int visdata_bl_stride = header->Nfreqs*header->Npols;
-	const int Npols = header->Npols;
 	const int Nfreqs = header->Nfreqs;
+	const int Npols = header->Npols;
+	const int visdata_bl_stride = Nfreqs*header->Npols;
+	const int xgpu_freq_stride = xgpuOutputElements/Nfreqs;
 
 	int visdata_offset; // = blidx*visdata_bl_stride + freq*Npols + pol_idx
 	int* xgpu_idx = header->_ant_pol_prod_xgpu_index;
@@ -779,13 +782,9 @@ void UVH5visdata_from_xgpu_float_output(
 	char* is_auto = header->_ant_pol_prod_auto;
 	for (int approd_idx = 0; approd_idx < ant_pol_products; approd_idx++) {
 		visdata_offset = (*bl_idx)*visdata_bl_stride + (*pol_idx);
+
 		for (int freq = 0; freq < Nfreqs; freq++) {
-			memcpy(
-				visdata + visdata_offset,
-				xgpuOutput + (
-					freq * ant_pol_products + (*xgpu_idx)),
-				sizeof(UVH5_CF32_t)
-			);
+			visdata[visdata_offset] = xgpuOutput[freq * xgpu_freq_stride + (*xgpu_idx)];
 			if(*conjugate) {
 				visdata[visdata_offset].i = -visdata[visdata_offset].i;
 			}
@@ -793,14 +792,9 @@ void UVH5visdata_from_xgpu_float_output(
 			if(*is_auto && *pol_idx == 1) {
 				// If cross-pol autocorrelation:
 				// "use some inside knowledge that
-        //  should be publicized in XGPU documentation that the
-        //  redundant cross-pol is at xgpuidx-1."
-				memcpy(
-					visdata + visdata_offset+1,
-					xgpuOutput + (
-						freq * ant_pol_products + (*xgpu_idx) - 1),
-					sizeof(UVH5_CF32_t)
-				);
+				//  should be publicized in XGPU documentation that the
+				//  redundant cross-pol is at xgpuidx-1."
+				visdata[visdata_offset+1] = xgpuOutput[freq * xgpu_freq_stride + (*xgpu_idx) - 1];
 				if(*conjugate) {
 					visdata[visdata_offset+1].i = -visdata[visdata_offset+1].i;
 				}
@@ -819,17 +813,20 @@ void UVH5visdata_from_xgpu_float_output(
 /*
  * Emulates Rawx.jl `for (xgpuidx, blidx, polidx, isauto, needsconj) in inpair_maps`
  *
- * Critically reliant on `UVH5_header_t->_ant_pol_prod_*` administrative arrays.
+ * Critically reliant on `UVH5_header_t->_ant_pol_prod_*` administrative arrays, 
+ * which are populated currently in `UVH5toml_parse_input_map`;
  */
 void UVH5visdata_from_xgpu_int_output(
-	UVH5_CI32_t* xgpuOutput, // [freq, ant_pol_prod]
-	UVH5_CI32_t* visdata, // [bl, freq, pol]
+	UVH5_CI32_t* xgpuOutput, // [freq, xgpu_antpol_prod]
+	UVH5_CI32_t* visdata, // [bl, freq, antpol_prod]
+	size_t xgpuOutputElements,
 	UVH5_header_t* header
 ) {
 	const int ant_pol_products = header->Nbls*header->Npols;
-	const int visdata_bl_stride = header->Nfreqs*header->Npols;
-	const int Npols = header->Npols;
 	const int Nfreqs = header->Nfreqs;
+	const int Npols = header->Npols;
+	const int visdata_bl_stride = Nfreqs*header->Npols;
+	const int xgpu_freq_stride = xgpuOutputElements/Nfreqs;
 
 	int visdata_offset; // = blidx*visdata_bl_stride + freq*Npols + pol_idx
 	int* xgpu_idx = header->_ant_pol_prod_xgpu_index;
@@ -839,13 +836,9 @@ void UVH5visdata_from_xgpu_int_output(
 	char* is_auto = header->_ant_pol_prod_auto;
 	for (int approd_idx = 0; approd_idx < ant_pol_products; approd_idx++) {
 		visdata_offset = (*bl_idx)*visdata_bl_stride + (*pol_idx);
+
 		for (int freq = 0; freq < Nfreqs; freq++) {
-			memcpy(
-				visdata + visdata_offset,
-				xgpuOutput + (
-					freq * ant_pol_products + (*xgpu_idx)),
-				sizeof(UVH5_CF32_t)
-			);
+			visdata[visdata_offset] = xgpuOutput[freq * xgpu_freq_stride + (*xgpu_idx)];
 			if(*conjugate) {
 				visdata[visdata_offset].i = -visdata[visdata_offset].i;
 			}
@@ -853,14 +846,9 @@ void UVH5visdata_from_xgpu_int_output(
 			if(*is_auto && *pol_idx == 1) {
 				// If cross-pol autocorrelation:
 				// "use some inside knowledge that
-        //  should be publicized in XGPU documentation that the
-        //  redundant cross-pol is at xgpuidx-1."
-				memcpy(
-					visdata + visdata_offset+1,
-					xgpuOutput + (
-						freq * ant_pol_products + (*xgpu_idx) - 1),
-					sizeof(UVH5_CF32_t)
-				);
+				//  should be publicized in XGPU documentation that the
+				//  redundant cross-pol is at xgpuidx-1."
+				visdata[visdata_offset+1] = xgpuOutput[freq * xgpu_freq_stride + (*xgpu_idx) - 1];
 				if(*conjugate) {
 					visdata[visdata_offset+1].i = -visdata[visdata_offset+1].i;
 				}
