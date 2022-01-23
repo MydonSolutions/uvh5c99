@@ -364,7 +364,7 @@ void UVH5toml_parse_input_map(
 			cross_bl_idx = cross_bl_idx_rerun_from;
 		}
 
-		for(int inpair_2 = inpair_1; inpair_2 < num_inpairs; inpair_2++) {
+		for(int inpair_2 = ant_1_idx*Npols_in; inpair_2 < num_inpairs; inpair_2++) {
 			toml_input_ant_name_pol = toml_array_at(toml_input_mapping, inpair_2);
 			ant_2_idx = inpair_2/Npols_in;
 			_UVH5toml_nstring_at(toml_input_ant_name_pol, 1, pol_product+1, 1);
@@ -413,9 +413,9 @@ void UVH5toml_parse_input_map(
 
 			UVH5print_verbose(__FUNCTION__, "#%d: (xgpu = %d, blidx = %d, polidx = %d, isauto = %d, needsconj = %d) [%d, %d]",
 				idx,
-				header->_ant_pol_prod_xgpu_index[idx] + 1,
-				header->_ant_pol_prod_bl_index[idx] + 1,
-				header->_ant_pol_prod_pol_index[idx] + 1,
+				header->_ant_pol_prod_xgpu_index[idx],
+				header->_ant_pol_prod_bl_index[idx],
+				header->_ant_pol_prod_pol_index[idx],
 				header->_ant_pol_prod_auto[idx],
 				header->_ant_pol_prod_conj[idx],
 				inpair_1, inpair_2
