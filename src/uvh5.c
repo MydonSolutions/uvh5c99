@@ -28,9 +28,9 @@ void UVH5Halloc(UVH5_header_t *header)
 		UVH5print_verbose(__FUNCTION__, "'uvw_array' allocated %ld bytes.", sizeof(double) * header->Nbls * 3);
 	}
 	if(header->time_array == NULL && header->Nbls != 0) {
-		header->time_array = malloc(sizeof(float) * header->Nbls);
-		memset(header->time_array, 0, sizeof(float) * header->Nbls);
-		UVH5print_verbose(__FUNCTION__, "'time_array' allocated %ld bytes.", sizeof(float) * header->Nbls);
+		header->time_array = malloc(sizeof(double) * header->Nbls);
+		memset(header->time_array, 0, sizeof(double) * header->Nbls);
+		UVH5print_verbose(__FUNCTION__, "'time_array' allocated %ld bytes.", sizeof(double) * header->Nbls);
 	}
 	if(header->integration_time == NULL && header->Nbls != 0) {
 		header->integration_time = malloc(sizeof(float) * header->Nbls);
@@ -507,7 +507,7 @@ void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata)
 
 	UVH5file->DS_header_time_array.name = "time_array";
 	H5DSset(1, dim1_unlim, dim1_nbls, &UVH5file->DS_header_time_array);
-	H5DSopenFloat(UVH5file->header_id, &UVH5file->DS_header_time_array);
+	H5DSopenDouble(UVH5file->header_id, &UVH5file->DS_header_time_array);
 
 	UVH5file->DS_header_integration_time.name = "integration_time";
 	H5DSset(1, dim1_unlim, dim1_nbls, &UVH5file->DS_header_integration_time);

@@ -56,7 +56,7 @@ typedef struct
 	double *uvw_array;					 /* An array of the uvw-coordinates corresponding to each observation in the data. This is a
 																	two-dimensional array of size [Nbls, 3] (reiteratively written Ntimes, so that stored it
 																	has size [Nblts, 3]). Units are in meters. */
-	float *time_array;					 /* An array of the Julian Date corresponding to the temporal midpoint of the corresponding
+	double *time_array;					 /* An array of the Julian Date corresponding to the temporal midpoint of the corresponding
 																	baseline's integration. This is a one-dimensional array of size [Nbls] (reiteratively
 																	written Ntimes, so that stored it has size [Nblts]). */
 	float *integration_time;		 /* An array of the duration in seconds of an integration. This is a one-dimensional array
