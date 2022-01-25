@@ -339,6 +339,9 @@ void UVH5toml_parse_input_map(
 	const int num_inpairs = toml_array_nelem(toml_input_mapping);
 	char pol_product[3] = {'\0'};
 	
+	int* redundant_pol_index = malloc(sizeof(int)*header->Nants_data);
+	memset(redundant_pol_index, -1, sizeof(int)*header->Nants_data);
+
 	char* ant_name = NULL;
 	int auto_bl_idx = -1;
 	bool is_auto;
@@ -411,6 +414,21 @@ void UVH5toml_parse_input_map(
 				(ant_2_idx > ant_1_idx)
 			);
 
+			// If cross-pol autocorrelation:
+			// "use some inside knowledge that
+			//  should be publicized in XGPU documentation that the
+			//  redundant cross-pol is at xgpuidx-1."
+			if(is_auto) {
+				if(header->_ant_pol_prod_pol_index[idx] == 1) {
+					// Store Ant-pol-product index of 'XY'
+					redundant_pol_index[ant_1_idx] = idx;
+				}
+				else if (header->_ant_pol_prod_pol_index[idx] == 2) {
+					// Derive indices for 'YX' from those for 'XY'
+					header->_ant_pol_prod_xgpu_index[idx] = header->_ant_pol_prod_xgpu_index[redundant_pol_index[ant_1_idx]] - 1;
+				}
+			}
+
 			UVH5print_verbose(__FUNCTION__, "#%d: (xgpu = %d, blidx = %d, polidx = %d, isauto = %d, needsconj = %d) [%d, %d]",
 				idx,
 				header->_ant_pol_prod_xgpu_index[idx],
@@ -423,6 +441,7 @@ void UVH5toml_parse_input_map(
 			idx++;
 		}
 	}
+	free(redundant_pol_index);
 }
 
 void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* header) {

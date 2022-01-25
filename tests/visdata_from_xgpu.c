@@ -13,7 +13,7 @@
  * 
  * Returns 1 if an issue is detected, else 0.
  */
-int UVH5visdata_touch(
+void UVH5visdata_touch(
 	UVH5_CI32_t* xgpuOutput, // [freq, xgpu_antpol_prod]
 	UVH5_CI32_t* visdata, // [bl, freq, polprod]
 	size_t xgpuElements,
@@ -23,7 +23,6 @@ int UVH5visdata_touch(
 	const int Nfreqs = header->Nfreqs;
 	const int Npols = header->Npols;
 	const int visdata_bl_stride = Nfreqs*header->Npols;
-	const int xgpu_freq_stride = xgpuElements/Nfreqs;
 
 	int visdata_offset; // = blidx*visdata_bl_stride + freq*Npols + pol_idx
 	int* xgpu_idx = header->_ant_pol_prod_xgpu_index;
@@ -38,36 +37,6 @@ int UVH5visdata_touch(
 			visdata[visdata_offset].r += 1;
 			visdata[visdata_offset].i += 1;
 
-			if(*is_auto && *pol_idx == 1) {
-				// If cross-pol autocorrelation:
-				// "use some inside knowledge that
-				//  should be publicized in XGPU documentation that the
-				//  redundant cross-pol is at xgpuidx-1."
-
-				//! this re-touches pol_idx == 2
-				// visdata[visdata_offset+1].r += 1;
-				// visdata[visdata_offset+1].i += 1;
-
-				if(*(bl_idx-1) != *bl_idx) {
-					UVH5print_error(__FUNCTION__, "Auto-crosspol product not correctly identified %d-1 != %d",
-					*(bl_idx-1), *bl_idx
-					);
-					return 1;
-				}
-				if(
-					xgpuOutput[freq * xgpu_freq_stride + *xgpu_idx].i != 
-					- xgpuOutput[freq * xgpu_freq_stride + *xgpu_idx-1].i
-				) {
-					UVH5print_error(
-						__FUNCTION__, 
-						"Auto-crosspol products are not conjugates @ xgpuOutput[%d, %d|%d], visdata[%d, %d, %d|%d]",
-						freq, *xgpu_idx, *xgpu_idx-1,
-						*bl_idx, freq, *pol_idx, *pol_idx-1
-					);
-					return 1;
-				}
-			}
-
 			visdata_offset += Npols;
 		}
 		xgpu_idx++;
@@ -76,7 +45,6 @@ int UVH5visdata_touch(
 		conjugate++;
 		is_auto++;
 	}
-	return 0;
 }
 
 int main(int argc, const char * argv[]) {
@@ -142,7 +110,7 @@ int main(int argc, const char * argv[]) {
 		UVH5_CI32_t* visdata = malloc(visdata_size*elem_byte_size);
 		memset(visdata, 0, visdata_size*elem_byte_size);
 
-		failed = UVH5visdata_touch(matrix, visdata, matrix_size, uvh5_header);
+		UVH5visdata_touch(matrix, visdata, matrix_size, uvh5_header);
 		
 		for(int t = 0; t < 1; t++) {
 			for(int i = 0; !failed && i < visdata_size; i++) {
@@ -201,7 +169,7 @@ int main(int argc, const char * argv[]) {
 				}
 
 				if(visdata[visdata_offset].r != xgpuOutput_sample.r ||
-					 visdata[visdata_offset].i != xgpuOutput_sample.i 
+					 visdata[visdata_offset].i != xgpuOutput_sample.i
 				) {
 					UVH5print_error(__FUNCTION__, "#(%d, %d): (xgpu = %d, blidx = %d, polidx = %d, isauto = %d, needsconj = %d)\n\t{%d, %di} vs {%d, %di}\n\t\t@ %d vs %d",
 						approd_idx,
@@ -217,34 +185,6 @@ int main(int argc, const char * argv[]) {
 					);
 					failed = true;
 				}
-				if(*is_auto && *pol_idx == 1) {
-					xgpuOutput_sample = xgpuOutput[freq * MATRIX_H_DIMS[1] + (*xgpu_idx) - 1];
-					if(*conjugate) {
-						xgpuOutput_sample.i = -xgpuOutput_sample.i;
-					}
-					// If cross-pol autocorrelation:
-					// "use some inside knowledge that
-					//  should be publicized in XGPU documentation that the
-					//  redundant cross-pol is at xgpuidx-1."
-					if(visdata[visdata_offset+1].r != xgpuOutput_sample.r ||
-					 visdata[visdata_offset+1].i != xgpuOutput_sample.i 
-					) {
-						UVH5print_error(__FUNCTION__, "%%(%d, %d): (xgpu = %d, blidx = %d, polidx = %d, isauto = %d, needsconj = %d)\n\t{%d, %di} vs {%d, %di} @ %d vs %d",
-							approd_idx,
-							freq,
-							xgpu_idx[0],
-							bl_idx[0],
-							pol_idx[0],
-							is_auto[0],
-							conjugate[0],
-							visdata[visdata_offset+1].r, visdata[visdata_offset+1].i,
-							xgpuOutput_sample.r, xgpuOutput_sample.i,
-							visdata_offset, freq * MATRIX_H_DIMS[1] + (*xgpu_idx)
-						);
-						failed = true;
-					}
-				}
-
 				visdata_offset += Npols;
 			}
 			xgpu_idx++;

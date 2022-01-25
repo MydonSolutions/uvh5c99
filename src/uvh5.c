@@ -790,17 +790,6 @@ void UVH5visdata_from_xgpu_float_output(
 				visdata[visdata_offset].i = -visdata[visdata_offset].i;
 			}
 
-			if(*is_auto && *pol_idx == 1) {
-				// If cross-pol autocorrelation:
-				// "use some inside knowledge that
-				//  should be publicized in XGPU documentation that the
-				//  redundant cross-pol is at xgpuidx-1."
-				visdata[visdata_offset+1] = xgpuOutput[freq * xgpu_freq_stride + (*xgpu_idx) - 1];
-				if(*conjugate) {
-					visdata[visdata_offset+1].i = -visdata[visdata_offset+1].i;
-				}
-			}
-
 			visdata_offset += Npols;
 		}
 		xgpu_idx++;
@@ -843,18 +832,6 @@ void UVH5visdata_from_xgpu_int_output(
 			if(*conjugate) {
 				visdata[visdata_offset].i = -visdata[visdata_offset].i;
 			}
-
-			if(*is_auto && *pol_idx == 1) {
-				// If cross-pol autocorrelation:
-				// "use some inside knowledge that
-				//  should be publicized in XGPU documentation that the
-				//  redundant cross-pol is at xgpuidx-1."
-				visdata[visdata_offset+1] = xgpuOutput[freq * xgpu_freq_stride + (*xgpu_idx) - 1];
-				if(*conjugate) {
-					visdata[visdata_offset+1].i = -visdata[visdata_offset+1].i;
-				}
-			}
-
 			visdata_offset += Npols;
 		}
 		xgpu_idx++;
