@@ -12,6 +12,155 @@ using Rawx
 
 
 """
+!
+! Copied from Rawx, in order to avoid its sorts which aren't done in UVH5C99:
+!  - `pols = sort(unique(getindex.(input_map, 2)))`
+!  - `antidxs = sort(unique(getindex.(input_map, 1)))`
+!
+
+
+    (pol_array, bl_array, inpair_maps) = generateInputPairMap(antennas, input_map)
+
+For the given `antennas` and `input_map`, create polarization array
+`pol_array::Array{Int,1}` containing UVH5/AIPS cross polarization values, a
+baseline array `bl_array::Array{Tuple{Int,Int},1}` containing all pairs of all
+antenna found in `input_map`, and an input pair mapping list
+`inpair_maps::Array{InputPairMapping,1}`.
+"""
+function generateInputPairMap(antennas::AbstractArray{<:AbstractDict{Symbol,Any},1},
+                              input_map::AbstractArray{<:AbstractArray{String,1},1})
+  # Make sure we do not have more inputs than supported by xGPU
+  num_inputs = length(input_map)
+  @assert num_inputs <= xgpuinfo.nstation * xgpuinfo.npol "input_map too long for xGPU"
+
+  # Remap antennas in input_map from name (String) or number (Int) to index
+  # into antennas array and map polarizations to lowercase Symbols
+  input_map = map(input_map) do (ant, pol)
+    Rawx.mapantpol(ant, pol, antennas)
+  end
+
+  # Determine unique polarizations in input_map.
+  #! pols = sort(unique(getindex.(input_map, 2)))
+  pols = unique(getindex.(input_map, 2))
+  npols = length(pols)
+  @assert (npols == 1 || npols == 2) "npols must be 1 or 2 (not $npols)"
+
+  # pol_array contains UVH5/AIPS polarization values for all possible
+  # polarization pairings.  This is the order in which the polarizations will
+  # be stored for a given antenna pair.
+  pol_array = [
+    Rawx.POLMAP[p1, p2] for p1 in pols for p2 in pols
+  ]
+
+  # pol_map (not to be confused with POLMAP!) is a Dict mapping (:p1,:p2)
+  # polarization tuples to "polidx" polarization indexes (i.e. indexes into
+  # polarization_array).
+  pol_map = Dict(map(i->(Rawx.POLMAP[pol_array[i]]=>i), eachindex(pol_array)))
+
+  # GUPPI RAW considers each antenna to be dual polarization.  xGPU can
+  # be compiled for single or dual polarization inputs.  UVH5 files can
+  # be single-polarization or dual-polarization.  In reality, the
+  # actual antenna-polarizations going to each input can be a completely
+  # arbitrary combination and arrangement of antennas and polarizations.
+  #
+  # We need to build a list of all possible antenna pairings (aka baselines)
+  # given the set of unique antennas that appear in input_map.  It is possible
+  # that some baselines will not have all cross polarizations present because
+  # some antennas may not have both polarizations present.  The ordering of
+  # antennas comprising a baseline is also important.  Because the
+  # antenna-polarizations may be connected to arbitrary inputs of the
+  # correlator, it is possible that some cross-polarizations will be conjugated
+  # differently from other cross-polarizations of the same baseline.  Since
+  # there is only one UVW vector for the baseline, these differences must be
+  # resolved by conjugating some of the cross-polarizations of these
+  # "conflicted" baselines to ensure that all cross-polarizations are
+  # conjugated consistently.
+  #
+  # xGPU computes conj(in1)*in2 where in1 <= in2.  By convention, we constrain
+  # baselines (antidx1, antidx2) such that antidx1 <= antidx2.  Note that
+  # antidx is the index into the `antennas` array for a given antenna.  This
+  # approach relies on the ordering of the antennas array rather than the
+  # actual antenna names or numbers, which are essentially opaque labels with
+  # no inherent meaning.
+  #
+  # UVH5 follows the conjugation convention of the Radio Interferometry
+  # Measurement Equation (RIME) which defines the visibility product of
+  # baseline (antidx1, antidx2) to be ``z_{antidx1}*conj(z_{antidx2})``.
+  #
+  # If xGPU input pair (in1, in2) with in1 < in2 corresponds to antenna index
+  # pair (antidx1, antidx2) with antidx1 <= antidx2, then we consider the
+  # visibility product from xGPU to be in need of conjugation before being
+  # written to the UVH5 dataset. If we find an xGPU input pair that corresponds
+  # to antenna index pair (antidx1, antidx2) with antidx1 > antidx2, then we
+  # consider the visibility product be properly conjugated.
+  #
+  # Auto correlations for dual-polarization systems are handled as a special
+  # case, because we write out the extra redundant cross-polarization product.
+  # Extra care is required to ensure that these cross-polarization products are
+  # properly conjugated.
+  #
+  # The ordering of the baselines in the dataset is autocorrelations followed
+  # by cross correlation.  First we build a baseline array, bl_array, that will
+  # be the source of the ant_1_array and ant_2_array contents.  Then we use
+  # this list to build a baseline map, `bl_map` that maps (antidx1, antidx2)
+  # baselines to a sequential baseline index.  This is used to look up the
+  # value for a `bl_idx` field for a given antidx pair (for a given xGPU input
+  # pair) when generating the list of InputPairMappings.
+
+  #! antidxs = sort(unique(getindex.(input_map, 1)))
+  antidxs = unique(getindex.(input_map, 1))
+  nants = length(antidxs)
+  nbls = ((nants + 1) * nants) ÷ 2
+
+  bl_array = Array{Tuple{Int,Int},1}(undef, nbls)
+  i = 0
+  # autos
+  for ai in antidxs
+    i += 1
+    bl_array[i] = (ai, ai)
+  end
+  # crosses
+  for aii1 in 1:nants-1
+    for aii2 in aii1+1:nants
+      i += 1
+      bl_array[i] = (antidxs[aii1], antidxs[aii2])
+    end
+  end
+  # bl_map maps (antidx1, antodx2) tuples to baseline index
+  bl_map = Dict(map(i->(bl_array[i]=>i), eachindex(bl_array)))
+
+  # Now we can make list of input pair mappings.
+  num_inpairs = (num_inputs+1) * num_inputs ÷ 2
+  inpair_maps = Array{Rawx.InputPairMapping,1}(undef, num_inpairs)
+  i = 0
+  for in1 in 1:num_inputs
+    ant1, pol1 = input_map[in1]
+    for in2 in in1:num_inputs
+      ant2, pol2 = input_map[in2]
+      isauto = (ant1 == ant2)
+
+      # TODO Need to check pol order as well (at least for autos)
+      if haskey(bl_map, (ant1, ant2))
+        blidx = bl_map[ant1, ant2]
+        polidx = pol_map[pol1, pol2]
+        needsconj = true
+      else
+        blidx = bl_map[ant2, ant1]
+        polidx = pol_map[pol2, pol1]
+        needsconj = false
+      end
+
+      i += 1
+      inpair_maps[i] = Rawx.InputPairMapping((XGPU.xgpuInputPairIndex(in1, in2),
+                                         blidx, polidx, isauto, needsconj))
+    end # for in2
+  end # for in1
+
+  (pol_array, bl_array, inpair_maps)
+end
+
+
+"""
     uvh5debug_fromraw(rawstem::AbstractString,
               uvh5name::AbstractString;
               telinfo::Union{AbstractString,AbstractDict{Symbol,Any}},
@@ -73,7 +222,7 @@ function uvh5debug_fromraw(rawstem::AbstractString,
   # Merge telinfo and obsinfo into metadata
   metadata = merge(telinfo, obsinfo)
 
-  pol_array, bl_array, inpair_maps = Rawx.generateInputPairMap(metadata[:antennas],
+  pol_array, bl_array, inpair_maps = generateInputPairMap(metadata[:antennas],
                                                           metadata[:input_map])
   # @info "inpair_maps length $idxs_length"
   # println(inpair_maps)
