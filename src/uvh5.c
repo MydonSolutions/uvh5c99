@@ -33,24 +33,24 @@ void UVH5Halloc(UVH5_header_t *header)
 		UVH5print_verbose(__FUNCTION__, "'time_array' allocated %ld bytes.", sizeof(double) * header->Nbls);
 	}
 	if(header->integration_time == NULL && header->Nbls != 0) {
-		header->integration_time = malloc(sizeof(float) * header->Nbls);
-		memset(header->integration_time, 0, sizeof(float) * header->Nbls);
-		UVH5print_verbose(__FUNCTION__, "'integration_time' allocated %ld bytes.", sizeof(float) * header->Nbls);
+		header->integration_time = malloc(sizeof(double) * header->Nbls);
+		memset(header->integration_time, 0, sizeof(double) * header->Nbls);
+		UVH5print_verbose(__FUNCTION__, "'integration_time' allocated %ld bytes.", sizeof(double) * header->Nbls);
 	}
 	if(header->freq_array == NULL && header->Nfreqs != 0) {
-		header->freq_array = malloc(sizeof(float) * header->Nfreqs);
-		memset(header->freq_array, 0, sizeof(float) * header->Nfreqs);
-		UVH5print_verbose(__FUNCTION__, "'freq_array' allocated %ld bytes.", sizeof(float) * header->Nfreqs);
+		header->freq_array = malloc(sizeof(double) * header->Nfreqs);
+		memset(header->freq_array, 0, sizeof(double) * header->Nfreqs);
+		UVH5print_verbose(__FUNCTION__, "'freq_array' allocated %ld bytes.", sizeof(double) * header->Nfreqs);
 	}
 	if(header->channel_width == NULL && header->Nfreqs != 0) {
-		header->channel_width = malloc(sizeof(float) * header->Nfreqs);
-		memset(header->channel_width, 0, sizeof(float) * header->Nfreqs);
-		UVH5print_verbose(__FUNCTION__, "'channel_width' allocated %ld bytes.", sizeof(float) * header->Nfreqs);
+		header->channel_width = malloc(sizeof(double) * header->Nfreqs);
+		memset(header->channel_width, 0, sizeof(double) * header->Nfreqs);
+		UVH5print_verbose(__FUNCTION__, "'channel_width' allocated %ld bytes.", sizeof(double) * header->Nfreqs);
 	}
 	if(header->spw_array == NULL && header->Nspws != 0) {
-		header->spw_array = malloc(sizeof(float) * header->Nspws);
-		memset(header->spw_array, 0, sizeof(float) * header->Nspws);
-		UVH5print_verbose(__FUNCTION__, "'spw_array' allocated %ld bytes.", sizeof(float) * header->Nspws);
+		header->spw_array = malloc(sizeof(double) * header->Nspws);
+		memset(header->spw_array, 0, sizeof(double) * header->Nspws);
+		UVH5print_verbose(__FUNCTION__, "'spw_array' allocated %ld bytes.", sizeof(double) * header->Nspws);
 	}
 	if(header->polarization_array == NULL && header->Npols != 0) {
 		header->polarization_array = malloc(sizeof(int) * header->Npols);
@@ -64,9 +64,9 @@ void UVH5Halloc(UVH5_header_t *header)
 	}
 	// Optional entries follow
 	// if(header-> == NULL && header->Nbls != 0) {
-	// 	header->lst_array = malloc(sizeof(float) * header->Nbls);
-	// 	memset(header->lst_array, 0, sizeof(float) * header->Nbls);
-	//	UVH5print_verbose(__FUNCTION__, "'lst_array' allocated %ld bytes.", sizeof(float) * header->Nbls);
+	// 	header->lst_array = malloc(sizeof(double) * header->Nbls);
+	// 	memset(header->lst_array, 0, sizeof(double) * header->Nbls);
+	//	UVH5print_verbose(__FUNCTION__, "'lst_array' allocated %ld bytes.", sizeof(double) * header->Nbls);
 	// }
 	// Administrative entries follow
 	if(header->_ant_pol_prod_xgpu_index == NULL && header->Nbls != 0 && header->Npols != 0) {
@@ -386,10 +386,10 @@ void _UVH5_Hwrite_static(UVH5_file_t *UVH5file)
 	status = _H5DintWrite(UVH5file->header_id, "Npols", 0, NULL, &header.Npols);
 	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'Npols'"); return; }
 
-	status = _H5DfloatWrite(UVH5file->header_id, "freq_array", 1, dims1_Nfreqs, header.freq_array);
+	status = _H5DdoubleWrite(UVH5file->header_id, "freq_array", 1, dims1_Nfreqs, header.freq_array);
 	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'freq_array'"); return; }
 
-	status = _H5DfloatWrite(UVH5file->header_id, "channel_width", 1, dims1_Nfreqs, header.channel_width);
+	status = _H5DdoubleWrite(UVH5file->header_id, "channel_width", 1, dims1_Nfreqs, header.channel_width);
 	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'channel_width'"); return; }
 
 	status = _H5DintWrite(UVH5file->header_id, "spw_array", 1, dims1_Nspws, header.spw_array);
@@ -414,17 +414,17 @@ void _UVH5_Hwrite_static(UVH5_file_t *UVH5file)
 	}
 
 	if(header.dut1){
-		status = _H5DfloatWrite(UVH5file->header_id, "dut1", 0, NULL, &header.dut1);
+		status = _H5DdoubleWrite(UVH5file->header_id, "dut1", 0, NULL, &header.dut1);
 		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on optional 'dut1'"); }
 	}
 
 	if(header.earth_omega){
-		status = _H5DfloatWrite(UVH5file->header_id, "earth_omega", 0, NULL, &header.earth_omega);
+		status = _H5DdoubleWrite(UVH5file->header_id, "earth_omega", 0, NULL, &header.earth_omega);
 		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on optional 'earth_omega'"); }
 	}
 
 	if(header.gst0){
-		status = _H5DfloatWrite(UVH5file->header_id, "gst0", 0, NULL, &header.gst0);
+		status = _H5DdoubleWrite(UVH5file->header_id, "gst0", 0, NULL, &header.gst0);
 		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on optional 'gst0'"); }
 	}
 
@@ -444,7 +444,7 @@ void _UVH5_Hwrite_static(UVH5_file_t *UVH5file)
 	}
 
 	if(header.antenna_diameters){
-		status = _H5DfloatWrite(UVH5file->header_id, "antenna_diameters", 1, dims1_Nants_telescope, header.antenna_diameters);
+		status = _H5DdoubleWrite(UVH5file->header_id, "antenna_diameters", 1, dims1_Nants_telescope, header.antenna_diameters);
 		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on optional 'antenna_diameters'"); }
 	}
 
@@ -454,13 +454,13 @@ void _UVH5_Hwrite_static(UVH5_file_t *UVH5file)
 	}
 
 	if(strcmp(header.phase_type, "phased") == 0){
-		status = _H5DfloatWrite(UVH5file->header_id, "phase_center_ra", 0, NULL, &header.phase_center_ra);
+		status = _H5DdoubleWrite(UVH5file->header_id, "phase_center_ra", 0, NULL, &header.phase_center_ra);
 		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on situational 'phase_center_ra'"); }
 	
-		status = _H5DfloatWrite(UVH5file->header_id, "phase_center_dec", 0, NULL, &header.phase_center_dec);
+		status = _H5DdoubleWrite(UVH5file->header_id, "phase_center_dec", 0, NULL, &header.phase_center_dec);
 		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on situational 'phase_center_dec'"); }
 	
-		status = _H5DfloatWrite(UVH5file->header_id, "phase_center_epoch", 0, NULL, &header.phase_center_epoch);
+		status = _H5DdoubleWrite(UVH5file->header_id, "phase_center_epoch", 0, NULL, &header.phase_center_epoch);
 		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on situational 'phase_center_epoch'"); }
 	
 		status = _H5DstringWrite(UVH5file->header_id, "phase_center_frame", 0, NULL, header.phase_center_frame);
@@ -511,12 +511,12 @@ void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata)
 
 	UVH5file->DS_header_integration_time.name = "integration_time";
 	H5DSset(1, dim1_unlim, dim1_nbls, &UVH5file->DS_header_integration_time);
-	H5DSopenFloat(UVH5file->header_id, &UVH5file->DS_header_integration_time);
+	H5DSopenDouble(UVH5file->header_id, &UVH5file->DS_header_integration_time);
 
 	if(UVH5file->header.lst_array){
 		UVH5file->DS_header_lst_array.name = "lst_array";
 		H5DSset(1, dim1_unlim, dim1_nbls, &UVH5file->DS_header_lst_array);
-		H5DSopenFloat(UVH5file->header_id, &UVH5file->DS_header_lst_array);
+		H5DSopenDouble(UVH5file->header_id, &UVH5file->DS_header_lst_array);
 	}
 
 	_UVH5_Hwrite_static(UVH5file);
@@ -541,7 +541,7 @@ void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata)
 	UVH5file->DS_data_nsamples.name = "nsamples";
 	H5DSset(3, dim3_data_lim, dim3_data_chunk, &UVH5file->DS_data_nsamples);
 	UVH5file->DS_data_flags.filter_flag = H5_FILTER_FLAG_DEFLATE_3;
-	H5DSopenFloat(UVH5file->data_id, &UVH5file->DS_data_nsamples);
+	H5DSopenDouble(UVH5file->data_id, &UVH5file->DS_data_nsamples);
 	UVH5file->nsamples = H5DSmalloc(&UVH5file->DS_data_nsamples);
 }
 
@@ -578,6 +578,7 @@ void UVH5close(UVH5_file_t *UVH5file)
 
 	if(UVH5file->file_id) {
 		H5Fclose(UVH5file->file_id);
+		UVH5file->file_id = 0;
 	}
 }
 

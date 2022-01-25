@@ -59,11 +59,11 @@ typedef struct
 	double *time_array;					 /* An array of the Julian Date corresponding to the temporal midpoint of the corresponding
 																	baseline's integration. This is a one-dimensional array of size [Nbls] (reiteratively
 																	written Ntimes, so that stored it has size [Nblts]). */
-	float *integration_time;		 /* An array of the duration in seconds of an integration. This is a one-dimensional array
+	double *integration_time;		 /* An array of the duration in seconds of an integration. This is a one-dimensional array
 																	of size [Nbls] (reiteratively written Ntimes, so that stored it has size [Nblts]). */
-	float *freq_array;					 /* An array of all the frequencies (for all spectral windows) stored in the file in Hertz.
+	double *freq_array;					 /* An array of all the frequencies (for all spectral windows) stored in the file in Hertz.
 																	This is a one-dimensional array of size [Nfreqs]. */
-	float *channel_width;				 /* The width of frequency channels in the file in Hertz. This is a one-dimensional array of
+	double *channel_width;				 /* The width of frequency channels in the file in Hertz. This is a one-dimensional array of
 																	size [Nfreqs]. */
 	int *spw_array;							 /* An array of the spectral windows in the file. This is a one-dimensional array of size
 																	[Nspws]. */
@@ -84,11 +84,11 @@ typedef struct
 																	to individual spectral windows, as listed in the spw array. This is a one-dimensional
 																	array of size [Nfreqs]. Note this is required if the file uses flexible spectral windows
 																	(see Sec. 5.2.2).*/
-	float dut1;									 /* DUT1 (google it), in seconds. AIPS 117 calls it UT1UTC.*/
-	float earth_omega;					 /* Earth's rotation rate in degrees per day. Note the dif`ference in
+	double dut1;								 /* DUT1 (google it), in seconds. AIPS 117 calls it UT1UTC.*/
+	double earth_omega;					 /* Earth's rotation rate in degrees per day. Note the dif`ference in
 																	units, which is inherited from the way this quantity is handled in UVFITS datasets
 																	(AIPS 117 calls it DEGPDY).*/
-	float gst0;									 /* Greenwich sidereal time at midnight on reference date, in degrees. AIPS
+	double gst0;								 /* Greenwich sidereal time at midnight on reference date, in degrees. AIPS
 																	117 calls it GSTIA0. */
 	char *rdate;								 /* Date for which GST0 (or whichever time saved in that field) applies.
 																	Note this is different from how UVFITS handles this quantity, which is saved as
@@ -98,20 +98,20 @@ typedef struct
 	char* x_orientation;				 /* The orientation of the x-arm of a dipole antenna. It is assumed
 																	to be the same for all antennas in the dataset. For instance, "East" or "North" may
 																	be used. */
-	float* antenna_diameters;		 /* An array of the diameters of the antennas in meters.
+	double* antenna_diameters;	 /* An array of the diameters of the antennas in meters.
 																	This is a one-dimensional array of size [Nants_telescope]. */
 	int uvplane_reference_time;	 /* The time at which the phase center is normal to the
 																	chosen UV plane for phasing. Used for interoperability with the FHD package. */
-	float phase_center_ra;			 /* The right ascension of the phase center of the observation
+	double phase_center_ra;			 /* The right ascension of the phase center of the observation
 																	in radians. Required if phase type is "phased". */
-	float phase_center_dec;			 /* The declination of the phase center of the observation in
+	double phase_center_dec;		 /* The declination of the phase center of the observation in
 																	radians. Required if phase type is "phased". */
-	float phase_center_epoch;		 /* The epoch year of the phase applied to the data (e.g.,
+	double phase_center_epoch;	 /* The epoch year of the phase applied to the data (e.g.,
 																	2000.). Required if phase type is "phased".*/
 	char* phase_center_frame; 	 /* The frame the data and uvw array are phased to.
 																	Options are "gcrs" and "icrs", with default "icrs". These frames are defined as
 																	coordinate systems in astropy. */
-	float* lst_array;						 /* An array corresponding to the local sidereal time of the center of
+	double* lst_array;					 /* An array corresponding to the local sidereal time of the center of
 																	each observation in the data in units of radians. If it is not specified, it is calculated
 																	from the latitude/longitude and the time array. Saving it in the file can be useful
 																	for files with many values in the time array, which would expensive to recompute. */

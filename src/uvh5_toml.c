@@ -164,10 +164,10 @@ int _UVH5toml_antenna_table_in(
 	int* ant_id,
 	char** ant_name,
 	double* ant_pos,
-	float* ant_diameter
+	double* ant_diameter
 ){
 	if(ant_diameter != NULL){
-		if(_UVH5toml_float_in(parent, "diameter", ant_diameter)) {
+		if(_UVH5toml_double_in(parent, "diameter", ant_diameter)) {
 			UVH5print_warn(__FUNCTION__, "cannot read diameter");
 		}
 	}
@@ -213,8 +213,8 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header) {
 	_UVH5toml_sexagesimal_in(conf, "longitude", &header->longitude);
 	_UVH5toml_double_in(conf, "altitude", &header->altitude);
 
-	float universal_diameter = -1.0;
-	_UVH5toml_float_in(conf, "antenna_diameter", &universal_diameter);
+	double universal_diameter = -1.0;
+	_UVH5toml_double_in(conf, "antenna_diameter", &universal_diameter);
 	
 	toml_array_t* toml_antennas_array = toml_array_in(conf, "antennas");
 	if (!toml_antennas_array) {
@@ -223,7 +223,7 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header) {
 	else {
 		header->Nants_telescope = toml_array_nelem(toml_antennas_array);
 		UVH5Halloc(header); // Alloc Nants_telescope related
-		header->antenna_diameters = malloc(sizeof(float) * header->Nants_telescope); // Optional
+		header->antenna_diameters = malloc(sizeof(double) * header->Nants_telescope); // Optional
 
 		for (size_t i = 0; i < header->Nants_telescope; i++)
 		{
