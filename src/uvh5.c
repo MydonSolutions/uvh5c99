@@ -661,7 +661,8 @@ void UVH5permutate_uvws(UVH5_header_t* header) {
 			header->ant_2_array[bls_idx]
 		];
 
-		UVH5print_verbose(__FUNCTION__, "(#%d @ %d) -> (#%d @ %d)",
+		UVH5print_verbose(__FUNCTION__, "Basline #%d\n(#%d @ %d) -> (#%d @ %d)",
+			bls_idx,
 			header->ant_1_array[bls_idx],
 			ant_1_idx,
 			header->ant_2_array[bls_idx],

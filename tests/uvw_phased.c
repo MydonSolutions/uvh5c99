@@ -107,7 +107,7 @@ int main(int argc, const char * argv[]) {
 
 		UVH5calc_position_to_uvw_frame_from_enu(
 			uvh5_header->_antenna_uvw_positions,
-			uvh5_header->Nants_data,
+			uvh5_header->Nants_telescope,
 			_ha_rad,
 			_decli_rad,
 			UVH5calc_deg2rad(uvh5_header->latitude)
@@ -129,6 +129,22 @@ int main(int argc, const char * argv[]) {
 					uvh5_header->uvw_array[i*3 + 0], UVW[i*3 + 0],
 					uvh5_header->uvw_array[i*3 + 1], UVW[i*3 + 1],
 					uvh5_header->uvw_array[i*3 + 2], UVW[i*3 + 2]
+				);
+				
+				UVH5print_error(__FILE__, "\n\t\t%d -> %d (%s #%d -> %s #%d),\n\t\t\tvs\n\t\t%d -> %d (%s #%d -> %s #%d)\n",
+					uvh5_header->_antenna_num_idx_map[uvh5_header->ant_1_array[i]],
+					uvh5_header->_antenna_num_idx_map[uvh5_header->ant_2_array[i]],
+					uvh5_header->antenna_names[uvh5_header->_antenna_num_idx_map[uvh5_header->ant_1_array[i]]],
+					uvh5_header->ant_1_array[i],
+					uvh5_header->antenna_names[uvh5_header->_antenna_num_idx_map[uvh5_header->ant_2_array[i]]],
+					uvh5_header->ant_2_array[i],
+
+					uvh5_header->_antenna_num_idx_map[ANTENNA_1_ARRAY[i]],
+					uvh5_header->_antenna_num_idx_map[ANTENNA_2_ARRAY[i]],
+					uvh5_header->antenna_names[uvh5_header->_antenna_num_idx_map[ANTENNA_1_ARRAY[i]]],
+					ANTENNA_1_ARRAY[i],
+					uvh5_header->antenna_names[uvh5_header->_antenna_num_idx_map[ANTENNA_2_ARRAY[i]]],
+					ANTENNA_2_ARRAY[i]
 				);
 			}
 		}
