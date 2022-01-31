@@ -174,7 +174,7 @@ typedef struct
 	hid_t data_id;
 	void *visdata;
 	UVH5_bool_t *flags;
-	float *nsamples;
+	double *nsamples;
 	H5_open_dataspace_t DS_data_visdata;
 	H5_open_dataspace_t DS_data_flags;
 	H5_open_dataspace_t DS_data_nsamples;
