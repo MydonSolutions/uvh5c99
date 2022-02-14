@@ -409,10 +409,10 @@ void UVH5toml_parse_input_map(
 			header->_ant_pol_prod_pol_index[idx] = pol_product_index_map_offset8[
 				8+UVH5polarisation_string_key(pol_product, Npols_in)
 			];
-			header->_ant_pol_prod_conj[idx] = is_auto || (
+			header->_ant_pol_prod_conj[idx] = ! (is_auto || (
 				(ant_1_idx < header->Nants_data-1) &&
 				(ant_2_idx > ant_1_idx)
-			);
+			));
 
 			// If cross-pol autocorrelation:
 			// "use some inside knowledge that
