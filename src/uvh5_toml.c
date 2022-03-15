@@ -251,7 +251,7 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header) {
 		char ant_pos_frame = FRAME_ECEF;
 		if(_UVH5toml_string_in(conf, "antenna_position_frame", &ant_pos_frame_str)) {
 			// Not specified
-			double dist = UVH5calc_hypotenuse(header->antenna_positions, 3);
+			double dist = calc_hypotenuse(header->antenna_positions, 3);
 			if(dist < 6e6) {
 				ant_pos_frame = FRAME_ENU;
 			}
@@ -274,21 +274,21 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header) {
 		switch(ant_pos_frame) {
 		 case FRAME_ECEF:
 				UVH5print_info(__FUNCTION__, "Translating from ECEF to XYZ!");
-				UVH5calc_position_to_xyz_frame_from_ecef(
+				calc_position_to_xyz_frame_from_ecef(
 					header->antenna_positions,
 					header->Nants_telescope,
-					UVH5calc_deg2rad(header->longitude),
-					UVH5calc_deg2rad(header->latitude),
+					calc_deg2rad(header->longitude),
+					calc_deg2rad(header->latitude),
 					header->altitude
 				);
 				break;
 			case FRAME_ENU:
 				UVH5print_info(__FUNCTION__, "Translating from ENU to XYZ!");
-				UVH5calc_position_to_xyz_frame_from_enu(
+				calc_position_to_xyz_frame_from_enu(
 					header->antenna_positions,
 					header->Nants_telescope,
-					UVH5calc_deg2rad(header->longitude),
-					UVH5calc_deg2rad(header->latitude),
+					calc_deg2rad(header->longitude),
+					calc_deg2rad(header->latitude),
 					header->altitude
 				);
 				break;

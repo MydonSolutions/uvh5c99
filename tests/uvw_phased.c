@@ -6,7 +6,7 @@
 #include "uvh5/uvh5_toml.h"
 #include "uvw_phased.h"
 
-const double _atol = 0.0001;
+const double _atol = 0.000000001;
 
 bool isclose(double a, double b) {return abs(a - b) < _atol;}
 
@@ -86,11 +86,11 @@ int main(int argc, const char * argv[]) {
 		memcpy(uvh5_header->_antenna_uvw_positions, uvh5_header->_antenna_enu_positions, sizeof(double)*uvh5_header->Nants_telescope*3);
 		double _ha_rad = 0.0;
 		double _decli_rad = 0.0;
-		UVH5calc_ha_dec_rad(
+		calc_ha_dec_rad(
 			ra_rad,
 			dec_rad,
-			UVH5calc_deg2rad(uvh5_header->longitude),
-			UVH5calc_deg2rad(uvh5_header->latitude),
+			calc_deg2rad(uvh5_header->longitude),
+			calc_deg2rad(uvh5_header->latitude),
 			uvh5_header->altitude,
 			timemjd,
 			dut1,
@@ -105,12 +105,12 @@ int main(int argc, const char * argv[]) {
 			UVH5print_error(__FILE__, "_decli_rad %f != %f declination_rad", _decli_rad, declination_rad);
 		}
 
-		UVH5calc_position_to_uvw_frame_from_enu(
+		calc_position_to_uvw_frame_from_enu(
 			uvh5_header->_antenna_uvw_positions,
 			uvh5_header->Nants_telescope,
 			_ha_rad,
 			_decli_rad,
-			UVH5calc_deg2rad(uvh5_header->latitude)
+			calc_deg2rad(uvh5_header->latitude)
 		);
 
 		UVH5permutate_uvws(uvh5_header);

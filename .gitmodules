@@ -1,3 +1,6 @@
 [submodule "external_src/tomlc99"]
 	path = external_src/tomlc99
 	url = https://github.com/cktan/tomlc99
+[submodule "external_src/radiointerferometryc99"]
+	path = external_src/radiointerferometryc99
+	url = https://github.com/MydonSolutions/radiointerferometryc99.git

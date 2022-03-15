@@ -119,11 +119,11 @@ void UVH5Hadmin(UVH5_header_t *header) {
 	//	Create ENU antenna_positions from XYZ
 	header->_antenna_enu_positions = malloc(sizeof(double) * header->Nants_telescope * 3);
 	memcpy(header->_antenna_enu_positions, header->antenna_positions, sizeof(double) * header->Nants_telescope * 3);
-	UVH5calc_position_to_enu_frame_from_xyz(
+	calc_position_to_enu_frame_from_xyz(
 		header->_antenna_enu_positions,
 		header->Nants_telescope,
-		UVH5calc_deg2rad(header->longitude),
-		UVH5calc_deg2rad(header->latitude),
+		calc_deg2rad(header->longitude),
+		calc_deg2rad(header->latitude),
 		header->altitude
 	);
 	header->_antenna_uvw_positions = malloc(sizeof(double) * header->Nants_telescope * 3);
@@ -685,7 +685,7 @@ void UVH5permutate_uvws(UVH5_header_t* header) {
 			);
 		}
 		UVH5print_verbose(__FUNCTION__, "\t\t\tDist: %f",
-			UVH5calc_hypotenuse(header->uvw_array + bls_idx*3, 3)
+			calc_hypotenuse(header->uvw_array + bls_idx*3, 3)
 		);
 	}
 }
