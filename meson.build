@@ -19,7 +19,6 @@ inc_lst = [
 dep_lst = [
   m_dep,
   dependency('hdf5'),
-  dependency('erfa'),
   radiointerferometryc99_dep,
 ]
 
