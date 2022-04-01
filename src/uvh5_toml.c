@@ -385,7 +385,7 @@ int xgpuInputPairOutputIndex(
 // baselines, expressed and captured as pairs of ant_numbers.
 // This enables the population of `header->ant_1/2_array`.
 // Furthermore, an index is populated for each baseline in the internal administrative
-// arrays, which are critical to the `UVH5permutate_uvws` function:
+// arrays, which are critical to the `UVH5visdata_from_xgpu_int_output` function:
 //  `header->_ant_pol_prod_xgpu_index`
 //  `header->_ant_pol_prod_bl_index`
 //  `header->_ant_pol_prod_pol_index`
