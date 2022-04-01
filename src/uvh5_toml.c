@@ -1,5 +1,7 @@
 #include "uvh5/uvh5_toml.h"
 
+// Parse a '%d+:%d+:%d+' sexgesimal string to a double
+// Return zero if success, else non-zero
 double sexagesimal_to_double(const char *sexagesiamal_string) {
 		double f = 0.0;
 		char *pend;
@@ -19,12 +21,15 @@ double sexagesimal_to_double(const char *sexagesiamal_string) {
 		return f;
 }
 
+// Parse a sexgesimal value (string or double) at `location`, populating the `sexagesimal` double
+// Return zero if success, else non-zero
 int _UVH5toml_sexagesimal_in(toml_table_t* parent, const char* location, double* sexagesimal) {
 	toml_datum_t toml_datum = toml_string_in(parent, location);
 	if (!toml_datum.ok) {
 		toml_datum = toml_double_in(parent, location);
 		if (!toml_datum.ok) {
 			UVH5print_error(__FUNCTION__, "cannot read location '%s'", location);
+			return 1;
 		}
 		*sexagesimal = toml_datum.u.d;
 		UVH5print_verbose(__FUNCTION__, "%s: %f", location, *sexagesimal);
@@ -38,10 +43,13 @@ int _UVH5toml_sexagesimal_in(toml_table_t* parent, const char* location, double*
 	return 0;
 }
 
+// Parse the string at the array's index `idx`, populating `string_out`
+// Return zero if success, else non-zero
 int _UVH5toml_string_at(toml_array_t* parent, const int idx, char** string_out) {
 	toml_datum_t toml_datum = toml_string_at(parent, idx);
 	if (!toml_datum.ok) {
-			UVH5print_error(__FUNCTION__, "cannot read index %d", idx);
+		UVH5print_error(__FUNCTION__, "cannot read index %d", idx);
+		return 1;
 	}
 	else {
 		*string_out = malloc(strlen(toml_datum.u.s)+1);
@@ -52,24 +60,30 @@ int _UVH5toml_string_at(toml_array_t* parent, const int idx, char** string_out) 
 	return 0;
 }
 
-int _UVH5toml_nstring_at(toml_array_t* parent, const int location, char* string_out, size_t length) {
-	toml_datum_t toml_datum = toml_string_at(parent, location);
+// Parse the string at the array's index `idx`, populating `string_out`, with limited `length`
+// Return zero if success, else non-zero
+int _UVH5toml_nstring_at(toml_array_t* parent, const int idx, char* string_out, size_t length) {
+	toml_datum_t toml_datum = toml_string_at(parent, idx);
 	if (!toml_datum.ok) {
-			UVH5print_error(__FUNCTION__, "cannot read location %s", location);
+		UVH5print_error(__FUNCTION__, "cannot read idx %s", idx);
+		return 1;
 	}
 	else {
 		length = length <= strlen(toml_datum.u.s) ? length : strlen(toml_datum.u.s);
 		memcpy(string_out, toml_datum.u.s, length);
 		free(toml_datum.u.s);
-		UVH5print_verbose(__FUNCTION__, "[%d]: %s", location, string_out);
+		UVH5print_verbose(__FUNCTION__, "[%d]: %s", idx, string_out);
 	}
 	return 0;
 }
 
+// Parse the string at `location`, populating `string_out`
+// Return zero if success, else non-zero
 int _UVH5toml_string_in(toml_table_t* parent, const char* location, char** string_out) {
 	toml_datum_t toml_datum = toml_string_in(parent, location);
 	if (!toml_datum.ok) {
-			UVH5print_error(__FUNCTION__, "cannot read location", location);
+		UVH5print_error(__FUNCTION__, "cannot read location", location);
+		return 1;
 	}
 	else {
 		*string_out = malloc(strlen(toml_datum.u.s)+1);
@@ -80,10 +94,13 @@ int _UVH5toml_string_in(toml_table_t* parent, const char* location, char** strin
 	return 0;
 }
 
+// Parse the string at `location`, populating `string_out`, with limited `length`
+// Return zero if success, else non-zero
 int _UVH5toml_nstring_in(toml_table_t* parent, const char* location, char* string_out, size_t length) {
 	toml_datum_t toml_datum = toml_string_in(parent, location);
 	if (!toml_datum.ok) {
-			UVH5print_error(__FUNCTION__, "cannot read location '%s'", location);
+		UVH5print_error(__FUNCTION__, "cannot read location '%s'", location);
+		return 1;
 	}
 	else {
 		memset(string_out, '\0', length);
@@ -95,10 +112,13 @@ int _UVH5toml_nstring_in(toml_table_t* parent, const char* location, char* strin
 	return 0;
 }
 
+// Parse the double at array's index `idx`, populating `double_out`
+// Return zero if success, else non-zero
 int _UVH5toml_double_at(toml_array_t* parent, const int idx, double* double_out) {
 	toml_datum_t toml_datum = toml_double_at(parent, idx);
 	if (!toml_datum.ok) {
 		UVH5print_error(__FUNCTION__, "cannot read index %d", idx);
+		return 1;
 	}
 	else {
 		*double_out = toml_datum.u.d;
@@ -115,10 +135,13 @@ int _UVH5toml_float_at(toml_array_t* parent, const int idx, float* float_out) {
 	return 0;
 }
 
+// Parse the double at `location`, populating `double_out`
+// Return zero if success, else non-zero
 int _UVH5toml_double_in(toml_table_t* parent, const char* location, double* double_out) {
 	toml_datum_t toml_datum = toml_double_in(parent, location);
 	if (!toml_datum.ok) {
-			UVH5print_error(__FUNCTION__, "cannot read location '%s'", location);
+		UVH5print_error(__FUNCTION__, "cannot read location '%s'", location);
+		return 1;
 	}
 	else {
 		*double_out = toml_datum.u.d;
@@ -135,10 +158,13 @@ int _UVH5toml_float_in(toml_table_t* parent, const char* location, float* float_
 	return 0;
 }
 
+// Parse the int at array's index `idx`, populating `int_out`
+// Return zero if success, else non-zero
 int _UVH5toml_int_at(toml_array_t* parent, const int idx, int* int_out) {
 	toml_datum_t toml_datum = toml_int_at(parent, idx);
 	if (!toml_datum.ok) {
 		UVH5print_error(__FUNCTION__, "cannot read index %d", idx);
+		return 1;
 	}
 	else {
 		*int_out = toml_datum.u.i;
@@ -147,10 +173,13 @@ int _UVH5toml_int_at(toml_array_t* parent, const int idx, int* int_out) {
 	return 0;
 }
 
+// Parse the int at `location`, populating `int_out`
+// Return zero if success, else non-zero
 int _UVH5toml_int_in(toml_table_t* parent, const char* location, int* int_out) {
 	toml_datum_t toml_datum = toml_int_in(parent, location);
 	if (!toml_datum.ok) {
 		UVH5print_error(__FUNCTION__, "cannot read location", location);
+		return 1;
 	}
 	else {
 		*int_out = toml_datum.u.i;
@@ -159,6 +188,11 @@ int _UVH5toml_int_in(toml_table_t* parent, const char* location, int* int_out) {
 	return 0;
 }
 
+// Process the toml_table_t `parent`, using entries to populate arguments:
+//  "diameter" -> `ant_diameter`
+//  "number" -> `ant_id`
+//  "name" -> `ant_name`
+//  "position[0, 1, 2]" -> `ant_pos[0, 1, 2]` (x, y, z)
 int _UVH5toml_antenna_table_in(
 	toml_table_t* parent,
 	int* ant_id,
@@ -192,6 +226,25 @@ int _UVH5toml_antenna_table_in(
 	return 0;
 }
 
+// Parse the telescope_info toml file, populating the relevant fields in `header`.
+// The 'tests/telinfo_ata.toml' is exemplary.
+//
+//  "telescope_name" 		-> header->telescope_name
+//  "latitude" 					-> header->latitude
+//  "longitude" 				-> header->longitude
+//  "altitude" 					-> header->altitude
+//  "antenna_diameter"	-> header->antenna_diameters[...]
+//  len("[[antennas]]")	-> header->Nants_telescope
+//  "[[antennas]]"[i]		-> header->antenna_numbers[i]
+//									 ...-> header->antenna_names[i]
+//									 ...-> header->antenna_positions[i]
+//		See `_UVH5toml_antenna_table_in`
+//
+// All of the associated pointer-arrays in `header` are allocated before being
+// populated.
+//
+// The antenna_positions are converted to an "xyz" frame based on
+// the frame indicated by "antenna_position_frame".
 void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header) {
 	FILE* fp;
 	char errbuf[200];
@@ -324,6 +377,20 @@ int xgpuInputPairOutputIndex(
   return station_pair_index * npol * npol + pol_pair_index;
 }
 
+// This expects:
+//  `toml_input_mapping` is the 'obsinfo.toml:"input_map"' array
+//  `header` has been populated by telescope_info (see `UVH5toml_parse_telescope_info`)
+//
+// The input_mapping array is used to determine actual information of the observation's
+// baselines, expressed and captured as pairs of ant_numbers.
+// This enables the population of `header->ant_1/2_array`.
+// Furthermore, an index is populated for each baseline in the internal administrative
+// arrays, which are critical to the `UVH5permutate_uvws` function:
+//  `header->_ant_pol_prod_xgpu_index`
+//  `header->_ant_pol_prod_bl_index`
+//  `header->_ant_pol_prod_pol_index`
+//  `header->_ant_pol_prod_auto`
+//  `header->_ant_pol_prod_conj`
 void UVH5toml_parse_input_map(
 	toml_array_t* toml_input_mapping,
 	int Npols_in,
@@ -444,6 +511,17 @@ void UVH5toml_parse_input_map(
 	free(redundant_pol_index);
 }
 
+
+// Parse the observation_info toml file, populating the relevant fields in `header`.
+// The 'tests/obsinfo.toml' is exemplary.
+//
+// "input_map" is accessed and passed to `UVH5toml_parse_input_map`,
+// after some preliminary calculation of the number of polarisations present.
+// From the length of the "input_map" and inferred number of pol's, the 
+// `header->Nants_data` adn `header->Nbls` are populated, and associated pointer-arrays
+// allocated.
+// This also populated `header->polarization_array`.
+// Finally, `UVH5toml_parse_input_map` is called
 void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* header) {
 	FILE* fp;
 	char errbuf[200];
