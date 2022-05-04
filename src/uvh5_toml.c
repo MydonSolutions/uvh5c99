@@ -409,6 +409,9 @@ void UVH5toml_parse_input_map(
 	int* redundant_pol_index = malloc(sizeof(int)*header->Nants_data);
 	memset(redundant_pol_index, -1, sizeof(int)*header->Nants_data);
 
+	// Set the unique antenna_numbers for those in data
+	int _ant_numbers_data_index = 0;
+
 	char* ant_name = NULL;
 	int auto_bl_idx = -1;
 	bool is_auto;
@@ -426,6 +429,8 @@ void UVH5toml_parse_input_map(
 			_UVH5toml_string_at(toml_input_ant_name_pol, 0, &ant_name);
 			ant_1_num = header->antenna_numbers[UVH5find_antenna_index_by_name(header, ant_name)];
 			free(ant_name);
+			header->_antenna_numbers_data[_ant_numbers_data_index] = ant_1_num;
+			_ant_numbers_data_index++;
 
 			cross_bl_idx_rerun_from = cross_bl_idx;
 		}

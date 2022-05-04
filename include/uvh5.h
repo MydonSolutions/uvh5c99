@@ -128,6 +128,11 @@ typedef struct
 																		conjugation. Size of [Nbls*Npols]*/
 	char* _ant_pol_prod_auto; 		 /* An array whose elements indicate if the antenna-polarization-product is of auto-
 																		correlation. Size of [Nbls*Npols]*/
+	int* _antenna_numbers_data;  	 /* An array of the numbers of the antennas present in the
+																	observation (note that these are not indices, they do not need to start at zero or
+																	be continuous). This is a one-dimensional array of size Nants_data. Note there
+																	must be one entry for every unique antenna in ant 1 array and ant 2 array, and no
+																	additional entries. */
 
 } UVH5_header_t;
 

@@ -94,6 +94,11 @@ void UVH5Halloc(UVH5_header_t *header)
 		memset(header->_ant_pol_prod_auto, 0, sizeof(char) * header->Nbls * header->Npols);
 		UVH5print_verbose(__FUNCTION__, "'_ant_pol_prod_auto' allocated %ld bytes.", sizeof(char) * header->Nbls * header->Npols);
 	}
+	if(header->_antenna_numbers_data == NULL && header->Nants_data != 0) {
+		header->_antenna_numbers_data = malloc(sizeof(int) * header->Nants_data);
+		memset(header->_antenna_numbers_data, 0, sizeof(int) * header->Nants_data);
+		UVH5print_verbose(__FUNCTION__, "'_antenna_numbers_data' allocated %ld bytes.", sizeof(int) * header->Nants_data);
+	}
 }
 /*
  * Generate `_antenna_num_idx_map` and `_antenna_enu_positions`.
@@ -193,6 +198,9 @@ void UVH5Hfree(UVH5_header_t *header)
 	}
 	if(header->_ant_pol_prod_auto != NULL){
 		free(header->_ant_pol_prod_auto);
+	}
+	if(header->_antenna_numbers_data != NULL){
+		free(header->_antenna_numbers_data);
 	}
 }
 
