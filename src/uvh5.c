@@ -659,6 +659,162 @@ int UVH5find_antenna_index_by_name(UVH5_header_t* header, char* name) {
 	return -1;
 }
 
+/*
+ * https://github.com/david-macmahon/XGPU.jl/blob/1f08c9eb24268b0bd94659f4da78982ddb829ff0/src/XGPU.jl#L718-L732
+ */
+int xgpuInputPairOutputIndex(
+	int ant_1_i, int ant_1_p,
+	int ant_2_i, int ant_2_p,
+	int npol
+) {
+	if (ant_1_i*npol + ant_1_p > ant_2_i*npol + ant_2_p) {
+		int tmp = ant_1_i;
+		ant_1_i = ant_2_i;
+		ant_2_i = tmp;
+		tmp = ant_1_p;
+		ant_1_p = ant_2_p;
+		ant_2_p = tmp;
+	}
+
+  int station_pair_index = (((ant_2_i+1)*ant_2_i) / 2) + ant_1_i;
+  int pol_pair_index = ant_2_p * npol + ant_1_p;
+  return station_pair_index * npol * npol + pol_pair_index;
+}
+
+/*
+* This expects that the header has been alloced with:
+*		header->Npols
+*		header->Nants_data
+*		header->Nbls
+*
+* The UVh5_inputpair_t array is used to determine actual information of the observation's
+* baselines, expressed and captured as pairs of ant_numbers.
+* This enables the population of `header->ant_1/2_array`.
+* Furthermore, an index is populated for each baseline in the internal administrative
+* arrays, which are critical to the `UVH5visdata_from_xgpu_int_output` function:
+*  `header->_ant_pol_prod_xgpu_index`
+*  `header->_ant_pol_prod_bl_index`
+*  `header->_ant_pol_prod_pol_index`
+*  `header->_ant_pol_prod_auto`
+*  `header->_ant_pol_prod_conj`
+*/
+void UVH5parse_input_map(
+	UVH5_header_t* header,
+	UVH5_inputpair_t* inputs
+) {
+	int npols_in = header->Npols == 4 ? 2 : 1; // header->Npols is the pol-products
+	int ninpairs = npols_in*header->Nants_data;
+
+	//positive offset by most negative -8
+	int pol_product_index_map_offset8[13] = {-1};
+	for(int pol_idx = 0; pol_idx < header->Npols; pol_idx++) {
+		pol_product_index_map_offset8[8+header->polarization_array[pol_idx]] = pol_idx;
+	}
+	char pol_product[3] = {'\0'};
+	
+	int* redundant_pol_index = malloc(sizeof(int)*header->Nants_data);
+	memset(redundant_pol_index, -1, sizeof(int)*header->Nants_data);
+
+	// Set the unique antenna_numbers for those in data
+	int _ant_numbers_data_index = 0;
+
+	int auto_bl_idx = -1;
+	bool is_auto;
+	int cross_bl_idx = header->Nants_data - 1;
+	int cross_bl_idx_rerun_from;
+	int idx = 0;
+	int ant_1_idx, ant_1_num, ant_2_idx, ant_2_num;
+	for(int inpair_1 = 0; inpair_1 < ninpairs; inpair_1++) {
+		ant_1_idx = inpair_1/npols_in;
+		pol_product[0] = inputs[inpair_1].polarization;
+		
+		if(inpair_1%npols_in == 0) {
+			ant_1_num = header->antenna_numbers[UVH5find_antenna_index_by_name(header, inputs[inpair_1].antenna)];
+			header->_antenna_numbers_data[_ant_numbers_data_index] = ant_1_num;
+			_ant_numbers_data_index++;
+
+			cross_bl_idx_rerun_from = cross_bl_idx;
+		}
+		else {
+			// rewind the cross_bl_idx
+			cross_bl_idx = cross_bl_idx_rerun_from;
+		}
+
+		for(int inpair_2 = ant_1_idx*npols_in; inpair_2 < ninpairs; inpair_2++) {
+			ant_2_idx = inpair_2/npols_in;
+			pol_product[1] = inputs[inpair_2].polarization;
+			if(inpair_2%npols_in == 0) {
+				ant_2_num = header->antenna_numbers[UVH5find_antenna_index_by_name(header, inputs[inpair_2].antenna)];
+			}
+
+			is_auto = ant_1_num == ant_2_num;
+
+			if(inpair_1%npols_in == 0 && inpair_2%npols_in == 0) {
+				if(is_auto) {
+					auto_bl_idx++;
+					header->ant_1_array[auto_bl_idx] = ant_1_num;
+					header->ant_2_array[auto_bl_idx] = ant_2_num;
+					UVH5print_verbose(__FUNCTION__, "Auto baseline %d->%d", ant_1_num, ant_2_num);
+				}
+				else {
+					cross_bl_idx++;
+					header->ant_1_array[cross_bl_idx] = ant_1_num;
+					header->ant_2_array[cross_bl_idx] = ant_2_num;
+					UVH5print_verbose(__FUNCTION__, "Cross baseline %d->%d", ant_1_num, ant_2_num);
+				}
+			}
+			else if (!is_auto && inpair_1%npols_in != 0 && inpair_2%npols_in == 0) {
+				// Re-run the cross baselines
+				cross_bl_idx++;
+			}
+
+			header->_ant_pol_prod_auto[idx] = is_auto;
+			header->_ant_pol_prod_xgpu_index[idx] = xgpuInputPairOutputIndex(
+				ant_1_idx, inpair_1%npols_in,
+				ant_2_idx, inpair_2%npols_in,
+				npols_in
+			);
+
+			header->_ant_pol_prod_bl_index[idx] = is_auto ? auto_bl_idx : cross_bl_idx;
+			header->_ant_pol_prod_pol_index[idx] = pol_product_index_map_offset8[
+				8+UVH5polarisation_string_key(pol_product, npols_in)
+			];
+			header->_ant_pol_prod_conj[idx] = ! (is_auto || (
+				(ant_1_idx < header->Nants_data-1) &&
+				(ant_2_idx > ant_1_idx)
+			));
+
+			// If cross-pol autocorrelation:
+			// "use some inside knowledge that
+			//  should be publicized in XGPU documentation that the
+			//  redundant cross-pol is at xgpuidx-1."
+			if(is_auto) {
+				if(header->_ant_pol_prod_pol_index[idx] == 1) {
+					// Store Ant-pol-product index of 'XY'
+					redundant_pol_index[ant_1_idx] = idx;
+				}
+				else if (header->_ant_pol_prod_pol_index[idx] == 2) {
+					// Derive indices for 'YX' from those for 'XY'
+					header->_ant_pol_prod_xgpu_index[idx] = header->_ant_pol_prod_xgpu_index[redundant_pol_index[ant_1_idx]] - 1;
+				}
+			}
+
+			UVH5print_verbose(__FUNCTION__, "#%d: (xgpu = %d, blidx = %d, polidx = %d, isauto = %d, needsconj = %d) [%d, %d]",
+				idx,
+				header->_ant_pol_prod_xgpu_index[idx],
+				header->_ant_pol_prod_bl_index[idx],
+				header->_ant_pol_prod_pol_index[idx],
+				header->_ant_pol_prod_auto[idx],
+				header->_ant_pol_prod_conj[idx],
+				inpair_1, inpair_2
+			);
+			idx++;
+		}
+	}
+	free(redundant_pol_index);
+
+}
+
 void UVH5permutate_uvws(UVH5_header_t* header) {
 	int ant_1_idx, ant_2_idx;
 	for (int bls_idx = 0; bls_idx < header->Nbls; bls_idx++) {

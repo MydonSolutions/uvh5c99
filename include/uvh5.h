@@ -185,6 +185,12 @@ typedef struct
 	H5_open_dataspace_t DS_data_nsamples;
 } UVH5_file_t;
 
+typedef struct
+{
+	char* antenna;
+	char polarization;
+} UVH5_inputpair_t;
+
 void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata);
 
 void UVH5close(UVH5_file_t *UVH5file);
@@ -192,6 +198,11 @@ void UVH5close(UVH5_file_t *UVH5file);
 int UVH5write_dynamic(UVH5_file_t* UVH5file);
 
 int UVH5find_antenna_index_by_name(UVH5_header_t* header, char* name);
+
+void UVH5parse_input_map(
+	UVH5_header_t* header,
+	UVH5_inputpair_t* inputs
+);
 
 void UVH5permutate_uvws(UVH5_header_t* header);
 
