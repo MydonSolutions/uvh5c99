@@ -204,7 +204,7 @@ void UVH5parse_input_map(
 	UVH5_inputpair_t* inputs
 );
 
-void UVH5permutate_uvws(UVH5_header_t* header);
+void UVH5permute_uvws(UVH5_header_t* header);
 
 int UVH5polarisation_string_key(char* pol_string, int npols);
 

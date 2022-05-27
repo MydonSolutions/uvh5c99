@@ -815,7 +815,7 @@ void UVH5parse_input_map(
 
 }
 
-void UVH5permutate_uvws(UVH5_header_t* header) {
+void UVH5permute_uvws(UVH5_header_t* header) {
 	int ant_1_idx, ant_2_idx;
 	for (int bls_idx = 0; bls_idx < header->Nbls; bls_idx++) {
 		ant_1_idx = header->_antenna_num_idx_map[

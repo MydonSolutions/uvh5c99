@@ -113,7 +113,7 @@ int main(int argc, const char * argv[]) {
 			calc_deg2rad(uvh5_header->latitude)
 		);
 
-		UVH5permutate_uvws(uvh5_header);
+		UVH5permute_uvws(uvh5_header);
 
 		for (int i = 0; !failed && i < uvh5_header->Nbls; i++)
 		{
