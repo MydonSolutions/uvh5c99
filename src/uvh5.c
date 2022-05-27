@@ -754,13 +754,13 @@ void UVH5parse_input_map(
 					auto_bl_idx++;
 					header->ant_1_array[auto_bl_idx] = ant_1_num;
 					header->ant_2_array[auto_bl_idx] = ant_2_num;
-					UVH5print_verbose(__FUNCTION__, "Auto baseline %d->%d", ant_1_num, ant_2_num);
+					UVH5print_verbose(__FUNCTION__, "Auto baseline #%d %s(%d)->(%d)%s", auto_bl_idx, inputs[inpair_1].antenna, ant_1_num, ant_2_num, inputs[inpair_2].antenna);
 				}
 				else {
 					cross_bl_idx++;
 					header->ant_1_array[cross_bl_idx] = ant_1_num;
 					header->ant_2_array[cross_bl_idx] = ant_2_num;
-					UVH5print_verbose(__FUNCTION__, "Cross baseline %d->%d", ant_1_num, ant_2_num);
+					UVH5print_verbose(__FUNCTION__, "Cross baseline #%d %s(%d)->(%d)%s", cross_bl_idx, inputs[inpair_1].antenna, ant_1_num, ant_2_num, inputs[inpair_2].antenna);
 				}
 			}
 			else if (!is_auto && inpair_1%npols_in != 0 && inpair_2%npols_in == 0) {
@@ -825,7 +825,7 @@ void UVH5permutate_uvws(UVH5_header_t* header) {
 			header->ant_2_array[bls_idx]
 		];
 
-		UVH5print_verbose(__FUNCTION__, "Basline #%d\n(#%d @ %d) -> (#%d @ %d)",
+		UVH5print_verbose(__FUNCTION__, "Baseline #%d\n(#%d @ %d) -> (#%d @ %d)",
 			bls_idx,
 			header->ant_1_array[bls_idx],
 			ant_1_idx,
