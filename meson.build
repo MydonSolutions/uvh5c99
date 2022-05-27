@@ -12,6 +12,7 @@ inc_lst = [
 dep_lst = [
   m_dep,
   dependency('hdf5'),
+  subproject('radiointerferometryc99').get_variable('lib_radiointerferometry_dep'),
 ]
 
 subdir('external_src')
