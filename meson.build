@@ -1,5 +1,5 @@
 project('uvh5c99', 'c',
-  version: '0.6',
+  version: '0.7',
 )
 
 cc = meson.get_compiler('c')

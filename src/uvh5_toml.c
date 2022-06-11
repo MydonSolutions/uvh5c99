@@ -301,7 +301,7 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header) {
 		}
 
 		char *ant_pos_frame_str = NULL;
-		char ant_pos_frame = FRAME_ECEF;
+		char ant_pos_frame = FRAME_XYZ;
 		if(_UVH5toml_string_in(conf, "antenna_position_frame", &ant_pos_frame_str)) {
 			// Not specified
 			double dist = calc_hypotenuse(header->antenna_positions, 3);
@@ -318,6 +318,9 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header) {
 			}
 			else if(strcmp(ant_pos_frame_str, "enu") == 0) {
 				ant_pos_frame = FRAME_ENU;
+			}
+			else if(strcmp(ant_pos_frame_str, "xyz") == 0) {
+				ant_pos_frame = FRAME_XYZ;
 			}
 			else {
 				UVH5print_warn(__FUNCTION__, "Ignoring 'antenna_position_frame' specfication: '%s'.", ant_pos_frame_str);
@@ -346,6 +349,7 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header) {
 				);
 				break;
 			case FRAME_XYZ:
+			default:
 				UVH5print_info(__FUNCTION__, "Verbatim XYZ positions.");
 				break;
 		}
