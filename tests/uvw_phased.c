@@ -89,8 +89,8 @@ int main(int argc, const char * argv[]) {
 		calc_ha_dec_rad(
 			ra_rad,
 			dec_rad,
-			calc_deg2rad(uvh5_header->longitude),
-			calc_deg2rad(uvh5_header->latitude),
+			calc_rad_from_degree(uvh5_header->longitude),
+			calc_rad_from_degree(uvh5_header->latitude),
 			uvh5_header->altitude,
 			timemjd,
 			dut1,
@@ -110,7 +110,7 @@ int main(int argc, const char * argv[]) {
 			uvh5_header->Nants_telescope,
 			_ha_rad,
 			_decli_rad,
-			calc_deg2rad(uvh5_header->latitude)
+			calc_rad_from_degree(uvh5_header->latitude)
 		);
 
 		UVH5permute_uvws(uvh5_header);

@@ -127,8 +127,8 @@ void UVH5Hadmin(UVH5_header_t *header) {
 	calc_position_to_enu_frame_from_xyz(
 		header->_antenna_enu_positions,
 		header->Nants_telescope,
-		calc_deg2rad(header->longitude),
-		calc_deg2rad(header->latitude),
+		calc_rad_from_degree(header->longitude),
+		calc_rad_from_degree(header->latitude),
 		header->altitude
 	);
 	header->_antenna_uvw_positions = malloc(sizeof(double) * header->Nants_telescope * 3);

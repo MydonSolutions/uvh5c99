@@ -169,7 +169,7 @@ int main(int argc, const char * argv[]) {
 				}
 
 				if(visdata[visdata_offset].r != xgpuOutput_sample.r ||
-					 visdata[visdata_offset].i != xgpuOutput_sample.i
+					 visdata[visdata_offset].i != -xgpuOutput_sample.i
 				) {
 					UVH5print_error(__FUNCTION__, "#(%d, %d): (xgpu = %d, blidx = %d, polidx = %d, isauto = %d, needsconj = %d)\n\t{%d, %di} vs {%d, %di}\n\t\t@ %d vs %d",
 						approd_idx,

@@ -4,6 +4,7 @@
 
 #include "uvh5.h"
 #include "uvh5/uvh5_toml.h"
+#include "radiointerferometryc99.h"
 
 int main(int argc, const char * argv[]) {
 	if (argc != 3) {
@@ -48,7 +49,7 @@ int main(int argc, const char * argv[]) {
 			uvh5_header->Nants_data,
 			hour_angle_rad,
 			declination_rad,
-			calc_deg2rad(uvh5_header->latitude)
+			calc_rad_from_degree(uvh5_header->latitude)
 		);
 
 		UVH5permute_uvws(uvh5_header);
@@ -59,7 +60,7 @@ int main(int argc, const char * argv[]) {
 	float tau = 1.0;
 	for (size_t i = 0; i < uvh5_header->Nbls; i++)
 	{
-		uvh5_header->time_array[i] = calc_julian_date_from_guppi_param(16.0, 16*8192, 8192, 12371829, 0) + tau/(DAYSEC*2);
+		uvh5_header->time_array[i] = calc_julian_date_from_guppi_param(16.0, 16*8192, 8192, 12371829, 0) + tau/(RADIOINTERFEROMETERY_DAYSEC*2);
 		uvh5_header->integration_time[i] = tau;
 	}
 
@@ -69,7 +70,7 @@ int main(int argc, const char * argv[]) {
 		UVH5write_dynamic(&uvh5);
 		for (size_t i = 0; i < uvh5_header->Nbls; i++)
 		{
-			uvh5_header->time_array[i] += tau/DAYSEC;
+			uvh5_header->time_array[i] += tau/RADIOINTERFEROMETERY_DAYSEC;
 		}
 	}
 

@@ -1,5 +1,10 @@
 project('uvh5c99', 'c',
-  version: '0.7',
+  version: '0.7.1',
+  default_options: [
+    'c_std=c99',
+    'buildtype=release',
+    'b_ndebug=if-release'
+  ]
 )
 
 cc = meson.get_compiler('c')

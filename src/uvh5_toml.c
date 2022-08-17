@@ -333,8 +333,8 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header) {
 				calc_position_to_xyz_frame_from_ecef(
 					header->antenna_positions,
 					header->Nants_telescope,
-					calc_deg2rad(header->longitude),
-					calc_deg2rad(header->latitude),
+					calc_rad_from_degree(header->longitude),
+					calc_rad_from_degree(header->latitude),
 					header->altitude
 				);
 				break;
@@ -343,8 +343,8 @@ void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header) {
 				calc_position_to_xyz_frame_from_enu(
 					header->antenna_positions,
 					header->Nants_telescope,
-					calc_deg2rad(header->longitude),
-					calc_deg2rad(header->latitude),
+					calc_rad_from_degree(header->longitude),
+					calc_rad_from_degree(header->latitude),
 					header->altitude
 				);
 				break;
