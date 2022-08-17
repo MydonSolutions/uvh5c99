@@ -60,7 +60,7 @@ int main(int argc, const char * argv[]) {
 	float tau = 1.0;
 	for (size_t i = 0; i < uvh5_header->Nbls; i++)
 	{
-		uvh5_header->time_array[i] = calc_julian_date_from_guppi_param(16.0, 16*8192, 8192, 12371829, 0) + tau/(RADIOINTERFEROMETERY_DAYSEC*2);
+		uvh5_header->time_array[i] = tau/(RADIOINTERFEROMETERY_DAYSEC*2);
 		uvh5_header->integration_time[i] = tau;
 	}
 
