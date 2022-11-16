@@ -164,12 +164,12 @@ int main(int argc, const char * argv[]) {
 			visdata_offset = (*bl_idx)*visdata_bl_stride + (*pol_idx);
 			for (int freq = 0; !failed && freq < Nfreqs; freq++) {
 				xgpuOutput_sample = xgpuOutput[freq * MATRIX_H_DIMS[1] + (*xgpu_idx)];
-				if(*conjugate) {
+				if(! *conjugate) { // xgpu sample is conjugated once too far
 					xgpuOutput_sample.i = -xgpuOutput_sample.i;
 				}
 
 				if(visdata[visdata_offset].r != xgpuOutput_sample.r ||
-					 visdata[visdata_offset].i != -xgpuOutput_sample.i
+					 visdata[visdata_offset].i != xgpuOutput_sample.i
 				) {
 					UVH5print_error(__FUNCTION__, "#(%d, %d): (xgpu = %d, blidx = %d, polidx = %d, isauto = %d, needsconj = %d)\n\t{%d, %di} vs {%d, %di}\n\t\t@ %d vs %d",
 						approd_idx,

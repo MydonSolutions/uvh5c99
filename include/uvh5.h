@@ -9,6 +9,7 @@
 #include "h5dsc99/h5_dataspace.h"
 #include "radiointerferometryc99.h"
 #include "uvh5/uvh5_printer.h"
+#include "uvh5/uvh5_phase_center.h"
 
 typedef struct
 {
@@ -18,13 +19,7 @@ typedef struct
 	char *telescope_name;				 /* The name of the telescope used to take the data. The value is used to check that metadata
 																	is self-consistent for known telescopes in pyuvdata. */
 	char *instrument;						 /* The name of the instrument, typically the telescope name. */
-	char *object_name;					 /* The name of the object tracked by the telescope. For a driftscan antenna, this is
-																	typically "zenith". */
 	char *history;							 /* The history of the data file. */
-	char *phase_type;						 /* The phase type of the observation. Should be "phased" or "drift". Note that "drift" in
-																	this context more accurately means "unphased", in that baselines are computing using ENU
-																	coordinates, without any w-projection. Any other value is treated as an unrecognized
-																	type. */
 	int Nants_data;							 /* The number of antennas that data in the file corresponds to. May be smaller than the
 																	number of antennas in the array. */
 	int Nants_telescope;				 /* The number of antennas in the array. May be larger than the number of antennas with
@@ -79,6 +74,36 @@ typedef struct
 																	position plus the values stored in antenna positions equals the position of individual
 																	elements in ECEF. The conversion between LLA and ECEF is given by WGS84. This is a
 																	two-dimensional array of size [Nants_telescope, 3]. */
+	
+	UVH5_phase_center_t* phase_center_catalog; /* A list of phase-center details (UVH5_phase_center_t). The integer-indices
+																								are the phase center catalog IDs, which are used to identify which
+																								baseline-times are phased to which phase center via the
+																								phase center id array.*/
+	int* phase_center_id_array;			 /* The cat id from the phase_center_catalog that each baseline-time is phased to.
+																			A one dimensional array of length [Nbls] (reiteratively written Ntimes, so that
+																			stored it has size [Nblts]). */
+	double* phase_center_app_ra;  	 /* Apparent right ascension of the phase center in the topocentric frame of the observatory,
+																			in radians. This is a one-dimensional array of size [Nbls] (reiteratively written Ntimes,
+																			so that stored it has size [Nblts]).
+																			In the event that there are multiple phase centers, the phase center id array
+																			can be used to identify which phase center is used for this calculation. For unprojected 
+																			phase types, this is just the apparent LST (LAST). */
+	double* phase_center_app_dec;		 /* Apparent declination of the phase center in the topocentric frame of the observatory, in
+																			radians. This is a one-dimensional array of size [Nbls] (reiteratively written Ntimes, so
+																			that stored it has size [Nblts]).
+																			In the event that there are multiple phase centers, the phase center id array can be
+																			used to identify which phase center is used for this calculation. For unprojected phase
+																			types, this is just the telescope latitude. */
+	double* phase_center_frame_pa;	 /* Position angle between the hour circle (which is
+																			a great circle that goes through the target postion and both poles) in the
+																			apparent/topocentric frame, and the frame given in the phase center catalog under the cat
+																			frame dataset. This is a one dimensional array of length [Nbls] (reiteratively written
+																			Ntimes, so that stored it has size [Nblts]).
+																			In the event that there are multiple phase centers with different frames, the
+																			phase center id array can be used to identify which frame is used for each baseline-time
+																			in this calculation.
+																			This is set to zero for unprojected phase types. */
+
 	// Optional entries follow
 	int* flex_spw_id_array;			 /* The mapping of individual channels along the frequency axis
 																	to individual spectral windows, as listed in the spw array. This is a one-dimensional
@@ -102,41 +127,35 @@ typedef struct
 																	This is a one-dimensional array of size [Nants_telescope]. */
 	int uvplane_reference_time;	 /* The time at which the phase center is normal to the
 																	chosen UV plane for phasing. Used for interoperability with the FHD package. */
-	double phase_center_ra;			 /* The right ascension of the phase center of the observation
-																	in radians. Required if phase type is "phased". */
-	double phase_center_dec;		 /* The declination of the phase center of the observation in
-																	radians. Required if phase type is "phased". */
-	double phase_center_epoch;	 /* The epoch year of the phase applied to the data (e.g.,
-																	2000.). Required if phase type is "phased".*/
-	char* phase_center_frame; 	 /* The frame the data and uvw array are phased to.
-																	Options are "gcrs" and "icrs", with default "icrs". These frames are defined as
-																	coordinate systems in astropy. */
 	double* lst_array;					 /* An array corresponding to the local sidereal time of the center of
 																	each observation in the data in units of radians. If it is not specified, it is calculated
 																	from the latitude/longitude and the time array. Saving it in the file can be useful
 																	for files with many values in the time array, which would expensive to recompute. */
 
 	// Administrative entries follow
-	int* _antenna_num_idx_map;	 		 /* An array whose elements translate the corresponding index from antenna-number to index
-																			in the other antenna_* arrays. */
-	double* _antenna_enu_positions;  /* The ENU-framed antenna_positions. */
-	double* _antenna_uvw_positions;  /* The UVW-framed antenna_positions. */
-	int* _ant_pol_prod_xgpu_index;	 /* An array whose elements are the xGPU indices. Size of [Nbls*Npols]*/
-	int* _ant_pol_prod_bl_index;		 /* An array whose elements are the ant_1/2_array index. Size of [Nbls*Npols]*/
-	int* _ant_pol_prod_pol_index; 	 /* An array whose elements are the polarization index. Size of [Nbls*Npols]*/
-	char* _ant_pol_prod_conj; 		 	 /* An array whose elements indicate if the antenna-polarization-product needs
-																			conjugation. Size of [Nbls*Npols]*/
-	char* _ant_pol_prod_auto; 		 	 /* An array whose elements indicate if the antenna-polarization-product is of auto-
-																			correlation. Size of [Nbls*Npols]*/
-	int* _antenna_numbers_data;  	 	 /* An array of the numbers of the antennas present in the
-																			observation (note that these are not indices, they do not need to start at zero or
-																			be continuous). This is a one-dimensional array of size Nants_data. Note there
-																			must be one entry for every unique antenna in ant 1 array and ant 2 array, and no
-																			additional entries. */
+	int* _antenna_num_idx_map;	 				 /* An array whose elements translate the corresponding index from antenna-number to index
+																					in the other antenna_* arrays. */
+	double* _antenna_enu_positions; 		 /* The ENU-framed antenna_positions. */
+	double* _antenna_uvw_positions; 		 /* The UVW-framed antenna_positions. */
+	int* _ant_pol_prod_xgpu_index; 			 /* An array whose elements are the xGPU indices. Size of [Nbls*Npols]*/
+	int* _ant_pol_prod_bl_index;	 			 /* An array whose elements are the ant_1/2_array index. Size of [Nbls*Npols]*/
+	int* _ant_pol_prod_pol_index; 			 /* An array whose elements are the polarization index. Size of [Nbls*Npols]*/
+	char* _ant_pol_prod_conj; 		 			 /* An array whose elements indicate if the antenna-polarization-product needs
+																					conjugation. Size of [Nbls*Npols]*/
+	char* _ant_pol_prod_auto; 		 			 /* An array whose elements indicate if the antenna-polarization-product is of auto-
+																					correlation. Size of [Nbls*Npols]*/
+	int* _antenna_numbers_data;  	 			 /* An array of the numbers of the antennas present in the
+																					observation (note that these are not indices, they do not need to start at zero or
+																					be continuous). This is a one-dimensional array of size Nants_data. Note there
+																					must be one entry for every unique antenna in ant 1 array and ant 2 array, and no
+																					additional entries. */
+	size_t _phase_center_catalog_length; /* The length of the phase_center_catalog.*/
 
 } UVH5_header_t;
 
 void UVH5Halloc(UVH5_header_t *header);
+
+void UVH5Hmalloc_phase_center_catalog(UVH5_header_t *header, size_t catalog_length);
 
 void UVH5Hadmin(UVH5_header_t *header);
 
@@ -177,6 +196,10 @@ typedef struct
 	H5_open_dataspace_t DS_header_time_array;
 	H5_open_dataspace_t DS_header_integration_time;
 	H5_open_dataspace_t DS_header_lst_array;
+	H5_open_dataspace_t DS_phase_center_id_array;
+	H5_open_dataspace_t DS_phase_center_app_ra;
+	H5_open_dataspace_t DS_phase_center_app_dec;
+	H5_open_dataspace_t DS_phase_center_frame_pa;
 	hid_t data_id;
 	void *visdata;
 	H5_bool_t *flags;

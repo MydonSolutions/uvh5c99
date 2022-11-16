@@ -31,9 +31,15 @@ int main(int argc, const char * argv[]) {
 	UVH5Hadmin(uvh5_header);
 
 	uvh5_header->instrument = uvh5_header->telescope_name;
-	uvh5_header->object_name = "test";
 	uvh5_header->history = "None";
-	uvh5_header->phase_type = "phased";
+	
+	UVH5Hmalloc_phase_center_catalog(uvh5_header, 1);
+	uvh5_header->phase_center_catalog[0].name = "Center";
+	uvh5_header->phase_center_catalog[0].type = UVH5_PHASE_CENTER_SIDEREAL;
+	uvh5_header->phase_center_catalog[0].lon = 0.0;
+	uvh5_header->phase_center_catalog[0].lat = 0.0;
+	uvh5_header->phase_center_catalog[0].frame = "icrs";
+	uvh5_header->phase_center_catalog[0].epoch = 2000.0;
 
 	bool failed = false;
 	for (int i = 0; !failed && i < uvh5_header->Nants_data; i++)

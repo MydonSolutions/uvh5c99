@@ -62,6 +62,26 @@ void UVH5Halloc(UVH5_header_t *header)
 		memset(header->antenna_positions, 0, sizeof(double) * header->Nants_telescope * 3);
 		UVH5print_verbose(__FUNCTION__, "'antenna_positions' allocated %ld bytes.", sizeof(double) * header->Nants_telescope * 3);
 	}
+	if(header->phase_center_id_array == NULL && header->Nbls != 0) {
+		header->phase_center_id_array = malloc(sizeof(int) * header->Nbls);
+		memset(header->phase_center_id_array, 0, sizeof(int) * header->Nbls);
+		UVH5print_verbose(__FUNCTION__, "'phase_center_id_array' allocated %ld bytes.", sizeof(int) * header->Nbls);
+	}
+	if(header->phase_center_app_ra == NULL && header->Nbls != 0) {
+		header->phase_center_app_ra = malloc(sizeof(double) * header->Nbls);
+		memset(header->phase_center_app_ra, 0, sizeof(double) * header->Nbls);
+		UVH5print_verbose(__FUNCTION__, "'phase_center_app_ra' allocated %ld bytes.", sizeof(double) * header->Nbls);
+	}
+	if(header->phase_center_app_dec == NULL && header->Nbls != 0) {
+		header->phase_center_app_dec = malloc(sizeof(double) * header->Nbls);
+		memset(header->phase_center_app_dec, 0, sizeof(double) * header->Nbls);
+		UVH5print_verbose(__FUNCTION__, "'phase_center_app_dec' allocated %ld bytes.", sizeof(double) * header->Nbls);
+	}
+	if(header->phase_center_frame_pa == NULL && header->Nbls != 0) {
+		header->phase_center_frame_pa = malloc(sizeof(double) * header->Nbls);
+		memset(header->phase_center_frame_pa, 0, sizeof(double) * header->Nbls);
+		UVH5print_verbose(__FUNCTION__, "'phase_center_frame_pa' allocated %ld bytes.", sizeof(double) * header->Nbls);
+	}
 	// Optional entries follow
 	// if(header-> == NULL && header->Nbls != 0) {
 	// 	header->lst_array = malloc(sizeof(double) * header->Nbls);
@@ -100,6 +120,13 @@ void UVH5Halloc(UVH5_header_t *header)
 		UVH5print_verbose(__FUNCTION__, "'_antenna_numbers_data' allocated %ld bytes.", sizeof(int) * header->Nants_data);
 	}
 }
+
+void UVH5Hmalloc_phase_center_catalog(UVH5_header_t *header, size_t catalog_length) {
+	header->_phase_center_catalog_length = catalog_length;
+	header->phase_center_catalog = malloc(header->_phase_center_catalog_length * sizeof(UVH5_phase_center_t));
+	memset(header->phase_center_catalog, 0, header->_phase_center_catalog_length * sizeof(UVH5_phase_center_t));
+}
+
 /*
  * Generate `_antenna_num_idx_map` and `_antenna_enu_positions`.
  */
@@ -173,6 +200,18 @@ void UVH5Hfree(UVH5_header_t *header)
 	if (header->antenna_positions != NULL) {
 		free(header->antenna_positions);
 	}
+	if (header->phase_center_catalog != NULL) {
+		for(int catalog_index = 0; catalog_index < header->_phase_center_catalog_length; catalog_index++) {
+			if(header->phase_center_catalog[catalog_index].type == UVH5_PHASE_CENTER_EPHEMERIS) {
+				free(header->phase_center_catalog[catalog_index].ephem_lon);
+				free(header->phase_center_catalog[catalog_index].ephem_lat);
+				free(header->phase_center_catalog[catalog_index].times);
+				free(header->phase_center_catalog[catalog_index].dist);
+				free(header->phase_center_catalog[catalog_index].vrad);
+			}
+		}
+		free(header->phase_center_catalog);
+	}
 	// Optional arrays follow
 	if (header->antenna_diameters != NULL) {
 		free(header->antenna_diameters);
@@ -228,6 +267,95 @@ hid_t UVH5TcreateCF64()
 	return UVH5_CF64;
 }
 
+herr_t _H5DSphaseCenterCatalogWrite(
+	hid_t file_id,
+	UVH5_phase_center_t* catalog,
+	int catalog_length
+) {	
+	herr_t status;
+	
+	hid_t parent_catalog_id = H5Gcreate(file_id, "/Header/phase_center_catalog", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	if (parent_catalog_id < 0)	{ UVH5print_error(__FUNCTION__, "failure opening catalog"); return -1; }
+
+	// 'Header/phase_center_catalog' group
+	char catalog_group_path[] = "/Header/phase_center_catalog/*********";
+	for(int catalog_index = 0; catalog_index < catalog_length; catalog_index++) {
+		sprintf(catalog_group_path, "/Header/phase_center_catalog/%d", catalog_index%1000000000);
+		hid_t catalog_id = H5Gcreate(file_id, catalog_group_path, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		if (catalog_id < 0)	{ UVH5print_error(__FUNCTION__, "failure opening catalog ID #%d", catalog_index); return -1; }
+
+		status = H5DSstringWrite(catalog_id, "cat_name", 0, NULL, catalog[catalog_index].name);
+		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_name' at catalog ID #%d", catalog_index); return status; }
+		status = H5DSstringWrite(catalog_id, "cat_frame", 0, NULL, catalog[catalog_index].frame);
+		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_frame' at catalog ID #%d", catalog_index); return status; }
+		status = H5DSdoubleWrite(catalog_id, "cat_epoch", 0, NULL, &catalog[catalog_index].epoch);
+		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_epoch' at catalog ID #%d", catalog_index); return status; }
+		if(catalog[catalog_index].info_source) {
+			status = H5DSstringWrite(catalog_id, "info_source", 0, NULL, catalog[catalog_index].info_source);
+			if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'info_source' at catalog ID #%d", catalog_index); return status; }
+		}
+
+		switch(catalog[catalog_index].type) {
+			case UVH5_PHASE_CENTER_SIDEREAL:
+				status = H5DSstringWrite(catalog_id, "cat_type", 0, NULL, "sidereal");
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_type' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "cat_lon", 0, NULL, &catalog[catalog_index].lon);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lon' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "cat_lat", 0, NULL, &catalog[catalog_index].lat);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lat' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "pm_ra", 0, NULL, &catalog[catalog_index].pm_ra);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'pm_ra' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "pm_dec", 0, NULL, &catalog[catalog_index].pm_dec);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'pm_dec' at catalog ID #%d", catalog_index); return status; }
+				
+				break;
+			case UVH5_PHASE_CENTER_EPHEMERIS:
+				status = H5DSstringWrite(catalog_id, "cat_type", 0, NULL, "ephem");
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_type' at catalog ID #%d", catalog_index); return status; }
+
+				const hsize_t dims1_Npts[] = {catalog[catalog_index]._ephem_points};
+				status = H5DSdoubleWrite(catalog_id, "ephem_lon", 1, dims1_Npts, catalog[catalog_index].ephem_lon);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'ephem_lon' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "ephem_lat", 1, dims1_Npts, catalog[catalog_index].ephem_lat);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'ephem_lat' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "times", 1, dims1_Npts, catalog[catalog_index].times);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'times' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "dist", 1, dims1_Npts, catalog[catalog_index].dist);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'dist' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "vrad", 1, dims1_Npts, catalog[catalog_index].vrad);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'vrad' at catalog ID #%d", catalog_index); return status; }
+				break;
+			case UVH5_PHASE_CENTER_DRIFTSCAN:
+				status = H5DSstringWrite(catalog_id, "cat_type", 0, NULL, "driftscan");
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_type' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "cat_lon", 0, NULL, &catalog[catalog_index].lon);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lon' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "cat_lat", 0, NULL, &catalog[catalog_index].lat);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lat' at catalog ID #%d", catalog_index); return status; }
+				break;
+			case UVH5_PHASE_CENTER_UNPROJECTED:
+				status = H5DSstringWrite(catalog_id, "cat_type", 0, NULL, "unprojected");
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_type' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "cat_lon", 0, NULL, &catalog[catalog_index].lon);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lon' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "cat_lat", 0, NULL, &catalog[catalog_index].lat);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lat' at catalog ID #%d", catalog_index); return status; }
+				break;
+			default:
+				UVH5print_error(__FUNCTION__, "Unrecognised catalog type '%d' for catalog ID #%d", catalog[catalog_index].type, catalog_index);
+				return -1;
+		}
+
+		status = H5Gclose(catalog_id);
+		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure closing catalog ID #%d", catalog_index); return status; }
+	}
+	status = H5Gclose(parent_catalog_id);
+	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure closing catalog"); return status; }
+
+	return 0;	
+}
+
+
 void _UVH5_Hwrite_static(UVH5_file_t *UVH5file)
 {
 	// TODO return error code
@@ -257,14 +385,8 @@ void _UVH5_Hwrite_static(UVH5_file_t *UVH5file)
 	status = H5DSstringWrite(UVH5file->header_id, "instrument", 0, NULL, header.instrument);
 	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'instrument'"); return; }
 
-	status = H5DSstringWrite(UVH5file->header_id, "object_name", 0, NULL, header.object_name);
-	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'object_name'"); return; }
-
 	status = H5DSstringWrite(UVH5file->header_id, "history", 0, NULL, header.history);
 	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'history'"); return; }
-
-	status = H5DSstringWrite(UVH5file->header_id, "phase_type", 0, NULL, header.phase_type);
-	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'phase_type'"); return; }
 
 	status = H5DSintWrite(UVH5file->header_id, "Nants_data", 0, NULL, &header.Nants_data);
 	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'Nants_data'"); return; }
@@ -308,7 +430,10 @@ void _UVH5_Hwrite_static(UVH5_file_t *UVH5file)
 	status = H5DSdoubleWrite(UVH5file->header_id, "antenna_positions", 2, dims2_Nants_telescope_3, header.antenna_positions);
 	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'antenna_positions'"); return; }
 
-	status = H5DSstringWrite(UVH5file->header_id, "version", 0, NULL, "1.0");
+	status = _H5DSphaseCenterCatalogWrite(UVH5file->file_id, header.phase_center_catalog, header._phase_center_catalog_length);
+	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'phase_center_catalog'"); return; }
+
+	status = H5DSstringWrite(UVH5file->header_id, "version", 0, NULL, "1.1");
 	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'version'"); return; }
 
 	// Optional entries follow
@@ -357,20 +482,6 @@ void _UVH5_Hwrite_static(UVH5_file_t *UVH5file)
 		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on optional 'uvplane_reference_time'"); }
 	}
 
-	if(strcmp(header.phase_type, "phased") == 0){
-		status = H5DSdoubleWrite(UVH5file->header_id, "phase_center_ra", 0, NULL, &header.phase_center_ra);
-		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on situational 'phase_center_ra'"); }
-	
-		status = H5DSdoubleWrite(UVH5file->header_id, "phase_center_dec", 0, NULL, &header.phase_center_dec);
-		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on situational 'phase_center_dec'"); }
-	
-		status = H5DSdoubleWrite(UVH5file->header_id, "phase_center_epoch", 0, NULL, &header.phase_center_epoch);
-		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on situational 'phase_center_epoch'"); }
-	
-		status = H5DSstringWrite(UVH5file->header_id, "phase_center_frame", 0, NULL, header.phase_center_frame);
-		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on situational 'phase_center_frame'"); }
-	}
-
 }
 
 void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata)
@@ -416,6 +527,22 @@ void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata)
 	UVH5file->DS_header_integration_time.name = "integration_time";
 	H5DSset(1, dim1_unlim, dim1_nbls, &UVH5file->DS_header_integration_time);
 	H5DSopenDouble(UVH5file->header_id, &UVH5file->DS_header_integration_time);
+
+	UVH5file->DS_phase_center_id_array.name = "phase_center_id_array";
+	H5DSset(1, dim1_unlim, dim1_nbls, &UVH5file->DS_phase_center_id_array);
+	H5DSopenInt(UVH5file->header_id, &UVH5file->DS_phase_center_id_array);
+
+	UVH5file->DS_phase_center_app_ra.name = "phase_center_app_ra";
+	H5DSset(1, dim1_unlim, dim1_nbls, &UVH5file->DS_phase_center_app_ra);
+	H5DSopenDouble(UVH5file->header_id, &UVH5file->DS_phase_center_app_ra);
+
+	UVH5file->DS_phase_center_app_dec.name = "phase_center_app_dec";
+	H5DSset(1, dim1_unlim, dim1_nbls, &UVH5file->DS_phase_center_app_dec);
+	H5DSopenDouble(UVH5file->header_id, &UVH5file->DS_phase_center_app_dec);
+
+	UVH5file->DS_phase_center_frame_pa.name = "phase_center_frame_pa";
+	H5DSset(1, dim1_unlim, dim1_nbls, &UVH5file->DS_phase_center_frame_pa);
+	H5DSopenDouble(UVH5file->header_id, &UVH5file->DS_phase_center_frame_pa);
 
 	if(UVH5file->header.lst_array){
 		UVH5file->DS_header_lst_array.name = "lst_array";
@@ -463,6 +590,10 @@ void UVH5close(UVH5_file_t *UVH5file)
 		H5DSclose(&UVH5file->DS_header_uvw_array);
 		H5DSclose(&UVH5file->DS_header_time_array);
 		H5DSclose(&UVH5file->DS_header_integration_time);
+		H5DSclose(&UVH5file->DS_phase_center_id_array);
+		H5DSclose(&UVH5file->DS_phase_center_app_ra);
+		H5DSclose(&UVH5file->DS_phase_center_app_dec);
+		H5DSclose(&UVH5file->DS_phase_center_frame_pa);
 
 		if(UVH5file->header.lst_array){
 			H5DSclose(&UVH5file->DS_header_lst_array);
@@ -554,6 +685,26 @@ int UVH5write_dynamic(UVH5_file_t* UVH5file) {
 	if (status < 0) { UVH5print_error(__FUNCTION__, "H5DSextend failure on 'header_integration_time'"); return -1;}
 	status = H5DSwrite(&UVH5file->DS_header_integration_time, UVH5file->header.integration_time);
 	if (status < 0) { UVH5print_error(__FUNCTION__, "H5DSwrite failure on 'header_integration_time'"); return -1;}
+
+	status = H5DSextend(&UVH5file->DS_phase_center_id_array);
+	if (status < 0) { UVH5print_error(__FUNCTION__, "H5DSextend failure on 'header_phase_center_id_array'"); return -1;}
+	status = H5DSwrite(&UVH5file->DS_phase_center_id_array, UVH5file->header.phase_center_id_array);
+	if (status < 0) { UVH5print_error(__FUNCTION__, "H5DSwrite failure on 'header_phase_center_id_array'"); return -1;}
+
+	status = H5DSextend(&UVH5file->DS_phase_center_app_ra);
+	if (status < 0) { UVH5print_error(__FUNCTION__, "H5DSextend failure on 'header_phase_center_app_ra'"); return -1;}
+	status = H5DSwrite(&UVH5file->DS_phase_center_app_ra, UVH5file->header.phase_center_app_ra);
+	if (status < 0) { UVH5print_error(__FUNCTION__, "H5DSwrite failure on 'header_phase_center_app_ra'"); return -1;}
+
+	status = H5DSextend(&UVH5file->DS_phase_center_app_dec);
+	if (status < 0) { UVH5print_error(__FUNCTION__, "H5DSextend failure on 'header_phase_center_app_dec'"); return -1;}
+	status = H5DSwrite(&UVH5file->DS_phase_center_app_dec, UVH5file->header.phase_center_app_dec);
+	if (status < 0) { UVH5print_error(__FUNCTION__, "H5DSwrite failure on 'header_phase_center_app_dec'"); return -1;}
+
+	status = H5DSextend(&UVH5file->DS_phase_center_frame_pa);
+	if (status < 0) { UVH5print_error(__FUNCTION__, "H5DSextend failure on 'header_phase_center_frame_pa'"); return -1;}
+	status = H5DSwrite(&UVH5file->DS_phase_center_frame_pa, UVH5file->header.phase_center_frame_pa);
+	if (status < 0) { UVH5print_error(__FUNCTION__, "H5DSwrite failure on 'header_phase_center_frame_pa'"); return -1;}
 
 	// Data
 	status = H5DSextend(&UVH5file->DS_data_visdata);
