@@ -412,6 +412,9 @@ void _UVH5_Hwrite_static(UVH5_file_t *UVH5file)
 	status = H5DSintWrite(UVH5file->header_id, "Npols", 0, NULL, &header.Npols);
 	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'Npols'"); return; }
 
+	status = H5DSintWrite(UVH5file->header_id, "Nphase", 0, NULL, &header._phase_center_catalog_length);
+	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'Nphase'"); return; }
+
 	status = H5DSdoubleWrite(UVH5file->header_id, "freq_array", 1, dims1_Nfreqs, header.freq_array);
 	if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'freq_array'"); return; }
 
