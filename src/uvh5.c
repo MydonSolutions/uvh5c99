@@ -551,6 +551,9 @@ void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata)
 	UVH5file->DS_data_flags.filter_flag = H5_FILTER_FLAG_DEFLATE_3;
 	H5DSopenDouble(UVH5file->data_id, &UVH5file->DS_data_nsamples);
 	UVH5file->nsamples = H5DSmalloc(&UVH5file->DS_data_nsamples);
+
+	// 'extra_keywords' group
+	UVH5file->keywords_id = H5Gcreate(UVH5file->file_id, "/Header/extra_keywords", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 }
 
 void UVH5close(UVH5_file_t *UVH5file)
@@ -584,10 +587,47 @@ void UVH5close(UVH5_file_t *UVH5file)
 		free(UVH5file->nsamples);
 	}
 
+	// 'extra_keywords' group
+	if(UVH5file->keywords_id) {
+		H5Gclose(UVH5file->keywords_id);
+	}
+
 	if(UVH5file->file_id) {
 		H5Fclose(UVH5file->file_id);
 		UVH5file->file_id = 0;
 	}
+}
+
+int UVH5write_keyword_bool(UVH5_file_t* UVH5file, char* key, bool value) {
+	if (_H5DboolWrite(UVH5file->keywords_id, key, 0, NULL, &value) < 0) {
+		UVH5print_error(__FUNCTION__, "failure on `extra_keywords/%s`", key);
+		return -1;
+	}
+	return 0;
+}
+
+int UVH5write_keyword_double(UVH5_file_t* UVH5file, char* key, double value) {
+	if (_H5DdoubleWrite(UVH5file->keywords_id, key, 0, NULL, &value) < 0) {
+		UVH5print_error(__FUNCTION__, "failure on `extra_keywords/%s`", key);
+		return -1;
+	}
+	return 0;
+}
+
+int UVH5write_keyword_int(UVH5_file_t* UVH5file, char* key, int value) {
+	if (_H5DintWrite(UVH5file->keywords_id, key, 0, NULL, &value) < 0) {
+		UVH5print_error(__FUNCTION__, "failure on `extra_keywords/%s`", key);
+		return -1;
+	}
+	return 0;
+}
+
+int UVH5write_keyword_string(UVH5_file_t* UVH5file, char* key, char* value) {
+	if (_H5DstringWrite(UVH5file->keywords_id, key, 0, NULL, value) < 0) {
+		UVH5print_error(__FUNCTION__, "failure on `extra_keywords/%s`", key);
+		return -1;
+	}
+	return 0;
 }
 
 int UVH5write_dynamic(UVH5_file_t* UVH5file) {

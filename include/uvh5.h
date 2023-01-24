@@ -167,6 +167,7 @@ typedef struct
 {
 	hid_t file_id;
 	hid_t header_id;
+	hid_t keywords_id;
 	UVH5_header_t header;
 	H5_open_dataspace_t DS_header_Ntimes;
 	H5_open_dataspace_t DS_header_Nblts;
@@ -196,6 +197,11 @@ void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata);
 void UVH5close(UVH5_file_t *UVH5file);
 
 int UVH5write_dynamic(UVH5_file_t* UVH5file);
+
+int UVH5write_keyword_double(UVH5_file_t* UVH5file, char* key, double value);
+int UVH5write_keyword_bool(UVH5_file_t* UVH5file, char* key, bool value);
+int UVH5write_keyword_int(UVH5_file_t* UVH5file, char* key, int value);
+int UVH5write_keyword_string(UVH5_file_t* UVH5file, char* key, char* value);
 
 int UVH5find_antenna_index_by_name(UVH5_header_t* header, char* name);
 

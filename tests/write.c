@@ -65,6 +65,10 @@ int main(int argc, const char * argv[]) {
 	}
 
 	UVH5open("test_file.uvh5", &uvh5, UVH5TcreateCF32());
+	UVH5write_keyword_bool(&uvh5, "keyword_bool", true);
+	UVH5write_keyword_double(&uvh5, "keyword_double", 3.14159265);
+	UVH5write_keyword_int(&uvh5, "keyword_int", 42);
+	UVH5write_keyword_string(&uvh5, "keyword_string", "Testing");
 
 	while(uvh5_header->Ntimes < 2) {
 		UVH5write_dynamic(&uvh5);
