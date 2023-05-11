@@ -688,6 +688,7 @@ int UVH5write_dynamic(UVH5_file_t* UVH5file) {
 
 int UVH5find_antenna_index_by_name(UVH5_header_t* header, char* name) {
 	if(header->antenna_names == NULL) {
+			UVH5print_error(__FUNCTION__, "UVH5_header_t->antenna_names is NULL");
 			return -2;
 	}
 	for(size_t i = 0; i < header->Nants_telescope; i++) {
@@ -696,6 +697,7 @@ int UVH5find_antenna_index_by_name(UVH5_header_t* header, char* name) {
 			return i;
 		}
 	}
+	UVH5print_warn(__FUNCTION__, "UVH5_header_t->antenna_names does not contain '%s'.", name);
 	return -1;
 }
 
@@ -763,13 +765,19 @@ void UVH5parse_input_map(
 	int cross_bl_idx = header->Nants_data - 1;
 	int cross_bl_idx_rerun_from;
 	int idx = 0;
-	int ant_1_idx, ant_1_num, ant_2_idx, ant_2_num;
+	int ant_1_idx, ant_1_numidx, ant_1_num, ant_2_idx, ant_2_numidx, ant_2_num;
 	for(int inpair_1 = 0; inpair_1 < ninpairs; inpair_1++) {
 		ant_1_idx = inpair_1/npols_in;
 		pol_product[0] = inputs[inpair_1].polarization;
 		
 		if(inpair_1%npols_in == 0) {
-			ant_1_num = header->antenna_numbers[UVH5find_antenna_index_by_name(header, inputs[inpair_1].antenna)];
+			ant_1_numidx = UVH5find_antenna_index_by_name(header, inputs[inpair_1].antenna);
+			if(ant_1_numidx >= 0) {
+				ant_1_num = header->antenna_numbers[ant_1_numidx];
+			}
+			else {
+				ant_1_num = -1;
+			}
 			header->_antenna_numbers_data[_ant_numbers_data_index] = ant_1_num;
 			_ant_numbers_data_index++;
 
@@ -784,7 +792,13 @@ void UVH5parse_input_map(
 			ant_2_idx = inpair_2/npols_in;
 			pol_product[1] = inputs[inpair_2].polarization;
 			if(inpair_2%npols_in == 0) {
-				ant_2_num = header->antenna_numbers[UVH5find_antenna_index_by_name(header, inputs[inpair_2].antenna)];
+				ant_2_numidx = UVH5find_antenna_index_by_name(header, inputs[inpair_2].antenna);
+				if(ant_2_numidx >= 0) {
+					ant_2_num = header->antenna_numbers[ant_2_numidx];
+				}
+				else {
+					ant_2_num = -1;
+				}
 			}
 
 			is_auto = ant_1_num == ant_2_num;
