@@ -55,7 +55,7 @@ int main(int argc, const char * argv[]) {
 		UVH5permute_uvws(uvh5_header);
 	}
 
-	uvh5_header->flex_spw = UVH5_FALSE;
+	uvh5_header->flex_spw = H5_FALSE;
 
 	float tau = 1.0;
 	for (size_t i = 0; i < uvh5_header->Nbls; i++)

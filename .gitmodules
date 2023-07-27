@@ -4,3 +4,6 @@
 [submodule "subprojects/radiointerferometryc99"]
 	path = subprojects/radiointerferometryc99
 	url = https://github.com/MydonSolutions/radiointerferometryc99.git
+[submodule "subprojects/h5dsc99"]
+	path = subprojects/h5dsc99
+	url = https://github.com/MydonSolutions/h5dsc99

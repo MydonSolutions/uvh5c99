@@ -5,8 +5,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "uvh5/uvh5_bool_t.h"
-#include "uvh5/h5_dataspace.h"
+#include "h5dsc99/h5_bool.h"
+#include "h5dsc99/h5_dataspace.h"
 #include "radiointerferometryc99.h"
 #include "uvh5/uvh5_printer.h"
 
@@ -63,11 +63,11 @@ typedef struct
 																	of size [Nbls] (reiteratively written Ntimes, so that stored it has size [Nblts]). */
 	double *freq_array;					 /* An array of all the frequencies (for all spectral windows) stored in the file in Hertz.
 																	This is a one-dimensional array of size [Nfreqs]. */
-	double *channel_width;				 /* The width of frequency channels in the file in Hertz. This is a one-dimensional array of
+	double *channel_width;			 /* The width of frequency channels in the file in Hertz. This is a one-dimensional array of
 																	size [Nfreqs]. */
 	int *spw_array;							 /* An array of the spectral windows in the file. This is a one-dimensional array of size
 																	[Nspws]. */
-	UVH5_bool_t flex_spw;				 /* Whether the data are saved using flexible spectral windows. If more than one spectral
+	H5_bool_t flex_spw;				 	 /* Whether the data are saved using flexible spectral windows. If more than one spectral
 																	window is present in the data, this must be True. */
 	int *polarization_array;		 /* An array of the polarizations contained in the file. This is a one-dimensional array of
 																	size [Npols]. Note that the polarizations should be stored as an integer, and use the
@@ -117,22 +117,22 @@ typedef struct
 																	for files with many values in the time array, which would expensive to recompute. */
 
 	// Administrative entries follow
-	int* _antenna_num_idx_map;	 /* An array whose elements translate the corresponding index from antenna-number to index
-																	in the other antenna_* arrays. */
-	double* _antenna_enu_positions; /* The ENU-framed antenna_positions. */
-	double* _antenna_uvw_positions; /* The UVW-framed antenna_positions. */
-	int* _ant_pol_prod_xgpu_index; /* An array whose elements are the xGPU indices. Size of [Nbls*Npols]*/
-	int* _ant_pol_prod_bl_index;	 /* An array whose elements are the ant_1/2_array index. Size of [Nbls*Npols]*/
-	int* _ant_pol_prod_pol_index; /* An array whose elements are the polarization index. Size of [Nbls*Npols]*/
-	char* _ant_pol_prod_conj; 		 /* An array whose elements indicate if the antenna-polarization-product needs
-																		conjugation. Size of [Nbls*Npols]*/
-	char* _ant_pol_prod_auto; 		 /* An array whose elements indicate if the antenna-polarization-product is of auto-
-																		correlation. Size of [Nbls*Npols]*/
-	int* _antenna_numbers_data;  	 /* An array of the numbers of the antennas present in the
-																	observation (note that these are not indices, they do not need to start at zero or
-																	be continuous). This is a one-dimensional array of size Nants_data. Note there
-																	must be one entry for every unique antenna in ant 1 array and ant 2 array, and no
-																	additional entries. */
+	int* _antenna_num_idx_map;	 		 /* An array whose elements translate the corresponding index from antenna-number to index
+																			in the other antenna_* arrays. */
+	double* _antenna_enu_positions;  /* The ENU-framed antenna_positions. */
+	double* _antenna_uvw_positions;  /* The UVW-framed antenna_positions. */
+	int* _ant_pol_prod_xgpu_index;	 /* An array whose elements are the xGPU indices. Size of [Nbls*Npols]*/
+	int* _ant_pol_prod_bl_index;		 /* An array whose elements are the ant_1/2_array index. Size of [Nbls*Npols]*/
+	int* _ant_pol_prod_pol_index; 	 /* An array whose elements are the polarization index. Size of [Nbls*Npols]*/
+	char* _ant_pol_prod_conj; 		 	 /* An array whose elements indicate if the antenna-polarization-product needs
+																			conjugation. Size of [Nbls*Npols]*/
+	char* _ant_pol_prod_auto; 		 	 /* An array whose elements indicate if the antenna-polarization-product is of auto-
+																			correlation. Size of [Nbls*Npols]*/
+	int* _antenna_numbers_data;  	 	 /* An array of the numbers of the antennas present in the
+																			observation (note that these are not indices, they do not need to start at zero or
+																			be continuous). This is a one-dimensional array of size Nants_data. Note there
+																			must be one entry for every unique antenna in ant 1 array and ant 2 array, and no
+																			additional entries. */
 
 } UVH5_header_t;
 
@@ -179,7 +179,7 @@ typedef struct
 	H5_open_dataspace_t DS_header_lst_array;
 	hid_t data_id;
 	void *visdata;
-	UVH5_bool_t *flags;
+	H5_bool_t *flags;
 	double *nsamples;
 	H5_open_dataspace_t DS_data_visdata;
 	H5_open_dataspace_t DS_data_flags;

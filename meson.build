@@ -16,7 +16,7 @@ inc_lst = [
 ]
 dep_lst = [
   m_dep,
-  dependency('hdf5'),
+  subproject('h5dsc99').get_variable('lib_h5dsc99_dep'),
   subproject('radiointerferometryc99').get_variable('lib_radiointerferometry_dep'),
 ]
 
