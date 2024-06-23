@@ -288,6 +288,11 @@ herr_t _H5DSphaseCenterCatalogWrite(
 		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_name' at catalog ID #%d", catalog_index); return status; }
 		status = H5DSstringWrite(catalog_id, "cat_frame", 0, NULL, catalog[catalog_index].frame);
 		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_frame' at catalog ID #%d", catalog_index); return status; }
+		status = H5DSdoubleWrite(catalog_id, "cat_lon", 0, NULL, &catalog[catalog_index].lon);
+		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lon' at catalog ID #%d", catalog_index); return status; }
+		status = H5DSdoubleWrite(catalog_id, "cat_lat", 0, NULL, &catalog[catalog_index].lat);
+		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lat' at catalog ID #%d", catalog_index); return status; }
+
 		status = H5DSdoubleWrite(catalog_id, "cat_epoch", 0, NULL, &catalog[catalog_index].epoch);
 		if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_epoch' at catalog ID #%d", catalog_index); return status; }
 		if(catalog[catalog_index].info_source) {
@@ -299,14 +304,11 @@ herr_t _H5DSphaseCenterCatalogWrite(
 			case UVH5_PHASE_CENTER_SIDEREAL:
 				status = H5DSstringWrite(catalog_id, "cat_type", 0, NULL, "sidereal");
 				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_type' at catalog ID #%d", catalog_index); return status; }
-				status = H5DSdoubleWrite(catalog_id, "cat_lon", 0, NULL, &catalog[catalog_index].lon);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lon' at catalog ID #%d", catalog_index); return status; }
-				status = H5DSdoubleWrite(catalog_id, "cat_lat", 0, NULL, &catalog[catalog_index].lat);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lat' at catalog ID #%d", catalog_index); return status; }
-				status = H5DSdoubleWrite(catalog_id, "pm_ra", 0, NULL, &catalog[catalog_index].pm_ra);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'pm_ra' at catalog ID #%d", catalog_index); return status; }
-				status = H5DSdoubleWrite(catalog_id, "pm_dec", 0, NULL, &catalog[catalog_index].pm_dec);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'pm_dec' at catalog ID #%d", catalog_index); return status; }
+
+				status = H5DSdoubleWrite(catalog_id, "cat_pm_ra", 0, NULL, &catalog[catalog_index].pm_ra);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_pm_ra' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "cat_pm_dec", 0, NULL, &catalog[catalog_index].pm_dec);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_pm_dec' at catalog ID #%d", catalog_index); return status; }
 				
 				break;
 			case UVH5_PHASE_CENTER_EPHEMERIS:
@@ -314,32 +316,20 @@ herr_t _H5DSphaseCenterCatalogWrite(
 				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_type' at catalog ID #%d", catalog_index); return status; }
 
 				const hsize_t dims1_Npts[] = {catalog[catalog_index]._ephem_points};
-				status = H5DSdoubleWrite(catalog_id, "ephem_lon", 1, dims1_Npts, catalog[catalog_index].ephem_lon);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'ephem_lon' at catalog ID #%d", catalog_index); return status; }
-				status = H5DSdoubleWrite(catalog_id, "ephem_lat", 1, dims1_Npts, catalog[catalog_index].ephem_lat);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'ephem_lat' at catalog ID #%d", catalog_index); return status; }
-				status = H5DSdoubleWrite(catalog_id, "times", 1, dims1_Npts, catalog[catalog_index].times);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'times' at catalog ID #%d", catalog_index); return status; }
-				status = H5DSdoubleWrite(catalog_id, "dist", 1, dims1_Npts, catalog[catalog_index].dist);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'dist' at catalog ID #%d", catalog_index); return status; }
-				status = H5DSdoubleWrite(catalog_id, "vrad", 1, dims1_Npts, catalog[catalog_index].vrad);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'vrad' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "cat_times", 1, dims1_Npts, catalog[catalog_index].times);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_times' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "cat_dist", 1, dims1_Npts, catalog[catalog_index].dist);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_dist' at catalog ID #%d", catalog_index); return status; }
+				status = H5DSdoubleWrite(catalog_id, "cat_vrad", 1, dims1_Npts, catalog[catalog_index].vrad);
+				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_vrad' at catalog ID #%d", catalog_index); return status; }
 				break;
 			case UVH5_PHASE_CENTER_DRIFTSCAN:
 				status = H5DSstringWrite(catalog_id, "cat_type", 0, NULL, "driftscan");
 				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_type' at catalog ID #%d", catalog_index); return status; }
-				status = H5DSdoubleWrite(catalog_id, "cat_lon", 0, NULL, &catalog[catalog_index].lon);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lon' at catalog ID #%d", catalog_index); return status; }
-				status = H5DSdoubleWrite(catalog_id, "cat_lat", 0, NULL, &catalog[catalog_index].lat);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lat' at catalog ID #%d", catalog_index); return status; }
 				break;
 			case UVH5_PHASE_CENTER_UNPROJECTED:
 				status = H5DSstringWrite(catalog_id, "cat_type", 0, NULL, "unprojected");
 				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_type' at catalog ID #%d", catalog_index); return status; }
-				status = H5DSdoubleWrite(catalog_id, "cat_lon", 0, NULL, &catalog[catalog_index].lon);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lon' at catalog ID #%d", catalog_index); return status; }
-				status = H5DSdoubleWrite(catalog_id, "cat_lat", 0, NULL, &catalog[catalog_index].lat);
-				if (status < 0)	{ UVH5print_error(__FUNCTION__, "failure on 'cat_lat' at catalog ID #%d", catalog_index); return status; }
 				break;
 			default:
 				UVH5print_error(__FUNCTION__, "Unrecognised catalog type '%d' for catalog ID #%d", catalog[catalog_index].type, catalog_index);
