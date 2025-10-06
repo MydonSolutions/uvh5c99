@@ -10,10 +10,6 @@
 
 // #define PRINTER_VERBOSE
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* Call this to log an error message */
 void UVH5print_error(const char *name, const char *msg, ...);
 
@@ -25,9 +21,5 @@ void UVH5print_info(const char *name, const char *msg, ...);
 
 /* Call this to log verbose message */
 void UVH5print_verbose(const char *name, const char *msg, ...);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // _PRINTER_H

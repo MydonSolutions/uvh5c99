@@ -1,9 +1,13 @@
 #ifndef UVH5_H
 #define UVH5_H
 
-#include "hdf5/serial/hdf5.h"
+#include "hdf5.h"
 #include <string.h>
 #include <stdlib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "h5dsc99/h5_bool.h"
 #include "h5dsc99/h5_dataspace.h"
@@ -220,7 +224,8 @@ typedef struct
     char polarization;
 } UVH5_inputpair_t;
 
-void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata);
+void UVH5open(const char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata);
+void UVH5open_with_fileaccess(const char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata, hid_t Pfapl);
 
 void UVH5close(UVH5_file_t *UVH5file);
 
@@ -262,4 +267,9 @@ void UVH5visdata_from_xgpu_int_output(
     size_t xgpuElements,
     UVH5_header_t* header
 );
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

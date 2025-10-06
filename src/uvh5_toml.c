@@ -246,7 +246,7 @@ int _UVH5toml_antenna_table_in(
 //
 // The antenna_positions are converted to an "xyz" frame based on
 // the frame indicated by "antenna_position_frame".
-void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header) {
+void UVH5toml_parse_telescope_info(const char* file_path, UVH5_header_t* header) {
     FILE* fp;
     char errbuf[200];
 
@@ -401,7 +401,7 @@ void UVH5toml_parse_input_map(
 * This also populates `header->polarization_array`.
 * Finally, `UVH5toml_parse_input_map` is called
 */
-void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* header) {
+void UVH5toml_parse_observation_info(const char* file_path, UVH5_header_t* header) {
     FILE* fp;
     char errbuf[200];
 

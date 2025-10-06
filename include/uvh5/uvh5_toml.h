@@ -8,7 +8,7 @@
 #include "uvh5.h"
 #include "uvh5_printer.h"
 
-void UVH5toml_parse_telescope_info(char* file_path, UVH5_header_t* header);
-void UVH5toml_parse_observation_info(char* file_path, UVH5_header_t* header);
+void UVH5toml_parse_telescope_info(const char* file_path, UVH5_header_t* header);
+void UVH5toml_parse_observation_info(const char* file_path, UVH5_header_t* header);
 
 #endif

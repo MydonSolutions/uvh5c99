@@ -475,10 +475,14 @@ void _UVH5_Hwrite_static(UVH5_file_t *UVH5file)
 
 }
 
-void UVH5open(char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata)
+void UVH5open(const char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata)
 {
+    UVH5open_with_fileaccess(filepath, UVH5file, Tvisdata, H5P_DEFAULT);
+}
 
-    UVH5file->file_id = H5Fcreate(filepath, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+void UVH5open_with_fileaccess(const char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata, hid_t Pfapl)
+{
+    UVH5file->file_id = H5Fcreate(filepath, H5F_ACC_TRUNC, H5P_DEFAULT, Pfapl);
 
     const hsize_t dim1_unlim[] = {H5S_UNLIMITED};
     const hsize_t dim1_nbls[] = {UVH5file->header.Nbls};
