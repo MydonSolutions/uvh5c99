@@ -1,5 +1,5 @@
 project('uvh5c99', 'c',
-  version: '0.9.0',
+  version: '0.9.1',
   default_options: [
     'c_std=c99',
     'buildtype=release',

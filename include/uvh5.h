@@ -158,13 +158,13 @@ typedef struct
                                                     be continuous). This is a one-dimensional array of size Nants_data. Note there
                                                     must be one entry for every unique antenna in ant 1 array and ant 2 array, and no
                                                     additional entries. */
-    size_t _phase_center_catalog_length; 		/* The length of the phase_center_catalog.*/
+    int _phase_center_catalog_length; 		    /* The length of the phase_center_catalog.*/
 
 } UVH5_header_t;
 
 void UVH5Halloc(UVH5_header_t *header);
 
-void UVH5Hmalloc_phase_center_catalog(UVH5_header_t *header, size_t catalog_length);
+void UVH5Hmalloc_phase_center_catalog(UVH5_header_t *header, int catalog_length);
 
 void UVH5Hadmin(UVH5_header_t *header);
 
@@ -224,6 +224,14 @@ typedef struct
     char polarization;
 } UVH5_inputpair_t;
 
+typedef struct
+{
+    char* name;
+    int number;
+    double diameter;
+    double position[3];
+} UVH5_antinfo_t;
+
 void UVH5open(const char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata);
 void UVH5open_with_fileaccess(const char* filepath, UVH5_file_t *UVH5file, hid_t Tvisdata, hid_t Pfapl);
 
@@ -238,6 +246,60 @@ int UVH5write_keyword_string(UVH5_file_t* UVH5file, char* key, char* value);
 
 int UVH5find_antenna_index_by_name(UVH5_header_t* header, char* name);
 
+/* Sets the telescope information related fields of the header.
+ * 
+ * All of the associated pointer-arrays in `header` are allocated before being
+ * populated.
+ *
+ * The antenna_positions are converted to an "xyz" frame based on
+ * the frame indicated by "antenna_position_frame".
+ */ 
+void UVH5set_telescope_info(    
+    char* name,
+    double latitude,					/* The latitude of the telescope site, in degrees. */
+    double longitude,					/* The longitude of the telescope site, in degrees. */
+    double altitude,					/* The altitude of the telescope site, in meters. */
+    char* antenna_position_frame,       /* The antenna position frame: {"XYZ", "ENU", "ECEF"}. */
+    double default_antenna_diameter,    /* The fallback antenna diameter, in meters. */
+    int nantenna,                       /* The number of telescope antenna (the length of the `antenna` field). */
+    UVH5_antinfo_t* antenna,            /* The antenna information with positions. */
+
+    UVH5_header_t* header
+);
+
+/* Sets the telescope information related fields of the header.
+ * 
+ * All of the associated pointer-arrays in `header` are allocated before being
+ * populated.
+ *
+ * The antenna_positions are converted to an "xyz" frame based on
+ * the frame indicated by "antenna_position_frame".
+ */ 
+void UVH5set_observation_info(
+    int nantenna,
+    char** antenna_names,
+    char* polarisation_chars,
+    UVH5_header_t* header
+);
+
+/* Process the input-pair list, setting the ant_1/2_arrays and grouping the auto-baselines first.
+ *
+ * This expects that the header has been alloced with:
+ *		header->Npols
+ *		header->Nants_data
+ *		header->Nbls
+ *
+ * The UVh5_inputpair_t array is used to determine actual information of the observation's
+ * baselines, expressed and captured as pairs of ant_numbers.
+ *
+ * Furthermore, an index is populated for each baseline in the internal administrative
+ * arrays, which are critical to the `UVH5visdata_from_xgpu_int_output` function:
+ *  `header->_ant_pol_prod_xgpu_index`
+ *  `header->_ant_pol_prod_bl_index`
+ *  `header->_ant_pol_prod_pol_index`
+ *  `header->_ant_pol_prod_auto`
+ *  `header->_ant_pol_prod_conj`
+ */
 void UVH5parse_input_map(
     UVH5_header_t* header,
     UVH5_inputpair_t* inputs

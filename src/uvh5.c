@@ -121,7 +121,7 @@ void UVH5Halloc(UVH5_header_t *header)
     }
 }
 
-void UVH5Hmalloc_phase_center_catalog(UVH5_header_t *header, size_t catalog_length) {
+void UVH5Hmalloc_phase_center_catalog(UVH5_header_t *header, int catalog_length) {
     header->_phase_center_catalog_length = catalog_length;
     header->phase_center_catalog = malloc(header->_phase_center_catalog_length * sizeof(UVH5_phase_center_t));
     memset(header->phase_center_catalog, 0, header->_phase_center_catalog_length * sizeof(UVH5_phase_center_t));
@@ -604,7 +604,9 @@ void UVH5close(UVH5_file_t *UVH5file)
         H5DSclose(&UVH5file->DS_data_nsamples);
 
         H5Gclose(UVH5file->data_id);
-        free(UVH5file->visdata);
+        if (UVH5file->visdata) {
+            free(UVH5file->visdata);
+        }
         free(UVH5file->flags);
         free(UVH5file->nsamples);
     }
@@ -621,8 +623,8 @@ void UVH5close(UVH5_file_t *UVH5file)
 }
 
 int UVH5write_keyword_bool(UVH5_file_t* UVH5file, char* key, bool value) {
-    // H5_bool_t value_ = value == 0 ? H5_FALSE : H5_TRUE;
-    if (H5DSboolWrite(UVH5file->keywords_id, key, 0, NULL, &value) < 0) {
+    H5_bool_t value_ = value == 0 ? H5_FALSE : H5_TRUE;
+    if (H5DSboolWrite(UVH5file->keywords_id, key, 0, NULL, &value_) < 0) {
         UVH5print_error(__FUNCTION__, "failure on `extra_keywords/%s`", key);
         return -1;
     }
@@ -766,23 +768,130 @@ int xgpuInputPairOutputIndex(
   return station_pair_index * npol * npol + pol_pair_index;
 }
 
-/*
-* This expects that the header has been alloced with:
-*		header->Npols
-*		header->Nants_data
-*		header->Nbls
-*
-* The UVh5_inputpair_t array is used to determine actual information of the observation's
-* baselines, expressed and captured as pairs of ant_numbers.
-* This enables the population of `header->ant_1/2_array`.
-* Furthermore, an index is populated for each baseline in the internal administrative
-* arrays, which are critical to the `UVH5visdata_from_xgpu_int_output` function:
-*  `header->_ant_pol_prod_xgpu_index`
-*  `header->_ant_pol_prod_bl_index`
-*  `header->_ant_pol_prod_pol_index`
-*  `header->_ant_pol_prod_auto`
-*  `header->_ant_pol_prod_conj`
-*/
+void UVH5set_telescope_info(    
+    char* name,
+    double latitude,					/* The latitude of the telescope site, in degrees. */
+    double longitude,					/* The longitude of the telescope site, in degrees. */
+    double altitude,					/* The altitude of the telescope site, in meters. */
+    char* antenna_position_frame,       /* The antenna position frame: {"XYZ", "ENU", "ECEF"}. */
+    double default_antenna_diameter,    /* The fallback antenna diameter, in meters. */
+    int nantenna,                       /* The number of telescope antenna (the length of the `antenna` field). */
+    UVH5_antinfo_t* antenna,            /* The antenna information with positions. */
+
+    UVH5_header_t* header
+) {
+    header->latitude = latitude;
+    header->longitude = longitude;
+    header->altitude = altitude;
+    header->telescope_name = malloc(strlen(name)+1);
+    memcpy(header->telescope_name, name, strlen(name)+1);
+    
+    header->Nants_telescope = nantenna;
+    UVH5Halloc(header); // Alloc Nants_telescope related
+    header->antenna_diameters = malloc(sizeof(double) * header->Nants_telescope);
+
+    for (size_t i = 0; i < header->Nants_telescope; i++)
+    {
+        UVH5print_verbose(__FUNCTION__, "Antenna: %ld", i);
+        
+        header->antenna_numbers[i] = antenna[i].number;
+        header->antenna_names[i] = malloc(strlen(antenna[i].name)+1);
+        memcpy(header->antenna_names[i], antenna[i].name, strlen(antenna[i].name)+1);
+        header->antenna_positions[3*i+0] = antenna[i].position[0];
+        header->antenna_positions[3*i+1] = antenna[i].position[1];
+        header->antenna_positions[3*i+2] = antenna[i].position[2];
+        header->antenna_diameters[i] = antenna[i].diameter <= 0.0f ? default_antenna_diameter : antenna[i].diameter;
+    }
+
+    char ant_pos_frame = FRAME_XYZ;
+    if(antenna_position_frame == NULL || strlen(antenna_position_frame) == 0) {
+        // Not specified
+        double dist = calc_hypotenuse(header->antenna_positions, 3);
+        if(dist < 6e6) {
+            ant_pos_frame = FRAME_ENU;
+        }
+        else {
+            ant_pos_frame = FRAME_ECEF;
+        }
+    }
+    else {
+        if(strcmp(antenna_position_frame, "ecef") == 0) {
+            ant_pos_frame = FRAME_ECEF;
+        }
+        else if(strcmp(antenna_position_frame, "enu") == 0) {
+            ant_pos_frame = FRAME_ENU;
+        }
+        else if(strcmp(antenna_position_frame, "xyz") == 0) {
+            ant_pos_frame = FRAME_XYZ;
+        }
+        else {
+            UVH5print_warn(__FUNCTION__, "Ignoring 'antenna_position_frame' specfication: '%s'.", antenna_position_frame);
+        }
+    }
+
+    switch(ant_pos_frame) {
+    case FRAME_ECEF:
+        UVH5print_info(__FUNCTION__, "Translating from ECEF to XYZ!");
+        calc_position_to_xyz_frame_from_ecef(
+            header->antenna_positions,
+            header->Nants_telescope,
+            calc_rad_from_degree(header->longitude),
+            calc_rad_from_degree(header->latitude),
+            header->altitude
+        );
+        break;
+    case FRAME_ENU:
+        UVH5print_info(__FUNCTION__, "Translating from ENU to XYZ!");
+        calc_position_to_xyz_frame_from_enu(
+            header->antenna_positions,
+            header->Nants_telescope,
+            calc_rad_from_degree(header->longitude),
+            calc_rad_from_degree(header->latitude),
+            header->altitude
+        );
+        break;
+    case FRAME_XYZ:
+    default:
+        UVH5print_info(__FUNCTION__, "Verbatim XYZ positions.");
+        break;
+    }
+}
+
+void UVH5set_observation_info(
+    int nantenna,
+    char** antenna_names,
+    char* polarisation_chars,
+    UVH5_header_t* header
+) {
+    int npol = strlen(polarisation_chars);
+    header->Npols = npol*npol; // header->Npols is the pol-products
+    header->Nants_data = nantenna;
+    header->Nbls = (header->Nants_data*(header->Nants_data+1))/2;
+    UVH5Halloc(header);
+
+    char pol_product[3] = {'\0'};
+    for (size_t i = 0; i < npol; i++) {
+        pol_product[0] = polarisation_chars[i];
+        for (size_t j = 0; j < npol; j++) {
+            pol_product[1] = polarisation_chars[j];
+            header->polarization_array[i*2+j] = UVH5polarisation_string_key(pol_product, npol);
+            UVH5print_verbose(__FUNCTION__, "Pol-product '%s' with key %d @ %d.", pol_product, header->polarization_array[i*2+j], i*2+j);
+        }
+    }
+    
+    UVH5_inputpair_t* inpairs = malloc(nantenna*npol*sizeof(UVH5_inputpair_t));
+    for(int a = 0; a < nantenna; a++) {
+        for(int p = 0; p < npol; p++) {
+            inpairs[npol*a + p].antenna = malloc(strlen(antenna_names[a])+1);
+            memcpy(inpairs[npol*a + p].antenna, antenna_names[a], strlen(antenna_names[a])+1);
+    
+            inpairs[npol*a + p].polarization = polarisation_chars[p];
+        }
+    }
+
+    UVH5parse_input_map(header, inpairs);
+}
+
 void UVH5parse_input_map(
     UVH5_header_t* header,
     UVH5_inputpair_t* inputs

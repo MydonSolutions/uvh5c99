@@ -83,7 +83,7 @@ int main(int argc, const char * argv[]) {
 	}
 
 	if(VISDATA_DIMS[2] != uvh5_header->Npols) {
-		UVH5print_error("uvh5_header->Npols", "...");
+		UVH5print_error("uvh5_header->Npols", "%d != %d", VISDATA_DIMS[2], uvh5_header->Npols);
 		failed = true;
 	}
 

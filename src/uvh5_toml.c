@@ -195,32 +195,31 @@ int _UVH5toml_int_in(toml_table_t* parent, const char* location, int* int_out) {
 //  "position[0, 1, 2]" -> `ant_pos[0, 1, 2]` (x, y, z)
 int _UVH5toml_antenna_table_in(
     toml_table_t* parent,
-    int* ant_id,
-    char** ant_name,
-    double* ant_pos,
-    double* ant_diameter
+    UVH5_antinfo_t* ant
 ){
-    if(ant_diameter != NULL){
-        if(_UVH5toml_double_in(parent, "diameter", ant_diameter)) {
-            UVH5print_warn(__FUNCTION__, "cannot read diameter");
-        }
+    if(_UVH5toml_double_in(parent, "diameter", &ant->diameter)) {
+        UVH5print_warn(__FUNCTION__, "cannot read diameter");
     }
-    if(_UVH5toml_string_in(parent, "name", ant_name)) {
+    if(_UVH5toml_string_in(parent, "name", &ant->name)) {
         UVH5print_error(__FUNCTION__, "cannot read name");
     }
-    if(_UVH5toml_int_in(parent, "number", ant_id)) {
+    if(_UVH5toml_int_in(parent, "number", &ant->number)) {
         UVH5print_error(__FUNCTION__, "cannot read number");
     }
     toml_array_t* toml_ant_position = toml_array_in(parent, "position");
     if(toml_ant_position == NULL) {
         UVH5print_error(__FUNCTION__, "cannot read position");
     }
-
+    
     int ant_pos_count = toml_array_nelem(toml_ant_position);
-    for (size_t i = 0; i < ant_pos_count; i++)
+    if(ant_pos_count != 3) {
+        UVH5print_error(__FUNCTION__, "unexpected position length of %d", ant_pos_count);
+    }
+    for (size_t i = 0; i < 3; i++)
     {
-        if(_UVH5toml_double_at(toml_ant_position, i, ant_pos+i)) {
-            UVH5print_error(__FUNCTION__, "cannot read float");
+        if(_UVH5toml_double_at(toml_ant_position, i, ant->position+i)) {
+            UVH5print_error(__FUNCTION__, "cannot read position float at index %d", i);
+            ant->position[i] = 0.0f;
         }
     }
     return 0;
@@ -262,131 +261,70 @@ void UVH5toml_parse_telescope_info(const char* file_path, UVH5_header_t* header)
         UVH5print_error(__FUNCTION__, "cannot parse %s", errbuf);
         return;
     }
-    _UVH5toml_string_in(conf, "telescope_name", &header->telescope_name);
-    _UVH5toml_sexagesimal_in(conf, "latitude", &header->latitude);
-    _UVH5toml_sexagesimal_in(conf, "longitude", &header->longitude);
-    _UVH5toml_double_in(conf, "altitude", &header->altitude);
+    
+    char* name;
+    double latitude;					/* The latitude of the telescope site, in degrees. */
+    double longitude;					/* The longitude of the telescope site, in degrees. */
+    double altitude;					/* The altitude of the telescope site, in meters. */
+    char* antenna_position_frame;       /* The antenna position frame: {"XYZ", "ENU", "ECEF"}. */
+    double default_antenna_diameter;    /* The fallback antenna diameter, in meters. */
+    int nantenna;                       /* The number of antenna (the length of the `antenna` field). */
+    UVH5_antinfo_t* antenna;            /* The antenna information with positions. */
 
-    double universal_diameter = -1.0;
-    _UVH5toml_double_in(conf, "antenna_diameter", &universal_diameter);
+    _UVH5toml_string_in(conf, "telescope_name", &name);
+    _UVH5toml_sexagesimal_in(conf, "latitude", &latitude);
+    _UVH5toml_sexagesimal_in(conf, "longitude", &longitude);
+    _UVH5toml_double_in(conf, "altitude", &altitude);
+
+    _UVH5toml_double_in(conf, "antenna_diameter", &default_antenna_diameter);
     
     toml_array_t* toml_antennas_array = toml_array_in(conf, "antennas");
     if (!toml_antennas_array) {
         UVH5print_error(__FUNCTION__, "missing [[antennas]]");
+        return;
     }
-    else {
-        header->Nants_telescope = toml_array_nelem(toml_antennas_array);
-        UVH5Halloc(header); // Alloc Nants_telescope related
-        header->antenna_diameters = malloc(sizeof(double) * header->Nants_telescope); // Optional
+    
+    nantenna = toml_array_nelem(toml_antennas_array);
+    antenna = malloc(sizeof(UVH5_antinfo_t)*nantenna);
 
-        for (size_t i = 0; i < header->Nants_telescope; i++)
-        {
-            toml_table_t* toml_antenna_info = toml_table_at(toml_antennas_array, i);
-            if(toml_antenna_info) {
-                UVH5print_verbose(__FUNCTION__, "Antenna: %ld", i);
-                _UVH5toml_antenna_table_in(
-                    toml_antenna_info,
-                    header->antenna_numbers + i,
-                    header->antenna_names + i,
-                    header->antenna_positions + 3*i,
-                    universal_diameter > 0.0f ? NULL : 
-                        header->antenna_diameters != NULL ? header->antenna_diameters + i : NULL
-                );
-                if(header->antenna_diameters != NULL && universal_diameter > 0.0f) {
-                    header->antenna_diameters[i] = universal_diameter;
-                }
-            }
-            else {
-                UVH5print_error(__FUNCTION__, "cannot access antenna #%ld info", i);
-            }
-        }
-
-        char *ant_pos_frame_str = NULL;
-        char ant_pos_frame = FRAME_XYZ;
-        if(_UVH5toml_string_in(conf, "antenna_position_frame", &ant_pos_frame_str)) {
-            // Not specified
-            double dist = calc_hypotenuse(header->antenna_positions, 3);
-            if(dist < 6e6) {
-                ant_pos_frame = FRAME_ENU;
-            }
-            else {
-                ant_pos_frame = FRAME_ECEF;
-            }
+    for (size_t i = 0; i < nantenna; i++)
+    {
+        toml_table_t* toml_antenna_info = toml_table_at(toml_antennas_array, i);
+        if(toml_antenna_info) {
+            UVH5print_verbose(__FUNCTION__, "Antenna: %ld", i);
+            _UVH5toml_antenna_table_in(
+                toml_antenna_info,
+                antenna+i
+            );
         }
         else {
-            if(strcmp(ant_pos_frame_str, "ecef") == 0) {
-                ant_pos_frame = FRAME_ECEF;
-            }
-            else if(strcmp(ant_pos_frame_str, "enu") == 0) {
-                ant_pos_frame = FRAME_ENU;
-            }
-            else if(strcmp(ant_pos_frame_str, "xyz") == 0) {
-                ant_pos_frame = FRAME_XYZ;
-            }
-            else {
-                UVH5print_warn(__FUNCTION__, "Ignoring 'antenna_position_frame' specfication: '%s'.", ant_pos_frame_str);
-            }
+            UVH5print_error(__FUNCTION__, "cannot access antenna #%ld info", i);
         }
+    }
 
-        switch(ant_pos_frame) {
-        case FRAME_ECEF:
-            UVH5print_info(__FUNCTION__, "Translating from ECEF to XYZ!");
-            calc_position_to_xyz_frame_from_ecef(
-                header->antenna_positions,
-                header->Nants_telescope,
-                calc_rad_from_degree(header->longitude),
-                calc_rad_from_degree(header->latitude),
-                header->altitude
-            );
-            break;
-        case FRAME_ENU:
-            UVH5print_info(__FUNCTION__, "Translating from ENU to XYZ!");
-            calc_position_to_xyz_frame_from_enu(
-                header->antenna_positions,
-                header->Nants_telescope,
-                calc_rad_from_degree(header->longitude),
-                calc_rad_from_degree(header->latitude),
-                header->altitude
-            );
-            break;
-        case FRAME_XYZ:
-        default:
-            UVH5print_info(__FUNCTION__, "Verbatim XYZ positions.");
-            break;
-        }
+    if(_UVH5toml_string_in(conf, "antenna_position_frame", &antenna_position_frame)) {
+        // Not specified
+        antenna_position_frame = NULL;
     }
 
     toml_free(conf);
-}
-
-/*
-* This expects:
-*  `toml_input_mapping` is the 'obsinfo.toml:"input_map"' array
-*  `header` has been populated by telescope_info (see `UVH5toml_parse_telescope_info`)
-*
-* Constructs an array of inputpairs corresponding to the "input_map", feeding that to
-* `UVH5parse_input_map()`.
-*/
-void UVH5toml_parse_input_map(
-    toml_array_t* toml_input_mapping,
-    UVH5_header_t* header
-) {
-    const int num_inpairs = toml_array_nelem(toml_input_mapping);
-
-    UVH5_inputpair_t* inpairs = malloc(num_inpairs*sizeof(UVH5_inputpair_t));
-    toml_array_t* toml_input_ant_name_pol;
-    char polarization[2] = {'\0'};
-    for(int inpair = 0; inpair < num_inpairs; inpair++) {
-        toml_input_ant_name_pol = toml_array_at(toml_input_mapping, inpair);
-        _UVH5toml_string_at(toml_input_ant_name_pol, 0, &inpairs[inpair].antenna);
-        _UVH5toml_nstring_at(toml_input_ant_name_pol, 1, polarization, 1);
-        inpairs[inpair].polarization = polarization[0];
+    UVH5set_telescope_info(
+        name,
+        latitude,
+        longitude,
+        altitude,
+        antenna_position_frame,
+        default_antenna_diameter,
+        nantenna,
+        antenna,
+        header
+    );
+    free(name);
+    free(antenna_position_frame);
+    for (int i = 0; i < nantenna; i++) {
+        free(antenna[i].name);
     }
-    UVH5parse_input_map(header, inpairs);
-    for(int inpair = 0; inpair < num_inpairs; inpair++) {
-        free(inpairs[inpair].antenna);
-    }
-    free(inpairs);
+    free(antenna);
 }
 
 /*
@@ -425,8 +363,11 @@ void UVH5toml_parse_observation_info(const char* file_path, UVH5_header_t* heade
 
         char *ant_name0 = NULL, *ant_name1 = NULL;
         char pols_ant[3] = {'\0'}; // at most 2 unique pols
+        // iterate through the input_map entries which are string tuples of (antenna_name, polarisation)
+        // assume that entries are grouped by antenna
+        // iterate until the antenna name changes, at which point all of the polarisations should be collected in `pols_ant`.
         do {
-            if (ant_name1 == NULL) {
+            if (ant_name1 != NULL) {
                 free(ant_name1);
             }
             toml_array_t* toml_input_ant_name_pol = toml_array_at(toml_input_mapping, Npol_ant);
@@ -443,27 +384,30 @@ void UVH5toml_parse_observation_info(const char* file_path, UVH5_header_t* heade
             UVH5print_error(__FUNCTION__, "The first antenna is repeated more than twice indicating more than 2 polarisaitons.");
             return;
         }
+        pols_ant[Npol_ant] = '\0';
 
-        UVH5print_info(__FUNCTION__, "Assuming every antenna has %d polarisations, as the first does.", Npol_ant);
-        int Nants_data = toml_array_nelem(toml_input_mapping)/Npol_ant;
-        UVH5print_info(__FUNCTION__, "\tLeads to Nants_data: %d.", Nants_data);
-                
-        header->Npols = Npol_ant*Npol_ant; // header->Npols is the pol-products
-        header->Nants_data = Nants_data;
-        header->Nbls = (header->Nants_data*(header->Nants_data+1))/2;
-        UVH5Halloc(header);
+        UVH5print_info(__FUNCTION__, "Assuming every antenna has %d polarisations ('%s'), as the first does.", Npol_ant, pols_ant);
+        int nantenna = toml_array_nelem(toml_input_mapping)/Npol_ant;
+        UVH5print_info(__FUNCTION__, "\tLeads to Nants_data: %d.", nantenna);
 
-        char pol_product[3] = {'\0'};
-        for (size_t i = 0; i < Npol_ant; i++) {
-            pol_product[0] = pols_ant[i];
-            for (size_t j = 0; j < Npol_ant; j++) {
-                pol_product[1] = pols_ant[j];
-                header->polarization_array[i*2+j] = UVH5polarisation_string_key(pol_product, Npol_ant);
-                UVH5print_verbose(__FUNCTION__, "Pol-product '%s' with key %d @ %d.", pol_product, header->polarization_array[i*2+j], i*2+j);
-            }
+        char** antenna_names = malloc(nantenna*sizeof(char*));
+        toml_array_t* toml_input_ant_name_pol;
+        for(int a = 0; a < nantenna; a++) {
+            toml_input_ant_name_pol = toml_array_at(toml_input_mapping, Npol_ant*a);
+            _UVH5toml_string_at(toml_input_ant_name_pol, 0, antenna_names+a);
         }
+        
+        UVH5set_observation_info(
+            nantenna,
+            antenna_names,
+            pols_ant,
+            header
+        );
 
-        UVH5toml_parse_input_map(toml_input_mapping, header);
+        for(int a = 0; a < nantenna; a++) {
+            free(antenna_names[a]);
+        }
+        free(antenna_names);
     }
     else {
         UVH5print_error(__FUNCTION__, "cannot read location 'input_map'");
